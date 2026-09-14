@@ -1,0 +1,189 @@
+.main-container {
+    max-width: var(--shell);
+    margin: 0 auto;
+    padding: var(--s-lg) var(--gutter) var(--s-4xl);
+}
+
+.glass-card {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+}
+
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2xs);
+    margin-bottom: var(--s-xl);
+    border-bottom: 1px solid var(--hairline-strong);
+}
+
+.category-tabs .tab-btn {
+    position: relative;
+    padding: 11px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    cursor: pointer;
+}
+
+.category-tabs .tab-btn::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 2px;
+    background-color: var(--crimson);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--t) var(--ease-out);
+}
+
+.category-tabs .tab-btn:hover {
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    transform: none;
+}
+
+.category-tabs .tab-btn.active {
+    color: var(--ink);
+}
+
+.category-tabs .tab-btn.active::after {
+    transform: scaleX(1);
+}
+
+.faq-container {
+    border-top: 1px solid var(--hairline);
+}
+
+.faq-container details,
+.faq-container .faq-item {
+    border-bottom: 1px solid var(--hairline);
+}
+
+.faq-container summary,
+.faq-container .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-md);
+    padding: var(--s-md) var(--s-xs);
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--ink);
+    transition: color var(--t-fast) linear;
+}
+
+.faq-container summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-container summary::after {
+    content: "+";
+    flex: 0 0 auto;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--crimson);
+    transition: transform var(--t) var(--ease-out);
+}
+
+.faq-icon {
+    flex: 0 0 auto;
+    color: var(--crimson);
+    transition: transform var(--t) var(--ease-out);
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(90deg);
+}
+
+.faq-container details[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.faq-container summary:hover,
+.faq-container .faq-question:hover {
+    color: var(--crimson);
+}
+
+.faq-container details > *:not(summary),
+.faq-container .faq-answer {
+    padding: 0 var(--s-xs) var(--s-md);
+    font-size: var(--type-body);
+    line-height: 1.6;
+    color: var(--ink-dim);
+    max-width: 72ch;
+}
+
+.contact-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-md);
+    margin-top: var(--s-2xl);
+    padding: var(--s-lg);
+    background-color: var(--surface);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+}
+
+.contact-box-content h3 {
+    margin-bottom: var(--s-2xs);
+    font-size: var(--type-h3);
+    color: var(--ink);
+}
+
+.contact-box-content p {
+    margin: 0;
+    color: var(--ink-dim);
+}
+
+@media (max-width: 640px) {
+    .category-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .category-tabs .tab-btn { white-space: nowrap; }
+
+    .faq-container summary,
+    .faq-container .faq-question {
+        font-size: var(--type-label-lg);
+    }
+}
+
+.faq-answer {
+    display: none;
+}
+
+.faq-answer.show {
+    display: block;
+    animation: settle var(--t) var(--ease-out) both;
+}
+
+.no-results {
+    padding: var(--s-2xl);
+    text-align: center;
+    color: var(--ink-faint);
+    border: 1px dashed var(--hairline-strong);
+    border-radius: var(--r-md);
+}
