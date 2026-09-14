@@ -1,0 +1,19 @@
+{
+  "names": {
+    "Egypt": "مصر", "Afghanistan": "أفغانستان", "Albania": "ألبانيا", "Algeria": "الجزائر", "Argentina": "الأرجنتين",
+    "Australia": "أستراليا", "Austria": "النمسا", "Bangladesh": "بنجلاديش", "Belgium": "بلجيكا", "Brazil": "البرازيل",
+    "Canada": "كندا", "China": "الصين", "Denmark": "الدنمارك", "Finland": "فنلندا", "France": "فرنسا",
+    "Germany": "ألمانيا", "Greece": "اليونان", "India": "الهند", "Indonesia": "إندونيسيا", "Iran": "إيران",
+    "Iraq": "العراق", "Ireland": "أيرلندا", "Italy": "إيطاليا", "Japan": "اليابان", "Jordan": "الأردن",
+    "Kenya": "كينيا", "Kuwait": "الكويت", "Lebanon": "لبنان", "Malaysia": "ماليزيا", "Mexico": "المكسيك",
+    "Morocco": "المغرب", "Netherlands": "هولندا", "Nigeria": "نيجيريا", "Norway": "النرويج", "Pakistan": "باكستان",
+    "Philippines": "الفلبين", "Poland": "بولندا", "Portugal": "البرتغال", "Qatar": "قطر", "Russia": "روسيا",
+    "Saudi Arabia": "السعودية", "Singapore": "سنغافورة", "South Africa": "جنوب أفريقيا", "South Korea": "كوريا الجنوبية", "Spain": "إسبانيا",
+    "Sweden": "السويد", "Switzerland": "سويسرا", "Thailand": "تايلاند", "Tunisia": "تونس", "Turkey": "تركيا",
+    "UAE": "الإمارات", "UK": "بريطانيا", "USA": "أمريكا", "Vietnam": "فيتنام", "Yemen": "اليمن",
+    "Palestine": "فلسطين"
+  },
+  "dialNames": {
+    "USA/Canada": "أمريكا/كندا"
+  }
+}

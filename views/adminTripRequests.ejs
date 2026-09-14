@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Trip Requests - Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminDashboard.css?v=20260915b">
+    <link rel="stylesheet" href="/css/adminTripRequests.css?v=20260908o">
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li class="active"><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="top-bar-left">
+                <h1>Trip Requests</h1>
+                <p>Custom trip requests submitted from "Request Your Own"</p>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-compass"></i></div>
+                <div class="stat-info"><h3>Total</h3><p class="stat-number"><%= requests.length %></p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-danger);background:rgba(239,68,68,0.1);"><i class="fas fa-inbox"></i></div>
+                <div class="stat-info"><h3>New</h3><p class="stat-number" style="color:var(--color-danger);"><%= requests.filter(r=>r.status==='new').length %></p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-warning,#f59e0b);background:rgba(245,158,11,0.1);"><i class="fas fa-phone-volume"></i></div>
+                <div class="stat-info"><h3>Contacted</h3><p class="stat-number"><%= requests.filter(r=>r.status==='contacted').length %></p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-success);background:rgba(39,174,96,0.1);"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><h3>Closed</h3><p class="stat-number" style="color:var(--color-success);"><%= requests.filter(r=>r.status==='closed').length %></p></div>
+            </div>
+        </section>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-container">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="text" id="search-input" placeholder="Search customer or destination…">
+                </div>
+                <select id="status-filter" class="select-modern">
+                    <option value="">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+        </div>
+
+        <section class="card">
+            <div class="tr-table-wrap">
+                <table class="tr-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Destination</th>
+                            <th>Dates</th>
+                            <th>Travellers</th>
+                            <th>Rooms</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="requests-tbody">
+                        <% requests.forEach(r => {
+                            const roomCounts = {};
+                            (r.rooms || []).forEach(rm => { roomCounts[rm.type] = (roomCounts[rm.type] || 0) + 1; });
+                            const roomLabel = Object.keys(roomCounts).map(k => roomCounts[k] + ' ' + k).join(', ') || 'N/A';
+                        %>
+                        <tr class="tr-row"
+                            data-status="<%= r.status %>"
+                            data-search="<%= (r.userName || r.userEmail || '').toLowerCase() %> <%= (r.destination || '').toLowerCase() %>">
+                            <td>
+                                <div class="tr-strong"><%= r.userName || (r.userId && r.userId.name) || 'Guest' %></div>
+                                <div class="tr-muted"><%= r.userEmail || (r.userId && r.userId.email) || '' %></div>
+                            </td>
+                            <td><%= r.destination %></td>
+                            <td class="tr-muted">
+                                <%= new Date(r.startDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) %>
+                                &rarr;
+                                <%= new Date(r.endDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}) %>
+                                <span class="tr-nights">(<%= r.nights %>n)</span>
+                            </td>
+                            <td><%= r.travelers %></td>
+                            <td class="tr-muted"><%= (r.rooms || []).length %> · <%= roomLabel %></td>
+                            <td><span class="tr-badge tr-badge--<%= r.status %>"><%= r.status %></span></td>
+                            <td class="tr-muted"><%= new Date(r.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+                            <td><button class="view-btn btn btn--outline btn--small" data-id="<%= r._id %>"><i class="fas fa-eye"></i> View</button></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+                <% if (requests.length === 0) { %>
+                <div class="tr-empty">
+                    <i class="fas fa-compass"></i>
+                    <p>No trip requests yet.</p>
+                </div>
+                <% } %>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="request-modal" class="tr-modal" hidden>
+    <div class="tr-modal__panel">
+        <button id="tr-close" class="tr-modal__close" aria-label="Close">&times;</button>
+        <h2 class="tr-modal__title"><i class="fas fa-compass"></i> Trip Request</h2>
+
+        <div class="tr-modal__grid">
+            <div><span class="tr-modal__k">Customer</span><strong id="m-customer"></strong></div>
+            <div><span class="tr-modal__k">Email</span><span id="m-email"></span></div>
+            <div><span class="tr-modal__k">Submitted</span><span id="m-date"></span></div>
+            <div>
+                <span class="tr-modal__k">Status</span>
+                <select id="m-status" class="tr-select">
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tr-modal__section">
+            <span class="tr-modal__k">Destination</span>
+            <p id="m-destination" class="tr-modal__big"></p>
+        </div>
+
+        <div class="tr-modal__grid">
+            <div><span class="tr-modal__k">Dates</span><span id="m-dates"></span></div>
+            <div><span class="tr-modal__k">Travellers</span><span id="m-travelers"></span></div>
+        </div>
+
+        <div class="tr-modal__section">
+            <span class="tr-modal__k">Rooms</span>
+            <ul id="m-rooms" class="tr-rooms"></ul>
+        </div>
+
+        <div class="tr-modal__section">
+            <span class="tr-modal__k">Travellers</span>
+            <ul id="m-travellers-list" class="tr-travellers"></ul>
+        </div>
+
+        <div class="tr-modal__section" id="m-notes-wrap">
+            <span class="tr-modal__k">Customer notes</span>
+            <p id="m-notes" class="tr-modal__quote"></p>
+        </div>
+
+        <div class="tr-modal__section">
+            <label for="m-admin-note" class="tr-modal__k">Internal note <span style="font-weight:400;text-transform:none;">(only staff see this)</span></label>
+            <textarea id="m-admin-note" rows="3" class="tr-textarea" placeholder="e.g. Called 12 May, waiting on dates confirmation…"></textarea>
+        </div>
+
+        <div id="tr-modal-error" class="tr-modal__error" hidden></div>
+        <div class="tr-modal__actions">
+            <button id="tr-cancel" class="btn btn--outline">Close</button>
+            <button id="tr-save" class="btn btn--primary"><i class="fas fa-floppy-disk"></i> Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.SERVER_USER = <%- JSON.stringify(user) %>;
+    window.SERVER_REQUESTS = <%- JSON.stringify(requests.map(r => ({
+        id: String(r._id),
+        userName: r.userName || (r.userId && r.userId.name) || 'Guest',
+        userEmail: r.userEmail || (r.userId && r.userId.email) || '',
+        destination: r.destination,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        nights: r.nights,
+        travelers: r.travelers,
+        rooms: (r.rooms || []).map(rm => rm.type),
+        travellerDetails: (r.travellerDetails || []).map(t => ({
+            name: t.name || '', phone: t.phone || '', gender: t.gender || '',
+            idNumber: t.idNumber || '', idPhoto: t.idPhoto || '',
+            emergencyName: t.emergencyName || '', emergencyPhone: t.emergencyPhone || '',
+            knownDisease: t.knownDisease || '',
+        })),
+        notes: r.notes || '',
+        status: r.status,
+        adminNote: r.adminNote || '',
+        createdAt: r.createdAt,
+    }))) %>;
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+<script src="/js/adminTripRequests.js"></script>
+</body>
+</html>

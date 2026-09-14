@@ -1,0 +1,23 @@
+{
+  "heroHtml": "Get in <span class=\"text-gold\">Touch</span>",
+  "heroDesc": "Begin your journey Adrenaline with a conversation.",
+  "supportHtml": "Support <span class=\"text-gold\">Information</span>",
+  "supportDesc": "Got a question, a group to plan for, or an idea for a trip? Reach out through any of our channels.",
+  "findUs": "Find Us",
+  "responseTime": "Response Time",
+  "replyWithin": "We reply within 24 hours",
+  "formHtml": "Send a <span class=\"text-gold\">Message</span>",
+  "formDesc": "Have a specific vision or question? We respond within 24 hours.",
+  "fullName": "Full Name",
+  "namePlaceholder": "E.g. Alexander Great",
+  "email": "Email Address",
+  "emailPlaceholder": "alex@heritage.com",
+  "subject": "Inquiry Subject",
+  "subjectPlaceholder": "E.g. Custom Luxor Tour",
+  "message": "Detailed Message",
+  "messagePlaceholder": "Share your travel aspirations with us...",
+  "submit": "Dispatch Inquiry",
+  "inquiriesHtml": "Your <span class=\"text-gold\">Inquiries</span>",
+  "inquiriesDesc": "Track the status of messages you've sent us.",
+  "loadingInquiries": "Loading your inquiries..."
+}

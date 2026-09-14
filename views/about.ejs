@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.about') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/public.css?v=20260916guides">
+    <link rel="stylesheet" href="/css/about.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body class="info-page">
+
+    <nav class="navbar" id="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link"><%= t('nav.home') %></a></li>
+                <li><a href="/packages/day" class="nav-link"><%= t('nav.tal3a') %></a></li>
+                <li><a href="/packages/week" class="nav-link"><%= t('nav.rehla') %></a></li>
+                <li><a href="/packages/single" class="nav-link"><%= t('nav.pump') %></a></li>
+                <li><a href="/custom-trip" class="nav-link"><%= t('nav.customTrip') %></a></li>
+                <li id="nav-dashboard-link" <% if (!user) { %>style="display:none"<% } %>>
+                    <a href="/dashboard" class="nav-link"><%= t('nav.dashboard') %></a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                    <i class="fas fa-sun sun-icon"></i>
+                    <i class="fas fa-moon moon-icon"></i>
+                </button>
+                <div class="nav-buttons">
+                    <% if (user) { %>
+                    <a href="/dashboard" class="btn btn--outline"><i class="fas fa-user"></i> <%= user.name.split(' ')[0] %></a>
+                    <a href="#" id="logout-btn" class="btn btn--primary"><%= t('nav.logout') %></a>
+                    <% } else { %>
+                    <a href="/login" class="btn btn--outline"><%= t('nav.logIn') %></a>
+                    <a href="/register" class="btn btn--primary"><%= t('nav.signUp') %></a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-title reveal-up">
+        <h1 class="hero-title"><%- t('about.heroHtml') %></h1>
+        <p class="hero-description"><%= t('about.heroDesc') %></p>
+    </div>
+
+    <main class="main-container">
+
+        <section class="story-section reveal-up">
+            <div class="story-content">
+                <h2 class="section-display-title"><%- t('about.whyHtml') %></h2>
+                <p><%= t('about.story1') %></p>
+                <p><%= t('about.story2') %></p>
+            </div>
+            <div class="story-visual glass-card">
+                <ul class="about-facts">
+                    <li>
+                        <span class="about-facts__label"><%= t('about.factForLabel') %></span>
+                        <span class="about-facts__value"><%= t('about.factForValue') %></span>
+                    </li>
+                    <li>
+                        <span class="about-facts__label"><%= t('about.factCategoryLabel') %></span>
+                        <span class="about-facts__value"><%= t('about.factCategoryValue') %></span>
+                    </li>
+                    <li>
+                        <span class="about-facts__label"><%= t('about.factStartedLabel') %></span>
+                        <span class="about-facts__value"><%= t('about.factStartedValue') %></span>
+                    </li>
+                    <li>
+                        <span class="about-facts__label"><%= t('about.factHeadedLabel') %></span>
+                        <span class="about-facts__value"><%= t('about.factHeadedValue') %></span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="values-section reveal-up">
+            <h2 class="section-display-title text-center"><%- t('about.pillarsHtml') %></h2>
+            <div class="values-grid">
+                <div class="value-card glass-card">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                    <h3><%= t('about.adventure') %></h3>
+                    <p><%= t('about.adventureDesc') %></p>
+                </div>
+                <div class="value-card glass-card">
+                    <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                    <h3><%= t('about.creativity') %></h3>
+                    <p><%= t('about.creativityDesc') %></p>
+                </div>
+                <div class="value-card glass-card">
+                    <i class="fas fa-people-group" aria-hidden="true"></i>
+                    <h3><%= t('about.community') %></h3>
+                    <p><%= t('about.communityDesc') %></p>
+                </div>
+                <div class="value-card glass-card">
+                    <i class="fas fa-fire" aria-hidden="true"></i>
+                    <h3><%= t('about.authenticity') %></h3>
+                    <p><%= t('about.authenticityDesc') %></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mission-banner glass-card reveal-up">
+            <div class="mission-text">
+                <h2><%- t('about.missionHtml') %></h2>
+                <p><%= t('about.mission') %></p>
+            </div>
+        </section>
+
+        <% const FOUNDERS = [
+            { name: t('about.nedal'), role: t('about.coFounder'), photo: '/images/founders/nedal-farhan.jpeg' },
+            { name: t('about.yasser'), role: t('about.coFounder'), photo: '/images/founders/yasser-zaher.jpeg' },
+        ]; %>
+        <section class="founders-section reveal-up">
+            <h2 class="section-display-title text-center"><%- t('about.foundersHtml') %></h2>
+            <div class="founders-grid">
+                <% FOUNDERS.forEach(f => { %>
+                <div class="founder-card glass-card">
+                    <img class="founder-card__photo" src="<%= f.photo %>" alt="<%= f.name %>">
+                    <h3 class="founder-card__name"><%= f.name %></h3>
+                    <p class="founder-card__role"><%= f.role %></p>
+                </div>
+                <% }) %>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="main-footer reveal-up">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="wordmark footer-logo" style="font-size:1.4rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+                <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+            </div>
+            <nav class="footer-nav" aria-label="<%= t('footer.navAria') %>">
+                <div class="footer-group">
+                    <h4><%= t('footer.explore') %></h4>
+                    <ul>
+                        <li><a href="/packages/day"><%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><%= t('nav.pump') %></a></li>
+                        <li><a href="/custom-trip"><%= t('nav.requestYourOwn') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.operations') %></h4>
+                    <ul>
+                        <li><a href="/about"><%= t('nav.about') %></a></li>
+                        <li><a href="/faq"><%= t('nav.faq') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.dispatch') %></h4>
+                    <ul>
+                        <li><a href="/contact"><%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="footer-bottom container">
+            <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+        </div>
+    </footer>
+
+    <script>
+        const SERVER_DATA = { user: <%- JSON.stringify(user) %> };
+        window.SERVER_USER = SERVER_DATA.user;
+</script>
+    <script src="/js/global.js"></script>
+</body>
+
+</html>

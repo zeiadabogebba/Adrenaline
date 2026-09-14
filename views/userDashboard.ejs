@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.userDashboard') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li class="active"><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn"><i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span></button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="topbar-left">
+                    <div class="greeting-stack">
+                        <span class="greeting-label" id="timeGreeting"><%= t('dashboard.goodDay') %></span>
+                        <h1 class="greeting-name" id="userGreeting"><%= user.name.split(' ')[0] %></h1>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                        <div class="account-chip__avatar">
+                            <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                        </div>
+                        <div>
+                            <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                            <strong class="account-chip__name"><%= user.name %></strong>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dash-scroll-area">
+                <div class="stat-ribbon" id="stat-ribbon">
+                    <div class="stat-pill">
+                        <div class="pill-icon"><i class="fas fa-route"></i></div>
+                        <div class="pill-data">
+                            <span class="pill-value" id="stat-trips" data-target="<%= totalBookings %>">0</span>
+                            <span class="pill-label"><%= t('dashboard.tripsBooked') %></span>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="pill-icon"><i class="fas fa-flag-checkered"></i></div>
+                        <div class="pill-data">
+                            <span class="pill-value pill-value--text" id="stat-next"><%= recentBooking && recentBooking.date ? recentBooking.date : t('dashboard.na') %></span>
+                            <span class="pill-label"><%= t('dashboard.nextDeparture') %></span>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="pill-icon"><i class="fas fa-id-card"></i></div>
+                        <div class="pill-data">
+                            <span class="pill-value pill-value--text" id="stat-since"><%= user.createdAt ? new Date(user.createdAt).getFullYear() : t('dashboard.na') %></span>
+                            <span class="pill-label"><%= t('dashboard.ridingSince') %></span>
+                        </div>
+                    </div>
+                    <div class="stat-pill stat-pill--accent">
+                        <div class="pill-icon"><i class="fas fa-award"></i></div>
+                        <div class="pill-data">
+                            <span class="pill-value pill-value--text" id="stat-level"><%= totalBookings >= 5 ? t('dashboard.levelVeteran') : totalBookings >= 2 ? t('dashboard.levelRegular') : t('dashboard.levelNew') %></span>
+                            <span class="pill-label"><%= t('dashboard.status') %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <% if (recentBooking) { %>
+                <section class="hero-journey" id="hero-journey">
+                    <div class="next-trip-card">
+                        <% const nextTripImage = (recentBooking.tripId && recentBooking.tripId.image) || (recentBooking.packageId && recentBooking.packageId.image) || ''; %>
+                        <% if (nextTripImage) { %>
+                        <div class="next-trip-card__bg" style="background-image:url('<%= nextTripImage %>')"></div>
+                        <% } %>
+                        <div class="next-trip-card__overlay"></div>
+                        <div class="next-trip-card__content">
+                            <span class="next-trip-card__label"><%= t('dashboard.nextJourney') %></span>
+                            <h2 class="next-trip-card__title"><%= recentBooking.packageName %></h2>
+                            <p class="next-trip-card__meta"><i class="fas fa-calendar"></i> <%= recentBooking.date || new Date(recentBooking.createdAt).toLocaleDateString('en-GB') %></p>
+                            <p class="next-trip-card__meta"><i class="fas fa-users"></i> <%= tp('dashboard.travelers', recentBooking.travelers) %></p>
+                            <div class="next-trip-card__actions">
+                                <a href="/booking/<%= recentBooking._id %>" class="btn btn--primary"><%= t('dashboard.viewDetails') %></a>
+                                <span class="next-trip-card__price"><%= money(recentBooking.totalPrice) %></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
+                <% if (rehlaPackages && rehlaPackages.length) { %>
+                <section class="dash-rehla" id="dash-rehla">
+                    <div class="dash-rehla__head">
+                        <h3 class="bento-title"><%= t('nav.rehla') %></h3>
+                        <a href="/packages/week" class="dash-rehla__all"><%= t('dashboard.seeAll') %> <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <%
+                        // Duration scales with how many cards there are, matching the
+                        // landing ticker's pace convention (see index.ejs tickerDuration).
+                        const rehlaDuration = Math.max(18, rehlaPackages.length * 3);
+                    %>
+                    <div class="dash-rehla__viewport">
+                        <div class="dash-rehla__row" style="animation-duration:<%= rehlaDuration %>s">
+                            <% for (let pass = 0; pass < 2; pass++) { %>
+                                <% rehlaPackages.forEach(pkg => { %>
+                                <a href="/packages/week" class="dash-rehla__card" <%- pass === 1 ? 'aria-hidden="true" tabindex="-1"' : '' %>>
+                                    <span class="dash-rehla__media" style="background-image:url('<%= pkg.image || '/images/layoutImage.jpg' %>')"></span>
+                                    <span class="dash-rehla__name"><%= pkg.name %></span>
+                                </a>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
+                <div class="bento-grid">
+                    <section class="bento-cell bento-actions" id="bento-actions">
+                        <h3 class="bento-title"><%= t('dashboard.quickActions') %></h3>
+                        <div class="action-tiles">
+                            <a href="/packages/day" class="action-tile"><div class="tile-icon"><i class="fas fa-sun"></i></div><span class="tile-label"><%= t('nav.tal3a') %></span></a>
+                            <a href="/packages/week" class="action-tile"><div class="tile-icon"><i class="fas fa-calendar-week"></i></div><span class="tile-label"><%= t('nav.rehla') %></span></a>
+                            <a href="/custom-trip" class="action-tile"><div class="tile-icon"><i class="fas fa-compass"></i></div><span class="tile-label"><%= t('dashboard.buildTrip') %></span></a>
+                            <a href="/my-bookings" class="action-tile"><div class="tile-icon"><i class="fas fa-suitcase-rolling"></i></div><span class="tile-label"><%= t('nav.myBookings') %></span></a>
+                        </div>
+                    </section>
+
+                    <section class="bento-cell bento-inspire" id="bento-inspire">
+                        <div class="inspire-bg" <% if (featuredPackage && featuredPackage.image) { %>style="background-image:url('<%= featuredPackage.image %>')"<% } %>></div>
+                        <div class="inspire-content">
+                            <span class="inspire-tag"><%= t('dashboard.featured') %></span>
+                            <h3 class="inspire-title"><%= featuredPackage ? featuredPackage.name : t('dashboard.exploreEgypt') %></h3>
+                            <p class="inspire-text"><%= featuredPackage ? featuredPackage.city : '' %></p>
+                            <a href="<%= featuredPackage ? '/packages/' + featuredPackage.type : '/packages/single' %>" class="inspire-cta"><%= t('dashboard.explore') %> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            recentBooking: <%- JSON.stringify(recentBooking) %>,
+            totalBookings: <%= totalBookings %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/userDashboard.js"></script>
+</body>
+</html>

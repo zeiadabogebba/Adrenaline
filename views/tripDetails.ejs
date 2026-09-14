@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= trip.title %> - Adrenaline</title>
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/tripDetails.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <div class="page-shell">
+        <aside class="page-sidebar" id="sidebar">
+            <div class="sidebar-brand"><a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-group"><span class="group-label"><%= t('nav.groupTrips') %></span><ul>
+                    <li><a href="/"><i class="fas fa-home"></i> <span><%= t('nav.home') %></span></a></li>
+                    <li><a href="/packages/day"><i class="fas fa-sun"></i> <span><%= t('nav.tal3a') %></span></a></li>
+                    <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <span><%= t('nav.rehla') %></span></a></li>
+                    <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <span><%= t('nav.pump') %></span></a></li>
+                    <li class="active"><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <span><%= t('nav.upcomingTrips') %></span></a></li>
+                    <li><a href="/custom-trip"><i class="fas fa-compass"></i> <span><%= t('nav.requestYourOwn') %></span></a></li>
+                    <li><a href="/trips/past"><i class="fas fa-images"></i> <span><%= t('nav.gallery') %></span></a></li>
+                </ul></div>
+                <div class="nav-group"><span class="group-label"><%= t('nav.groupAccount') %></span><ul>
+                    <li><a href="/dashboard"><i class="fas fa-columns"></i> <span><%= t('nav.dashboard') %></span></a></li>
+                    <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <span><%= t('nav.myBookings') %></span></a></li>
+                    <li><a href="/profile"><i class="fas fa-user-circle"></i> <span><%= t('nav.profile') %></span></a></li>
+                </ul></div>
+                <div class="nav-group"><span class="group-label"><%= t('nav.groupSupport') %></span><ul>
+                    <li><a href="/faq"><i class="fas fa-question-circle"></i> <span><%= t('nav.faq') %></span></a></li>
+                    <li><a href="/contact"><i class="fas fa-envelope"></i> <span><%= t('nav.contact') %></span></a></li>
+                </ul></div>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn"><i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span></button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <% if (user) { %><a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <span><%= t('nav.logout') %></span></a>
+                <% } else { %><a href="/login" class="logout-link"><i class="fas fa-sign-in-alt"></i> <span><%= t('nav.login') %></span></a><% } %>
+            </div>
+        </aside>
+
+        <div class="page-content">
+            <div id="trip-root"></div>
+        </div>
+    </div>
+
+    <script>
+        window.SERVER_TRIP = <%- JSON.stringify(trip) %>;
+        window.SERVER_USER = <%- JSON.stringify(user) %>;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/tripDetails.js"></script>
+</body>
+</html>

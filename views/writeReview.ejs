@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.writeReview') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/writeReview.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li class="active"><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
+                </button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="topbar-left">
+                    <div class="greeting-stack">
+                        <span class="greeting-label"><%= t('review.label') %></span>
+                        <h1 class="greeting-name"><%= t('review.title') %></h1>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                        <div class="account-chip__avatar" id="reviewer-avatar">
+                            <% if (user.image) { %>
+                            <img src="<%= user.image %>" alt="<%= user.name %>" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                            <% } else { %>
+                            <i class="fas fa-user"></i>
+                            <% } %>
+                        </div>
+                        <div>
+                            <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                            <strong class="account-chip__name"><%= user.name %></strong>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dash-scroll-area">
+                <section class="review-intro reveal-up">
+                    <div>
+                        <span class="greeting-label"><%= t('review.introLabel') %></span>
+                        <h2><%= t('review.introTitle') %></h2>
+                        <p><%= t('review.introDesc') %></p>
+                    </div>
+                </section>
+
+                <div class="review-workflow-container">
+                    <section class="review-panel reveal-up">
+                        <div class="section-header">
+                            <span class="step-label"><%= t('review.step1') %></span>
+                            <h2><%= t('review.selectPackage') %></h2>
+                        </div>
+                        <div class="review-options-grid">
+                            <label class="selection-tile">
+                                <input type="radio" name="packageType" value="day">
+                                <div class="tile-content">
+                                    <i class="fas fa-sun"></i>
+                                    <span><%= t('js.bookings.types.day') %></span>
+                                </div>
+                            </label>
+                            <label class="selection-tile">
+                                <input type="radio" name="packageType" value="week">
+                                <div class="tile-content">
+                                    <i class="fas fa-calendar-week"></i>
+                                    <span><%= t('js.bookings.types.week') %></span>
+                                </div>
+                            </label>
+                            <label class="selection-tile">
+                                <input type="radio" name="packageType" value="single">
+                                <div class="tile-content">
+                                    <i class="fas fa-location-dot"></i>
+                                    <span><%= t('js.bookings.types.single') %></span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="select-dropdown-container reveal-up">
+                            <label for="package-select"><%- t('review.specificHtml') %></label>
+                            <div class="premium-select-wrapper">
+                                <select id="package-select">
+                                    <option value=""><%= t('review.choosePlaceholder') %></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-review-area">
+                            <label for="review-title"><%= t('review.reviewTitle') %></label>
+                            <input type="text" id="review-title" placeholder="<%= t('review.titlePlaceholder') %>" maxlength="100">
+                        </div>
+                    </section>
+
+                    <section class="review-panel reveal-up">
+                        <div class="section-header">
+                            <span class="step-label"><%= t('review.step2') %></span>
+                            <h2><%= t('review.rate') %></h2>
+                        </div>
+                        <div class="rating-architecture">
+                            <h3><%= t('review.overall') %></h3>
+                            <div class="stars-glamour">
+                                <i class="far fa-star" data-rating="1"></i>
+                                <i class="far fa-star" data-rating="2"></i>
+                                <i class="far fa-star" data-rating="3"></i>
+                                <i class="far fa-star" data-rating="4"></i>
+                                <i class="far fa-star" data-rating="5"></i>
+                            </div>
+                        </div>
+
+                        <div class="text-review-area">
+                            <label for="review-text"><%= t('review.detailed') %></label>
+                            <textarea id="review-text" rows="6" placeholder="<%= t('review.textPlaceholder') %>"></textarea>
+                        </div>
+                    </section>
+
+                    <section class="review-panel reveal-up">
+                        <div class="section-header">
+                            <span class="step-label"><%= t('review.optional') %></span>
+                            <h2><%= t('review.addPhotos') %></h2>
+                        </div>
+                        <div class="upload-area-glamour" id="upload-area">
+                            <i class="fas fa-camera-retro"></i>
+                            <p><%= t('review.uploadHint') %></p>
+                            <input type="file" id="photo-input" accept="image/jpeg, image/png" style="display:none;" multiple>
+                        </div>
+                        <div class="photo-preview-grid" id="photo-preview"></div>
+                    </section>
+
+                    <div class="submit-actions reveal-up">
+                        <div id="form-feedback" class="form-feedback" aria-live="polite"></div>
+                        <button id="submit-review" class="btn btn--primary btn--large">
+                            <i class="fas fa-paper-plane"></i> <%= t('review.submit') %>
+                        </button>
+                    </div>
+                </div>
+
+                <section class="review-panel reveal-up" style="margin-top:2rem;">
+                    <div class="section-header">
+                        <span class="step-label"><%= t('review.historyLabel') %></span>
+                        <h2><%= t('review.myReviews') %></h2>
+                    </div>
+                    <div id="my-reviews-list"><p style="color:var(--color-text-muted);padding:1rem 0;"><%= t('review.loadingReviews') %></p></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="success-modal" class="modal-overlay">
+        <div class="modal-content glass-card">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h2><%= t('review.submittedTitle') %></h2>
+            <p><%= t('review.submittedDesc') %></p>
+            <button class="btn btn--primary" onclick="window.location.href='/dashboard'"><%= t('review.returnDashboard') %></button>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            packages: <%- JSON.stringify(packages) %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+        window.SERVER_PACKAGES = SERVER_DATA.packages;
+
+</script>
+    <script src="/js/global.js"></script>
+    <script src="/js/writeReview.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.register') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/register.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <% if (googleClientId) { %><script src="https://accounts.google.com/gsi/client?hl=<%= lang %>" async defer></script><% } %>
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <%
+        // Option values stay English (that's what gets stored); only the labels are translated.
+        const countryNames = tRaw('countries.names') || {};
+        const dialNames = tRaw('countries.dialNames') || {};
+        const countryLabel = (value) => countryNames[value] || value;
+        const dialLabel = (name) => dialNames[name] || countryNames[name] || name;
+        const nationalities = tRaw('countries.nationalities') || [];
+        const dialCodes = tRaw('countries.dialCodes') || [];
+    %>
+    <div class="auth-container">
+        <div class="neon-border-wrap">
+            <main class="layout">
+                <div class="image-panel">
+                    <div class="image-inner">
+                        <img src="/images/Cairo%20%26%20White%20Desert%20Odyssey.webp" alt="" class="backdrop-img">
+                        <div class="overlay-text">
+                            <span class="tag"><%= t('auth.newAccount') %></span>
+                            <h2 class="wordmark wordmark--lg">
+                                <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                                    <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                                    <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                                </svg>
+                                <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                            </h2>
+                            <p><%= t('auth.registerBlurb') %></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-panel">
+                    <div class="form-header">
+                        <div class="form-header__top">
+                            <a href="/" class="wordmark auth-logo" aria-label="<%= t('nav.homeAria') %>">
+                                <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                                    <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                                    <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                                </svg>
+                                <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                            </a>
+                            <div class="auth-header-actions">
+                                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                                    <i class="fas fa-sun sun-icon" aria-hidden="true"></i>
+                                    <i class="fas fa-moon moon-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h1><%= t('auth.registerTitle') %></h1>
+                        <p><%= t('auth.registerSub') %></p>
+                    </div>
+
+                    <form id="registrationForm" class="editorial-form">
+                        <div class="form-section">
+                            <h3 class="section-title"><%= t('auth.whoYouAre') %></h3>
+                            <div class="input-group">
+                                <div class="field">
+                                    <label for="firstname"><%= t('auth.firstName') %></label>
+                                    <input type="text" id="firstname" name="firstname" placeholder="<%= t('auth.firstNamePlaceholder') %>" autocomplete="given-name" required>
+                                    <span class="error" id="firstname_error"></span>
+                                </div>
+                                <div class="field">
+                                    <label for="lastname"><%= t('auth.lastName') %></label>
+                                    <input type="text" id="lastname" name="lastname" placeholder="<%= t('auth.lastNamePlaceholder') %>" autocomplete="family-name" required>
+                                    <span class="error" id="lastname_error"></span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="field">
+                                    <label for="dob"><%= t('auth.dob') %></label>
+                                    <input type="date" id="dob" name="dob" autocomplete="bday" required>
+                                    <span class="error" id="dob_error"></span>
+                                </div>
+                                <div class="field">
+                                    <label for="nationality"><%= t('auth.nationality') %></label>
+                                    <select name="nationality" id="nationality" required>
+                                        <option value="" disabled selected><%= t('auth.selectNationality') %></option>
+                                        <% nationalities.forEach(c => { %><option value="<%= c %>"><%= countryLabel(c) %></option><% }) %>
+                                    </select>
+                                    <span class="error" id="nationality_error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title"><%= t('auth.reachYou') %></h3>
+                            <div class="input-group">
+                                <div class="field phone-field">
+                                    <label for="phone"><%= t('auth.phone') %></label>
+                                    <div class="phone-row">
+                                        <select name="country_code" id="country_code" required>
+                                            <option value="" disabled selected><%= t('auth.code') %></option>
+                                            <% dialCodes.forEach(([code, name]) => { %><option value="<%= code %>"><%= dialLabel(name) %> (<%= code %>)</option><% }) %>
+                                        </select>
+                                        <input type="tel" id="phone" name="phone" placeholder="123 456 789" autocomplete="tel-national" dir="ltr" required>
+                                    </div>
+                                    <span class="error" id="phone_error"></span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="email"><%= t('auth.email') %></label>
+                                <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" dir="ltr" required>
+                                <span class="error" id="email_error"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title"><%= t('auth.setPassword') %></h3>
+                            <div class="field">
+                                <label for="password"><%= t('auth.password') %></label>
+                                <div class="pass-wrapper">
+                                    <input type="password" id="password" name="password" placeholder="<%= t('auth.passwordPlaceholder') %>" autocomplete="new-password" required>
+                                    <span class="eye-icon" onclick="togglePassword('password')"><i class="fas fa-eye" id="eye-password" aria-hidden="true"></i></span>
+                                </div>
+                                <span class="error" id="password_error"></span>
+                            </div>
+                            <div class="field">
+                                <label for="confirm_password"><%= t('auth.confirmPassword') %></label>
+                                <div class="pass-wrapper">
+                                    <input type="password" id="confirm_password" name="confirm_password" placeholder="<%= t('auth.confirmPlaceholder') %>" autocomplete="new-password" required>
+                                    <span class="eye-icon" onclick="togglePassword('confirm_password')"><i class="fas fa-eye" id="eye-confirm_password" aria-hidden="true"></i></span>
+                                </div>
+                                <span class="error" id="confirm_password_error"></span>
+                            </div>
+                        </div>
+
+                        <div id="register-error" class="error-message" role="alert"></div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary-btn"><%= t('auth.createBtn') %></button>
+                            <button type="reset" class="reset-btn"><%= t('auth.reset') %></button>
+                        </div>
+                    </form>
+
+                    <% if (googleClientId) { %>
+                    <div class="auth-divider"><span><%= t('auth.orContinue') %></span></div>
+                    <div id="googleSignInBtn" class="google-btn-slot"></div>
+                    <div id="google-auth-error" class="error-message" role="alert" style="display:none;"></div>
+                    <% } %>
+
+                    <div class="login-prompt">
+                        <p><%- t('auth.haveAccountHtml') %></p>
+                    </div>
+
+                    <footer class="form-footer">
+                        <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+                        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+                    </footer>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay terms-modal-overlay" id="termsModalOverlay" hidden>
+        <div class="modal-content terms-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-contract" aria-hidden="true"></i> <%= t('auth.termsTitle') %></h2>
+                <button type="button" class="modal-close" id="termsModalClose" aria-label="<%= t('auth.close') %>">&times;</button>
+            </div>
+
+            <div class="terms-modal-body">
+                <%- t('auth.termsBodyHtml') %>
+            </div>
+
+            <div class="terms-modal-details" id="googleDetailsFields" hidden>
+                <p class="terms-modal-details__lead"><%= t('auth.googleDetailsLead') %></p>
+                <div class="input-group">
+                    <div class="field">
+                        <label for="g_dob"><%= t('auth.dob') %></label>
+                        <input type="date" id="g_dob" autocomplete="bday">
+                        <span class="error" id="g_dob_error"></span>
+                    </div>
+                    <div class="field">
+                        <label for="g_nationality"><%= t('auth.nationality') %></label>
+                        <select id="g_nationality">
+                            <option value="" disabled selected><%= t('auth.selectNationality') %></option>
+                            <% nationalities.forEach(c => { %><option value="<%= c %>"><%= countryLabel(c) %></option><% }) %>
+                        </select>
+                        <span class="error" id="g_nationality_error"></span>
+                    </div>
+                </div>
+                <div class="field phone-field">
+                    <label for="g_phone"><%= t('auth.phone') %></label>
+                    <div class="phone-row">
+                        <select id="g_country_code">
+                            <option value="" disabled selected><%= t('auth.code') %></option>
+                            <% dialCodes.forEach(([code, name]) => { %><option value="<%= code %>"><%= dialLabel(name) %> (<%= code %>)</option><% }) %>
+                        </select>
+                        <input type="tel" id="g_phone" placeholder="123 456 789" autocomplete="tel-national" dir="ltr">
+                    </div>
+                    <span class="error" id="g_phone_error"></span>
+                </div>
+            </div>
+
+            <div class="terms-modal-agree">
+                <label class="terms-checkbox-row">
+                    <input type="checkbox" id="termsAgreeCheckbox">
+                    <span><%= t('auth.termsAgree') %></span>
+                </label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn--outline" id="termsCancelBtn"><%= t('auth.cancel') %></button>
+                <button type="button" class="btn btn--primary" id="termsContinueBtn" disabled><%= t('auth.termsContinue') %></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="otpModalOverlay" hidden>
+        <div class="modal-content otp-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope-circle-check" aria-hidden="true"></i> <%= t('auth.otpTitle') %></h2>
+                <button type="button" class="modal-close" id="otpModalClose" aria-label="<%= t('auth.close') %>">&times;</button>
+            </div>
+
+            <p class="otp-modal-lead"><%- t('auth.otpLeadRegisterHtml') %></p>
+
+            <div class="field">
+                <label for="otp-input"><%= t('auth.otpCode') %></label>
+                <input type="text" id="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="otp-input" dir="ltr">
+                <span class="error" id="otp_error"></span>
+            </div>
+
+            <div id="otp-modal-error" class="error-banner" style="display:none;"></div>
+
+            <div class="otp-modal-actions">
+                <button type="button" class="btn btn--outline" id="otp-resend-btn"><%= t('auth.otpResend') %></button>
+                <button type="button" class="btn btn--primary" id="otp-submit-btn"><%= t('auth.otpVerify') %></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById('eye-' + fieldId);
+            if (!field || !icon) return;
+            if (field.type === 'password') { field.type = 'text'; icon.className = 'fas fa-eye-slash'; }
+            else { field.type = 'password'; icon.className = 'fas fa-eye'; }
+        }
+        const SERVER_USER = <%- JSON.stringify(user) %>;
+        window.GOOGLE_CLIENT_ID = <%- JSON.stringify(googleClientId || '') %>;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/register.js?v=20260908s"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.login') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/login.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <% if (googleClientId) { %><script src="https://accounts.google.com/gsi/client?hl=<%= lang %>" async defer></script><% } %>
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="neon-border-wrap">
+            <main class="layout">
+                <div class="image-panel">
+                    <div class="image-inner">
+                        <img src="/images/Dahab%20%26%20Sinai%20Explorer.webp" alt="" class="backdrop-img">
+                        <div class="overlay-text">
+                            <span class="tag"><%= t('auth.welcomeBack') %></span>
+                            <h2 class="wordmark wordmark--lg">
+                                <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                                    <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                                    <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                                </svg>
+                                <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                            </h2>
+                            <p><%= t('auth.loginBlurb') %></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-panel">
+                    <div class="form-header">
+                        <div class="form-header__top">
+                            <a href="/" class="wordmark auth-logo" aria-label="<%= t('nav.homeAria') %>">
+                                <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                                    <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                                    <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                                </svg>
+                                <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                            </a>
+                            <div class="auth-header-actions">
+                                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                                    <i class="fas fa-sun sun-icon" aria-hidden="true"></i>
+                                    <i class="fas fa-moon moon-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h1><%= t('auth.loginTitle') %></h1>
+                        <p><%= t('auth.loginSub') %></p>
+                    </div>
+
+                    <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="error-banner"><%= error %></div>
+                    <% } %>
+
+                    <form id="login-form" class="editorial-form">
+                        <div class="field">
+                            <label for="username"><%= t('auth.email') %></label>
+                            <input type="text" id="username" name="username" placeholder="you@email.com"
+                                   autocomplete="username" inputmode="email" dir="ltr" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="password"><%= t('auth.password') %></label>
+                            <div class="pass-wrapper">
+                                <input type="password" id="password" name="password" placeholder="••••••••"
+                                       autocomplete="current-password" required>
+                                <button type="button" class="password-toggle" id="togglePasswordBtn" aria-label="<%= t('auth.showPassword') %>">
+                                    <i class="far fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="login-error" class="error-message" role="alert"></div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn primary-btn"><%= t('auth.logInBtn') %></button>
+                        </div>
+                    </form>
+
+                    <% if (googleClientId) { %>
+                    <div class="auth-divider"><span><%= t('auth.orContinue') %></span></div>
+                    <div id="googleSignInBtn" class="google-btn-slot"></div>
+                    <div id="google-auth-error" class="error-message" role="alert" style="display:none;"></div>
+                    <% } %>
+
+                    <div class="reg-prompt">
+                        <p><%- t('auth.noAccountHtml') %></p>
+                    </div>
+
+                    <footer class="form-footer">
+                        <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+                        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+                    </footer>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="otpModalOverlay" hidden>
+        <div class="modal-content otp-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope-circle-check" aria-hidden="true"></i> <%= t('auth.otpTitle') %></h2>
+                <button type="button" class="modal-close" id="otpModalClose" aria-label="<%= t('auth.close') %>">&times;</button>
+            </div>
+
+            <p class="otp-modal-lead"><%- t('auth.otpLeadLoginHtml') %></p>
+
+            <div class="field">
+                <label for="otp-input"><%= t('auth.otpCode') %></label>
+                <input type="text" id="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="otp-input" dir="ltr">
+                <span class="error" id="otp_error"></span>
+            </div>
+
+            <div id="otp-modal-error" class="error-banner" style="display:none;"></div>
+
+            <div class="otp-modal-actions">
+                <button type="button" class="btn btn--outline" id="otp-resend-btn"><%= t('auth.otpResend') %></button>
+                <button type="button" class="btn btn--primary" id="otp-submit-btn"><%= t('auth.otpVerify') %></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_USER = <%- JSON.stringify(user) %>;
+        window.GOOGLE_CLIENT_ID = <%- JSON.stringify(googleClientId || '') %>;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/login.js?v=20260908r"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "stepLabel": "Booking · Step 1 of 2",
+  "title": "Traveller Details",
+  "heading": "Who is coming with you?",
+  "subtitleHtml": "We need these details for every traveller. Fields marked <span class=\"req\">*</span> are required.",
+  "count": {
+    "one": "{n} traveller",
+    "other": "{n} travellers"
+  },
+  "payment": "Payment",
+  "howPay": "How will you pay?",
+  "howMuch": "How much now?",
+  "instapay": "InstaPay",
+  "vodafoneCash": "Vodafone Cash",
+  "deposit": "50% deposit now",
+  "full": "Pay in full",
+  "back": "Back",
+  "continue": "Continue to Summary"
+}

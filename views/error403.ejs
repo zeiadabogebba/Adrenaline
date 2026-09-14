@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <meta name="robots" content="noindex">
+    <title><%= t('titles.error403') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/error403.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body class="error-page-body">
+    <main class="error-wrapper">
+        <div class="error-ridge" aria-hidden="true">
+            <svg viewBox="0 0 1200 220" preserveAspectRatio="none">
+                <path d="M0 210 L180 120 L300 168 L470 44 L620 140 L780 70 L940 158 L1080 96 L1200 190"
+                      fill="none" stroke="currentColor" stroke-width="2"/>
+            </svg>
+        </div>
+
+        <div class="error-content">
+            <a href="/" class="wordmark error-logo" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+
+            <p class="error-code">403</p>
+            <h1 class="error-heading"><%= t('errors.403Heading') %></h1>
+            <p class="error-description"><%= t('errors.403Desc') %></p>
+
+            <% if (typeof message !== 'undefined' && message) { %>
+            <p class="error-detail"><%= message %></p>
+            <% } %>
+
+            <div class="error-actions">
+                    <a href="/login" class="btn btn--primary btn--large"><%= t('nav.logIn') %></a>
+                    <a href="/" class="btn btn--outline btn--large"><%= t('errors.backHome') %></a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/global.js"></script>
+</body>
+</html>

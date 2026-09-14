@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.bookingDetails') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/bookingDetails.css?v=20260915i18n">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li class="active"><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
+                </button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="topbar-left">
+                    <div class="greeting-stack">
+                        <span class="greeting-label"><%= t('booking.detailsLabel') %></span>
+                        <h1 class="greeting-name"><%= t('booking.receipt') %></h1>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                        <div class="account-chip__avatar">
+                            <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                        </div>
+                        <div>
+                            <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                            <strong class="account-chip__name"><%= user.name %></strong>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dash-scroll-area">
+                <header class="booking-header reveal-up">
+                    <h2 class="editorial-title"><%- t('booking.itineraryHtml') %></h2>
+                    <p class="editorial-subtitle"><%= t('booking.itinerarySub') %></p>
+                </header>
+
+                <div class="editorial-booking-container">
+
+                    <div class="editorial-booking-main">
+                        <section class="editorial-card reveal-up">
+                            <h3 class="card-title"><%= t('booking.tripDetails') %></h3>
+                            <div class="info-group">
+                                <div class="info-row">
+                                    <span class="label"><%= t('booking.trip') %></span>
+                                    <span class="value"><%= booking.packageName %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label"><%= t('booking.departure') %></span>
+                                    <span class="value"><%= booking.date || t('booking.toBeConfirmed') %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label"><%= t('booking.travellers') %></span>
+                                    <span class="value"><%= tp('booking.travelerCount', booking.travelers) %><%= booking.isCustom ? ' (' + (booking.tier || t('booking.customTier')) + ')' : '' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label"><%= t('booking.lead') %></span>
+                                    <span class="value"><%= booking.userId ? booking.userId.name : user.name %></span>
+                                </div>
+                                <%
+                                    const displayStatus = booking.status === 'cancelled' ? 'cancelled' : (booking.paymentStatus || 'verifying');
+                                    const statusColor = displayStatus === 'fully paid' ? 'var(--color-success)'
+                                        : displayStatus === 'cancelled' ? 'var(--color-danger)'
+                                        : displayStatus === 'verifying' ? 'var(--color-info)'
+                                        : 'var(--color-warning)';
+                                    const statusText = (s) => lang === 'ar' ? t('js.bookings.status.' + s.replace(/\s+/g, '-')) : s;
+                                    const genderText = (g) => g && lang === 'ar' ? t('js.traveller.' + g) : g;
+                                    const escapeHtmlText = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                                %>
+                                <div class="info-row">
+                                    <span class="label"><%= t('booking.status') %></span>
+                                    <span class="value" style="color:<%= statusColor %>;text-transform:capitalize;font-weight:600;">
+                                        <%= statusText(displayStatus) %>
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <% if (booking.paymentMethod || booking.paymentPlan) { %>
+                        <section class="editorial-card reveal-up">
+                            <h3 class="card-title"><%= t('booking.paymentChoice') %></h3>
+                            <div class="info-row">
+                                <span class="label"><%= t('booking.method') %></span>
+                                <span class="value"><%= booking.paymentMethod === 'vodafone-cash' ? t('travellers.vodafoneCash') : (booking.paymentMethod === 'instapay' ? t('travellers.instapay') : t('booking.na')) %></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label"><%= t('booking.plan') %></span>
+                                <span class="value"><%= booking.paymentPlan === 'deposit' ? t('booking.planDepositBalance') : (booking.paymentPlan === 'full' ? t('booking.paidFull') : t('booking.na')) %></span>
+                            </div>
+                        </section>
+                        <% } %>
+
+                        <% if (booking.travellerDetails && booking.travellerDetails.length > 0) { %>
+                        <section class="editorial-card reveal-up">
+                            <h3 class="card-title"><%= t('booking.travellers') %></h3>
+                            <ul class="itinerary-list bd-travellers">
+                                <% booking.travellerDetails.forEach((tr, i) => { %>
+                                <li>
+                                    <strong><%= i + 1 %>. <%= tr.name %></strong>
+                                    <span><%= genderText(tr.gender) || '' %><%= tr.gender && tr.phone ? ' · ' : '' %><% if (tr.phone) { %><bdi><%= tr.phone %></bdi><% } %></span>
+                                    <% if (tr.idNumber) { %><span><%- t('booking.idPassport', { v: '<bdi>' + escapeHtmlText(tr.idNumber) + '</bdi>' }) %></span><% } %>
+                                    <% if (tr.emergencyName || tr.emergencyPhone) { %><span><%- t('booking.emergency', { v: [escapeHtmlText(tr.emergencyName || ''), tr.emergencyPhone ? '<bdi>' + escapeHtmlText(tr.emergencyPhone) + '</bdi>' : ''].filter(Boolean).join(' · ') }) %></span><% } %>
+                                    <% if (tr.knownDisease) { %><span><%= t('booking.medical', { v: tr.knownDisease }) %></span><% } %>
+                                    <% if (tr.idPhoto) { %><a href="<%= tr.idPhoto %>" target="_blank" rel="noopener"><i class="fas fa-id-card"></i> <%= t('booking.viewIdPhoto') %></a><% } %>
+                                </li>
+                                <% }) %>
+                            </ul>
+                        </section>
+                        <% } %>
+
+                        <section class="editorial-card policy-card reveal-up">
+                            <h4 class="editorial-card__heading"><%= t('booking.bookingPolicy') %></h4>
+                            <p><%- t('booking.depositHtml') %></p>
+                            <p><%- t('booking.deadlineHtml') %></p>
+                        </section>
+
+                        <section class="editorial-card policy-card reveal-up">
+                            <h4 class="editorial-card__heading"><%= t('booking.refundPolicy') %></h4>
+                            <p><%- t('booking.refundMore6Html') %></p>
+                            <p><%- t('booking.refund35Html') %></p>
+                            <p><%- t('booking.refund42Html') %></p>
+                            <p><%- t('booking.substitutionHtml') %></p>
+                        </section>
+                    </div>
+
+                    <aside class="editorial-booking-sidebar reveal-up">
+                        <div class="voucher-ticket">
+                            <div class="ticket-header">
+                                <div class="ticket-logo">Adrenaline</div>
+                                <div class="ticket-status" id="trip-status" data-status="<%= displayStatus.replace(/\s+/g, '-') %>"><%= lang === 'ar' ? statusText(displayStatus) : displayStatus.toUpperCase() %></div>
+                            </div>
+
+                            <div class="ticket-body">
+                                <div class="ticket-ref">
+                                    <span class="ref-label"><%= t('booking.confirmationId') %></span>
+                                    <h3 class="ref-code" id="voucher-number" dir="ltr"><%= booking.bookingNumber %></h3>
+                                </div>
+
+                                <div class="receipt-body">
+                                    <div class="receipt-line">
+                                        <span><%= t('booking.basePrice') %></span>
+                                        <span><%= money(booking.basePrice || Math.round(booking.totalPrice / booking.travelers)) %></span>
+                                    </div>
+                                    <div class="receipt-line">
+                                        <span><%= t('booking.travellers') %></span>
+                                        <span>&times; <%= booking.travelers %></span>
+                                    </div>
+                                    <hr class="receipt-divider">
+                                    <div class="receipt-line total-line">
+                                        <span><%= t('booking.totalPaid') %></span>
+                                        <span><%= money(booking.totalPrice) %></span>
+                                    </div>
+                                    <p class="payment-method"><%= t('booking.paidVia') %></p>
+                                </div>
+                            </div>
+
+                            <div class="ticket-barcode">
+                                <div class="barcode-lines"></div>
+                                <span class="barcode-number" dir="ltr"><%= booking.bookingNumber %></span>
+                            </div>
+
+                            <p class="ticket-print-footer"><%= t('booking.printFooter') %></p>
+
+                            <div class="ticket-actions">
+                                <button id="print-btn" class="btn btn--outline btn--small"><i class="fas fa-print"></i> <%= t('booking.printVoucher') %></button>
+                                <button id="copy-btn" class="btn btn--primary btn--small"><i class="fas fa-copy"></i> <%= t('booking.copyId') %></button>
+                            </div>
+                        </div>
+
+                        <div class="voucher-quicklinks" style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap;">
+                            <a href="/my-bookings" class="btn btn--outline btn--small"><%= t('nav.myBookings') %></a>
+                            <a href="/packages/day" class="btn btn--primary btn--small"><%= t('booking.bookAgain') %></a>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            booking: <%- JSON.stringify(booking) %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+
+</script>
+    <script src="/js/global.js"></script>
+    <script src="/js/bookingDetails.js"></script>
+</body>
+
+</html>

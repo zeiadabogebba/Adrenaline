@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Admin Dashboard | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminDashboard.css?v=20260915b">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <h2>Adrenaline Ops</h2>
+                <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                    <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                    <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                    <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                    <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                    <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                    <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                    <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                    <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                    <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="account-chip account-chip--sidebar">
+                    <div class="account-chip__avatar">
+                        <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                    </div>
+                    <div>
+                        <span class="account-chip__label">Signed in as</span>
+                        <strong class="account-chip__name"><%= user.name %></strong>
+                    </div>
+                </div>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="top-bar-left">
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome back, <strong id="admin-display-name"><%= user.name %></strong></p>
+                </div>
+                <div class="top-bar-right" style="display:flex;align-items:center;gap:16px;">
+                    <div class="system-health">
+                        <span class="status-dot"></span> System Status: <strong id="health-text">Operational</strong>
+                    </div>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Users</h3>
+                        <p class="stat-number" id="stat-users"><%= stats.totalUsers %></p>
+                    </div>
+                    <span class="trend up">Active Tourists</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Bookings</h3>
+                        <p class="stat-number" id="stat-bookings"><%= stats.totalBookings %></p>
+                    </div>
+                    <span class="trend up">Confirmed</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-number" id="stat-revenue">EGP <%= stats.totalRevenue ? stats.totalRevenue.toLocaleString() : '0' %></p>
+                    </div>
+                    <span class="trend up">From paid bookings</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Open Tickets</h3>
+                        <p class="stat-number" id="stat-tickets"><%= stats.openTickets %></p>
+                    </div>
+                    <span class="trend <%= stats.openTickets > 5 ? 'down' : 'up' %>">Support Queue</span>
+                </div>
+            </section>
+
+            <div class="dashboard-row">
+                <section class="card popular-packages">
+                    <h2>Active Packages</h2>
+                    <ul class="data-list">
+                        <li><span>Total Active</span> <strong><%= stats.activePackages %></strong></li>
+                        <li><span>Total Reviews</span> <strong><%= stats.totalReviews %></strong></li>
+                        <li><span>Cancelled Bookings</span> <strong><%= stats.cancelledBookings || 0 %></strong></li>
+                    </ul>
+                    <div style="margin-top:16px;">
+                        <a href="/admin/packages" class="btn btn--outline btn--small">Manage Packages</a>
+                    </div>
+                </section>
+
+                <section class="card recent-activity">
+                    <h2>Recent Bookings</h2>
+                    <table class="activity-table">
+                        <thead>
+                            <tr><th>Guest</th><th>Package</th><th>Amount</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <% recentBookings.forEach(booking => { %>
+                            <% const slug = booking.computedStatus.replace(/\s+/g, '-'); %>
+                            <tr>
+                                <td><%= booking.userId ? booking.userId.name : booking.userEmail %></td>
+                                <td><%= booking.packageName %></td>
+                                <td>EGP <%= booking.totalPrice ? booking.totalPrice.toLocaleString() : '-' %></td>
+                                <td><span class="status-badge status-<%= slug %>"><%= booking.computedStatus %></span></td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:16px;">
+                        <a href="/admin/bookings" class="btn btn--outline btn--small">View All Bookings</a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            stats: <%- JSON.stringify(stats) %>,
+            recentBookings: <%- JSON.stringify(recentBookings) %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/admin-theme.js"></script>
+    <script src="/js/adminDashboard.js"></script>
+</body>
+</html>

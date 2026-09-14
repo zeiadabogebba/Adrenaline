@@ -1,0 +1,197 @@
+/* City guide reader: the guide's pages stacked in portrait, with a floating page counter. */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.guide-reader {
+    flex: 1;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-block: var(--s-xl) calc(var(--s-3xl) + 64px);
+    padding-inline: var(--s-md);
+}
+
+.guide-reader__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: var(--s-xl);
+}
+
+.guide-reader__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--s-lg);
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    text-decoration: none;
+}
+
+.guide-reader__back:hover {
+    color: var(--crimson);
+}
+
+.guide-reader__eyebrow {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide, 0.12em);
+    text-transform: uppercase;
+    color: var(--crimson);
+}
+
+.guide-reader__title {
+    margin: 4px 0 6px;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 1.4rem + 4vw, 4rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: var(--tracking-display, -0.02em);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.guide-reader__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ink-dim);
+}
+
+.guide-reader__pages {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.guide-page {
+    /* Clear the sticky navbar when jumping to a page. */
+    scroll-margin-top: 88px;
+}
+
+.guide-page img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-sm, 2px);
+    background: var(--surface);
+    box-shadow: 0 1px 0 var(--hairline), 0 14px 36px rgba(0, 0, 0, 0.22);
+}
+
+/* On wider screens size each page to the window height so a whole page is visible at once. */
+@media (min-width: 700px) {
+    .guide-page img {
+        width: min(100%, max(520px, calc((100vh - 140px) * 1667 / 2358)));
+        margin-inline: auto;
+    }
+}
+
+.guide-toolbar {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: max-content;
+    margin-inline: auto;
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--r-full);
+    background: rgba(10, 10, 11, 0.86);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.guide-toolbar__btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-full);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color var(--t-fast, 140ms) var(--ease-out, ease);
+}
+
+.guide-toolbar__btn:hover:not([disabled]) {
+    background: rgba(255, 255, 255, 0.14);
+    transform: none;
+}
+
+.guide-toolbar__btn:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+}
+
+.guide-toolbar__btn[disabled] {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.guide-toolbar__divider {
+    width: 1px;
+    height: 22px;
+    margin-inline: 4px;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.guide-toolbar__count {
+    min-width: 5.5em;
+    padding-inline: 6px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    direction: ltr;
+}
+
+.guide-reader__more {
+    margin-top: var(--s-3xl);
+}
+
+.guide-reader__more-title {
+    margin: 0 0 var(--s-md);
+    font-family: var(--font-display);
+    font-size: var(--type-h3, 1.5rem);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tight, -0.01em);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+@media (max-width: 640px) {
+    .guide-reader {
+        padding-inline: var(--s-sm);
+    }
+
+    .guide-reader__pages {
+        gap: var(--s-md);
+    }
+
+    .guide-page {
+        scroll-margin-top: 72px;
+    }
+}

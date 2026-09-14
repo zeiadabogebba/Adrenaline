@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Support Tickets - Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminDashboard.css?v=20260915b">
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li class="active"><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="top-bar-left">
+                <h1>Support Tickets</h1>
+                <p>Manage and respond to customer support requests</p>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-headset"></i></div>
+                <div class="stat-info"><h3>Total</h3><p class="stat-number"><%= tickets.length %></p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-danger);background:rgba(239,68,68,0.1);"><i class="fas fa-envelope-open"></i></div>
+                <div class="stat-info"><h3>Open</h3><p class="stat-number" style="color:var(--color-danger);"><%= tickets.filter(t=>t.status==='open').length %></p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-success);background:rgba(39,174,96,0.1);"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><h3>Resolved</h3><p class="stat-number" style="color:var(--color-success);"><%= tickets.filter(t=>t.status==='resolved').length %></p></div>
+            </div>
+        </section>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-container">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="text" id="search-input" placeholder="Search subject or customer…">
+                </div>
+                <select id="status-filter" class="select-modern">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+            </div>
+        </div>
+
+        <section class="card">
+            <div style="overflow-x:auto;">
+                <table class="activity-table" style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--color-border);">
+                            <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Customer</th>
+                            <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Subject</th>
+                            <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Status</th>
+                            <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Date</th>
+                            <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tickets-tbody">
+                        <% tickets.forEach(ticket => { %>
+                        <tr class="ticket-row"
+                            data-status="<%= ticket.status %>"
+                            data-search="<%= (ticket.customer || ticket.email).toLowerCase() %> <%= ticket.subject.toLowerCase() %>"
+                            style="border-bottom:1px solid var(--color-border);">
+                            <td style="padding:0.8rem 1rem;">
+                                <div style="font-weight:600;color:var(--color-text);"><%= ticket.customer || 'Guest' %></div>
+                                <div style="font-size:0.8rem;color:var(--color-text-muted);"><%= ticket.email %></div>
+                            </td>
+                            <td style="padding:0.8rem 1rem;max-width:260px;">
+                                <div style="color:var(--color-text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<%= ticket.subject %>"><%= ticket.subject %></div>
+                                <div style="font-size:0.8rem;color:var(--color-text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<%= ticket.message %>"><%= ticket.message.substring(0, 80) %><%= ticket.message.length > 80 ? '...' : '' %></div>
+                            </td>
+                            <td style="padding:0.8rem 1rem;">
+                                <span class="status-badge status-<%= ticket.status %>" style="text-transform:capitalize;"><%= ticket.status %></span>
+                            </td>
+                            <td style="padding:0.8rem 1rem;color:var(--color-text-muted);font-size:0.85rem;">
+                                <%= new Date(ticket.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) %>
+                            </td>
+                            <td style="padding:0.8rem 1rem;">
+                                <button class="view-btn btn btn--outline btn--small" data-id="<%= ticket._id %>">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+                <% if (tickets.length === 0) { %>
+                <div style="text-align:center;padding:4rem;color:var(--color-text-muted);">
+                    <i class="fas fa-headset" style="font-size:3rem;color:var(--crimson);display:block;margin-bottom:1rem;"></i>
+                    <p>No support tickets yet.</p>
+                </div>
+                <% } %>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="ticket-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="background:var(--color-surface);border-radius:12px;padding:2rem;width:min(600px,95vw);max-height:90vh;overflow-y:auto;position:relative;">
+        <button id="close-modal" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;color:var(--color-text-muted);cursor:pointer;">&times;</button>
+        <h2 style="color:var(--crimson);margin-bottom:1.5rem;"><i class="fas fa-ticket-alt"></i> Ticket Details</h2>
+
+        <div style="display:grid;gap:0.8rem;margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--color-border);">
+                <span style="color:var(--color-text-muted);">Customer</span><strong id="m-customer" style="color:var(--color-text);"></strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--color-border);">
+                <span style="color:var(--color-text-muted);">Email</span><span id="m-email" style="color:var(--color-text);"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--color-border);">
+                <span style="color:var(--color-text-muted);">Status</span>
+                <select id="m-status" style="background:var(--color-surface-alt);border:1px solid var(--color-border);color:var(--color-text);padding:0.3rem 0.6rem;border-radius:6px;font-size:0.9rem;">
+                    <option value="open">Open</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <label style="color:var(--color-text-muted);font-size:0.85rem;display:block;margin-bottom:0.4rem;">Subject</label>
+            <p id="m-subject" style="color:var(--color-text);font-weight:600;margin:0;"></p>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <label style="color:var(--color-text-muted);font-size:0.85rem;display:block;margin-bottom:0.4rem;">Message</label>
+            <p id="m-message" style="color:var(--color-text);line-height:1.7;background:var(--color-surface-alt);padding:1rem;border-radius:8px;margin:0;"></p>
+        </div>
+
+        <div id="m-existing-reply-wrap" style="display:none;margin-bottom:1.5rem;">
+            <label style="color:var(--color-text-muted);font-size:0.85rem;display:block;margin-bottom:0.4rem;">Previous Reply</label>
+            <p id="m-existing-reply" style="color:var(--color-text);line-height:1.7;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);padding:1rem;border-radius:8px;margin:0;"></p>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <label style="color:var(--color-text-muted);font-size:0.85rem;display:block;margin-bottom:0.4rem;">Reply to Customer <span style="font-size:0.8rem;">(sending a reply will mark ticket as resolved)</span></label>
+            <textarea id="m-reply" rows="4" placeholder="Type your reply here..." style="width:100%;background:var(--color-surface-alt);border:1px solid var(--color-border);color:var(--color-text);padding:0.8rem;border-radius:8px;resize:vertical;font-family:inherit;font-size:0.9rem;box-sizing:border-box;"></textarea>
+        </div>
+
+        <div id="modal-error" style="display:none;color:var(--color-danger);margin-bottom:0.8rem;font-size:0.9rem;"></div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;">
+            <button id="close-modal-btn" class="btn btn--outline">Close</button>
+            <button id="save-status-btn" class="btn btn--outline">Save Status</button>
+            <button id="send-reply-btn" class="btn btn--primary"><i class="fas fa-paper-plane"></i> Send Reply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SERVER_DATA = { user: <%- JSON.stringify(user) %>, tickets: <%- JSON.stringify(tickets) %> };
+    window.SERVER_USER = SERVER_DATA.user;
+
+    let currentTicketId = null;
+    const modal = document.getElementById('ticket-modal');
+
+    function applyFilters() {
+        const status = document.getElementById('status-filter').value;
+        const search = document.getElementById('search-input').value.toLowerCase();
+        document.querySelectorAll('.ticket-row').forEach(row => {
+            const matchStatus = !status || row.dataset.status === status;
+            const matchSearch = !search || row.dataset.search.includes(search);
+            row.style.display = (matchStatus && matchSearch) ? '' : 'none';
+        });
+    }
+    document.getElementById('status-filter').addEventListener('change', applyFilters);
+    document.getElementById('search-input').addEventListener('input', applyFilters);
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const t  = SERVER_DATA.tickets.find(x => (x._id || x.id) === id);
+            if (!t) return;
+            currentTicketId = id;
+            document.getElementById('m-customer').textContent = t.customer || 'Guest';
+            document.getElementById('m-email').textContent    = t.email;
+            document.getElementById('m-subject').textContent  = t.subject;
+            document.getElementById('m-message').textContent  = t.message;
+            document.getElementById('m-status').value         = t.status || 'open';
+            document.getElementById('m-reply').value          = '';
+            document.getElementById('modal-error').style.display = 'none';
+
+            const replyWrap = document.getElementById('m-existing-reply-wrap');
+            const replyEl   = document.getElementById('m-existing-reply');
+            if (t.adminReply) {
+                replyEl.textContent = t.adminReply;
+                replyWrap.style.display = 'block';
+            } else {
+                replyWrap.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    function closeModal() { modal.style.display = 'none'; document.body.style.overflow = ''; }
+    document.getElementById('close-modal').addEventListener('click', closeModal);
+    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    document.getElementById('save-status-btn').addEventListener('click', async () => {
+        if (!currentTicketId) return;
+        const status  = document.getElementById('m-status').value;
+        const btn     = document.getElementById('save-status-btn');
+        const errDiv  = document.getElementById('modal-error');
+        btn.textContent = 'Saving…'; btn.disabled = true; errDiv.style.display = 'none';
+        try {
+            const res = await fetch('/api/contact/' + currentTicketId + '/status', {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ status })
+            });
+            if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Update failed'); }
+            window.location.reload();
+        } catch (err) {
+            errDiv.textContent = err.message; errDiv.style.display = 'block';
+            btn.textContent = 'Save Status'; btn.disabled = false;
+        }
+    });
+
+    document.getElementById('send-reply-btn').addEventListener('click', async () => {
+        if (!currentTicketId) return;
+        const reply  = document.getElementById('m-reply').value.trim();
+        const btn    = document.getElementById('send-reply-btn');
+        const errDiv = document.getElementById('modal-error');
+        if (!reply) { errDiv.textContent = 'Please enter a reply message.'; errDiv.style.display = 'block'; return; }
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; btn.disabled = true; errDiv.style.display = 'none';
+        try {
+            const res = await fetch('/api/contact/' + currentTicketId + '/reply', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ reply })
+            });
+            if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Reply failed'); }
+            window.location.reload();
+        } catch (err) {
+            errDiv.textContent = err.message; errDiv.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reply'; btn.disabled = false;
+        }
+    });
+
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+</body>
+</html>

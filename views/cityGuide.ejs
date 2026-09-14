@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.cityGuide', { city: guide.name }) %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <% if (user && guide.pages[0]) { %><link rel="preload" as="image" href="<%= guide.pages[0].src %>"<% if (guide.pages[0].thumb) { %> imagesrcset="<%= guide.pages[0].thumb %> 600w, <%= guide.pages[0].src %> 1667w" imagesizes="(max-width: 699px) 100vw, 640px"<% } %>><% } %>
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/public.css?v=20260916guides">
+    <link rel="stylesheet" href="/css/cityGuide.css?v=20260916guides">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body class="guide-page-body">
+
+    <nav class="navbar" id="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link"><%= t('nav.home') %></a></li>
+                <li><a href="/packages/day" class="nav-link"><%= t('nav.tal3a') %></a></li>
+                <li><a href="/packages/week" class="nav-link"><%= t('nav.rehla') %></a></li>
+                <li><a href="/packages/single" class="nav-link"><%= t('nav.pump') %></a></li>
+                <li><a href="/custom-trip" class="nav-link"><%= t('nav.customTrip') %></a></li>
+                <li id="nav-dashboard-link" <% if (!user) { %>style="display:none"<% } %>>
+                    <a href="/dashboard" class="nav-link"><%= t('nav.dashboard') %></a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                    <i class="fas fa-sun sun-icon"></i>
+                    <i class="fas fa-moon moon-icon"></i>
+                </button>
+                <div class="nav-buttons">
+                    <% if (user) { %>
+                    <a href="/dashboard" class="btn btn--outline"><i class="fas fa-user"></i> <%= user.name.split(' ')[0] %></a>
+                    <a href="#" id="logout-btn" class="btn btn--primary"><%= t('nav.logout') %></a>
+                    <% } else { %>
+                    <a href="/login" class="btn btn--outline"><%= t('nav.logIn') %></a>
+                    <a href="/register" class="btn btn--primary"><%= t('nav.signUp') %></a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="guide-reader">
+        <header class="guide-reader__head">
+            <a href="/#city-guides" class="guide-reader__back"><i class="fas fa-arrow-left" aria-hidden="true"></i> <%= t('cityGuide.back') %></a>
+            <p class="guide-reader__eyebrow"><%= t('cityGuide.eyebrow') %></p>
+            <h1 class="guide-reader__title"><%= guide.name %></h1>
+            <p class="guide-reader__meta"><i class="fas fa-book-open" aria-hidden="true"></i> <%= tp('index.cityGuides.pages', guide.pages.length) %></p>
+        </header>
+
+        <% if (!user) { %>
+        <div class="cityguide-lock">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            <p class="cityguide-lock__text"><%= t('cityGuide.lock', { city: guide.name }) %></p>
+            <a href="/login" class="btn btn--primary btn--small"><%= t('nav.logIn') %></a>
+        </div>
+        <% } else { %>
+        <ol class="guide-reader__pages" aria-label="<%= t('cityGuide.readerAria') %>">
+            <% guide.pages.forEach((page, i) => { %>
+            <li class="guide-page" id="page-<%= i + 1 %>">
+                <img src="<%= page.src %>"<% if (page.thumb) { %> srcset="<%= page.thumb %> 600w, <%= page.src %> 1667w" sizes="(max-width: 699px) 100vw, 640px"<% } %>
+                     width="1667" height="2358" alt="<%= t('cityGuide.pageAlt', { city: guide.name, n: i + 1 }) %>"
+                     loading="<%= i < 2 ? 'eager' : 'lazy' %>" decoding="async">
+            </li>
+            <% }) %>
+        </ol>
+
+        <nav class="guide-toolbar" aria-label="<%= t('cityGuide.toolbarAria') %>">
+            <button type="button" class="guide-toolbar__btn" data-go="prev" aria-label="<%= t('cityGuide.prev') %>" disabled><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+            <span class="guide-toolbar__count" aria-live="polite"><%- t('cityGuide.pageOf', { n: '<span data-current>1</span>', total: guide.pages.length }) %></span>
+            <button type="button" class="guide-toolbar__btn" data-go="next" aria-label="<%= t('cityGuide.next') %>"<%= guide.pages.length > 1 ? '' : ' disabled' %>><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+            <span class="guide-toolbar__divider" aria-hidden="true"></span>
+            <button type="button" class="guide-toolbar__btn" data-go="top" aria-label="<%= t('cityGuide.top') %>"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
+        </nav>
+        <% } %>
+
+        <% if (otherGuides.length) { %>
+        <section class="guide-reader__more">
+            <h2 class="guide-reader__more-title"><%= t('cityGuide.more') %></h2>
+            <ul class="guide-shelf">
+                <% otherGuides.forEach((cg) => { const cover = cg.pages[0]; %>
+                <li>
+                    <a class="guide-card" href="/city-guides/<%= cg.slug %>">
+                        <span class="guide-card__cover">
+                            <img src="<%= cover.thumb || cover.src %>" alt="<%= t('index.cityGuides.coverAlt', { city: cg.name }) %>" width="600" height="849" loading="lazy">
+                            <span class="guide-card__pages"><i class="fas fa-book-open" aria-hidden="true"></i> <%= tp('index.cityGuides.pages', cg.pages.length) %></span>
+                        </span>
+                        <span class="guide-card__body">
+                            <span class="guide-card__name"><%= cg.name %></span>
+                            <span class="guide-card__cta"><%= t('index.cityGuides.open') %> <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        </span>
+                    </a>
+                </li>
+                <% }) %>
+            </ul>
+        </section>
+        <% } %>
+    </main>
+
+    <footer class="main-footer reveal-up">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="wordmark footer-logo" style="font-size:1.4rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+                <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+            </div>
+            <nav class="footer-nav" aria-label="<%= t('footer.navAria') %>">
+                <div class="footer-group">
+                    <h4><%= t('footer.explore') %></h4>
+                    <ul>
+                        <li><a href="/packages/day"><%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><%= t('nav.pump') %></a></li>
+                        <li><a href="/custom-trip"><%= t('nav.requestYourOwn') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.operations') %></h4>
+                    <ul>
+                        <li><a href="/about"><%= t('nav.about') %></a></li>
+                        <li><a href="/faq"><%= t('nav.faq') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.dispatch') %></h4>
+                    <ul>
+                        <li><a href="/contact"><%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="footer-bottom container">
+            <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+        </div>
+    </footer>
+
+    <script>
+        const SERVER_DATA = { user: <%- JSON.stringify(user) %> };
+        window.SERVER_USER = SERVER_DATA.user;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/cityGuide.js"></script>
+</body>
+
+</html>

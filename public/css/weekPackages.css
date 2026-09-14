@@ -1,0 +1,15 @@
+.page-title {
+    padding: 40px 48px 0;
+}
+
+.packages-container {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 var(--space-xl) var(--space-2xl);
+    display: grid;
+    /* min(): a 350px column minimum is wider than a phone's content area. */
+    grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
+    gap: var(--space-xl);
+    align-items: start;
+    width: 100%;
+}

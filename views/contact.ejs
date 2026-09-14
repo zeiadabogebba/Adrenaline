@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.contact') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/public.css?v=20260916guides">
+    <link rel="stylesheet" href="/css/contact.css?v=20260908o">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body class="info-page">
+
+    <nav class="navbar" id="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link"><%= t('nav.home') %></a></li>
+                <li><a href="/packages/day" class="nav-link"><%= t('nav.tal3a') %></a></li>
+                <li><a href="/packages/week" class="nav-link"><%= t('nav.rehla') %></a></li>
+                <li><a href="/packages/single" class="nav-link"><%= t('nav.pump') %></a></li>
+                <li><a href="/custom-trip" class="nav-link"><%= t('nav.customTrip') %></a></li>
+                <li id="nav-dashboard-link" <% if (!user) { %>style="display:none"<% } %>>
+                    <a href="/dashboard" class="nav-link"><%= t('nav.dashboard') %></a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                    <i class="fas fa-sun sun-icon"></i>
+                    <i class="fas fa-moon moon-icon"></i>
+                </button>
+                <div class="nav-buttons">
+                    <% if (user) { %>
+                    <a href="/dashboard" class="btn btn--outline"><i class="fas fa-user"></i> <%= user.name.split(' ')[0] %></a>
+                    <a href="#" id="logout-btn" class="btn btn--primary"><%= t('nav.logout') %></a>
+                    <% } else { %>
+                    <a href="/login" class="btn btn--outline"><%= t('nav.logIn') %></a>
+                    <a href="/register" class="btn btn--primary"><%= t('nav.signUp') %></a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-title reveal-up">
+        <h1 class="hero-title"><%- t('contact.heroHtml') %></h1>
+        <p class="hero-description"><%= t('contact.heroDesc') %></p>
+    </div>
+
+    <main class="main-container">
+        <div class="contact-grid">
+
+            <div class="contact-details reveal-up">
+                <div class="details-section">
+                    <h2 class="section-display-title"><%- t('contact.supportHtml') %></h2>
+                    <p class="section-desc"><%= t('contact.supportDesc') %></p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card glass-card">
+                        <i class="fas fa-share-nodes"></i>
+                        <div class="info-text">
+                            <h4><%= t('contact.findUs') %></h4>
+                            <p><a href="https://linktr.ee/Adrenaline98" target="_blank" rel="noopener">linktr.ee/Adrenaline98</a></p>
+                        </div>
+                    </div>
+                    <div class="info-card glass-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="info-text">
+                            <h4><%= t('contact.responseTime') %></h4>
+                            <p><%= t('contact.replyWithin') %></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="map-wrapper reveal-up">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d110502.60385038!2d31.1882508!3d30.0594885!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14583fa60b21beeb%3A0x79dfb296efaaad!2sCairo%2C%20Cairo%20Governorate!5e0!3m2!1sen!2seg!4v1700000000000!5m2!1sen!2seg"
+                        width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="contact-form-container reveal-up">
+                <div class="glass-card contact-form-card">
+                    <h2><%- t('contact.formHtml') %></h2>
+                    <p><%= t('contact.formDesc') %></p>
+
+                    <form id="contact-form" class="heritage-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name"><%= t('contact.fullName') %></label>
+                                <input type="text" id="name" placeholder="<%= t('contact.namePlaceholder') %>" required value="<%= user ? user.name : '' %>" <% if (user) { %>readonly class="field-locked"<% } %>>
+                            </div>
+                            <div class="form-group">
+                                <label for="email"><%= t('contact.email') %></label>
+                                <input type="email" id="email" placeholder="<%= t('contact.emailPlaceholder') %>" required value="<%= user ? user.email : '' %>" <% if (user) { %>readonly class="field-locked"<% } %>>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject"><%= t('contact.subject') %></label>
+                            <input type="text" id="subject" placeholder="<%= t('contact.subjectPlaceholder') %>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message"><%= t('contact.message') %></label>
+                            <textarea id="message" rows="5" placeholder="<%= t('contact.messagePlaceholder') %>" required></textarea>
+                        </div>
+
+                        <div id="contact-error" style="display:none;color:var(--color-danger);margin-bottom:1rem;"></div>
+                        <div id="contact-success" style="display:none;color:var(--color-success);margin-bottom:1rem;"></div>
+
+                        <button type="submit" class="btn btn--primary btn--full btn--large"><%= t('contact.submit') %></button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <% if (user) { %>
+    <section class="main-container" style="padding-top:0;">
+        <div class="glass-card reveal-up" style="padding:2rem;">
+            <h2 style="margin-bottom:0.25rem;"><%- t('contact.inquiriesHtml') %></h2>
+            <p style="opacity:0.7;margin-bottom:1.5rem;"><%= t('contact.inquiriesDesc') %></p>
+            <div id="my-tickets-container"><p style="opacity:0.6;"><%= t('contact.loadingInquiries') %></p></div>
+        </div>
+    </section>
+    <% } %>
+
+    <footer class="main-footer reveal-up">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="wordmark footer-logo" style="font-size:1.4rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+                <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+            </div>
+            <nav class="footer-nav" aria-label="<%= t('footer.navAria') %>">
+                <div class="footer-group">
+                    <h4><%= t('footer.explore') %></h4>
+                    <ul>
+                        <li><a href="/packages/day"><%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><%= t('nav.pump') %></a></li>
+                        <li><a href="/custom-trip"><%= t('nav.requestYourOwn') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.operations') %></h4>
+                    <ul>
+                        <li><a href="/about"><%= t('nav.about') %></a></li>
+                        <li><a href="/faq"><%= t('nav.faq') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.dispatch') %></h4>
+                    <ul>
+                        <li><a href="/contact"><%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="footer-bottom container">
+            <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+        </div>
+    </footer>
+
+    <script>
+        const SERVER_DATA = { user: <%- JSON.stringify(user) %> };
+        window.SERVER_USER = SERVER_DATA.user;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/contact.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+{
+  "goodDay": "يومك حلو",
+  "tripsBooked": "رحلات حجزتها",
+  "nextDeparture": "رحلتك الجاية",
+  "ridingSince": "معانا من",
+  "status": "المستوى",
+  "levelVeteran": "محترف",
+  "levelRegular": "دايماً معانا",
+  "levelNew": "جديد",
+  "na": "مفيش",
+  "nextJourney": "رحلتك الجاية",
+  "travelers": { "zero": "مفيش مسافرين", "one": "مسافر واحد", "two": "مسافرين", "few": "{n} مسافرين", "many": "{n} مسافر", "other": "{n} مسافر" },
+  "viewDetails": "شوف التفاصيل",
+  "seeAll": "شوف الكل",
+  "quickActions": "اختصارات",
+  "buildTrip": "اعمل رحلتك",
+  "featured": "مميّز",
+  "exploreEgypt": "اكتشف مصر",
+  "explore": "اكتشف"
+}

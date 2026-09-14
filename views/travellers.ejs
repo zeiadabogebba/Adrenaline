@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.travellers') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <meta name="description" content="Enter details for all travelers in your party before confirming your Egyptian journey.">
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/travellers.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
+                </button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="greeting-stack">
+                    <span class="greeting-label"><%= t('travellers.stepLabel') %></span>
+                    <h1 class="greeting-name"><%= t('travellers.title') %></h1>
+                </div>
+                <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                    <div class="account-chip__avatar">
+                        <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                    </div>
+                    <div>
+                        <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                        <strong class="account-chip__name"><%= user.name %></strong>
+                    </div>
+                </div>
+            </header>
+
+            <div class="td-scroll-area">
+                <div class="td-wrap reveal-up">
+
+                    <div class="td-page-header">
+                        <h2 class="td-page-header__title"><%= t('travellers.heading') %></h2>
+                        <p class="td-page-header__subtitle"><%- t('travellers.subtitleHtml') %></p>
+                        <p class="td-booking-chip">
+                            <i class="fas fa-suitcase-rolling" aria-hidden="true"></i>
+                            <span><strong><%= booking.packageName %></strong> &middot; <%= tp('travellers.count', booking.travelers) %></span>
+                        </p>
+                    </div>
+
+                    <form id="travelers-form">
+
+                        <% for (let i = 0; i < booking.travelers; i++) { %>
+                        <section class="traveller-card">
+                            <header class="traveller-card__head">
+                                <span class="traveller-card__num"><%= i + 1 %></span>
+                                <h3><% if (i === 0) { %><%- t('js.traveller.leadHtml') %><% } else { %><%= t('js.traveller.numbered', { n: i + 1 }) %><% } %></h3>
+                            </header>
+                            <div class="td-grid">
+                                <div class="td-field">
+                                    <label for="name_<%= i %>"><%= t('js.traveller.fullName') %> <span class="req">*</span></label>
+                                    <input type="text" id="name_<%= i %>" name="name_<%= i %>" data-i="<%= i %>" data-f="name" required value="<%= i === 0 ? user.name : '' %>" placeholder="<%= t('js.traveller.namePlaceholder') %>" autocomplete="off">
+                                    <span class="traveller-error" id="name_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field">
+                                    <label for="phone_<%= i %>"><%= t('js.traveller.phone') %> <span class="req">*</span></label>
+                                    <input type="tel" id="phone_<%= i %>" name="phone_<%= i %>" data-i="<%= i %>" data-f="phone" required value="<%= i === 0 ? (user.phone || '') : '' %>" placeholder="01x xxxx xxxx" inputmode="tel" dir="ltr">
+                                    <span class="traveller-error" id="phone_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field">
+                                    <label for="gender_<%= i %>"><%= t('js.traveller.gender') %> <span class="req">*</span></label>
+                                    <select id="gender_<%= i %>" name="gender_<%= i %>" data-i="<%= i %>" data-f="gender" required>
+                                        <option value="" disabled selected><%= t('js.traveller.select') %></option>
+                                        <option value="male"><%= t('js.traveller.male') %></option>
+                                        <option value="female"><%= t('js.traveller.female') %></option>
+                                    </select>
+                                    <span class="traveller-error" id="gender_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field">
+                                    <label for="idNumber_<%= i %>"><%= t('js.traveller.idNumber') %> <span class="req">*</span></label>
+                                    <input type="text" id="idNumber_<%= i %>" name="idNumber_<%= i %>" data-i="<%= i %>" data-f="idNumber" required placeholder="<%= t('js.traveller.idPlaceholder') %>" autocomplete="off">
+                                    <span class="traveller-error" id="idNumber_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field td-field--full">
+                                    <label><%= t('js.traveller.idPhoto') %> <span class="req">*</span> <span class="td-field__hint"><%= t('js.traveller.idPhotoHint') %></span></label>
+                                    <div class="td-upload" data-i="<%= i %>">
+                                        <input type="hidden" name="idPhoto_<%= i %>" id="idPhoto_<%= i %>" data-i="<%= i %>" data-f="idPhoto">
+                                        <input type="file" id="idPhotoFile_<%= i %>" accept="image/jpeg,image/png,image/webp" hidden>
+                                        <button type="button" class="td-upload__btn" data-i="<%= i %>"><i class="fas fa-camera" aria-hidden="true"></i> <span><%= t('js.traveller.choosePhoto') %></span></button>
+                                        <div class="td-upload__preview" id="idPhotoPreview_<%= i %>" hidden>
+                                            <img alt="<%= t('js.traveller.previewAlt') %>" src="">
+                                            <button type="button" class="td-upload__remove" data-i="<%= i %>" aria-label="<%= t('js.traveller.removePhoto') %>">&times;</button>
+                                        </div>
+                                        <span class="td-upload__status" id="idPhotoStatus_<%= i %>"></span>
+                                    </div>
+                                    <span class="traveller-error" id="idPhoto_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field">
+                                    <label for="emgName_<%= i %>"><%= t('js.traveller.emgName') %> <span class="req">*</span></label>
+                                    <input type="text" id="emgName_<%= i %>" name="emgName_<%= i %>" data-i="<%= i %>" data-f="emergencyName" required placeholder="<%= t('js.traveller.emgNamePlaceholder') %>" autocomplete="off">
+                                    <span class="traveller-error" id="emergencyName_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field">
+                                    <label for="emgPhone_<%= i %>"><%= t('js.traveller.emgPhone') %> <span class="req">*</span></label>
+                                    <input type="tel" id="emgPhone_<%= i %>" name="emgPhone_<%= i %>" data-i="<%= i %>" data-f="emergencyPhone" required placeholder="01x xxxx xxxx" inputmode="tel" dir="ltr">
+                                    <span class="traveller-error" id="emergencyPhone_error_<%= i %>"></span>
+                                </div>
+                                <div class="td-field td-field--full">
+                                    <label for="disease_<%= i %>"><%= t('js.traveller.disease') %></label>
+                                    <textarea id="disease_<%= i %>" name="disease_<%= i %>" data-i="<%= i %>" data-f="knownDisease" rows="2" placeholder="<%= t('js.traveller.diseasePlaceholder') %>"></textarea>
+                                </div>
+                            </div>
+                        </section>
+                        <% } %>
+
+                        <section class="traveller-card td-payment">
+                            <header class="traveller-card__head">
+                                <span class="traveller-card__num"><i class="fas fa-wallet" aria-hidden="true"></i></span>
+                                <h3><%= t('travellers.payment') %></h3>
+                            </header>
+
+                            <div class="td-pay-block">
+                                <p class="td-pay-label"><%= t('travellers.howPay') %> <span class="req">*</span></p>
+                                <div class="td-choice">
+                                    <label class="td-choice__opt">
+                                        <input type="radio" name="paymentMethod" value="instapay">
+                                        <span><i class="fas fa-bolt" aria-hidden="true"></i> <%= t('travellers.instapay') %></span>
+                                    </label>
+                                    <label class="td-choice__opt">
+                                        <input type="radio" name="paymentMethod" value="vodafone-cash">
+                                        <span><i class="fas fa-mobile-screen-button" aria-hidden="true"></i> <%= t('travellers.vodafoneCash') %></span>
+                                    </label>
+                                </div>
+                                <span class="traveller-error" id="paymentMethod_error"></span>
+                            </div>
+
+                            <div class="td-pay-block">
+                                <p class="td-pay-label"><%= t('travellers.howMuch') %> <span class="req">*</span></p>
+                                <div class="td-choice">
+                                    <label class="td-choice__opt">
+                                        <input type="radio" name="paymentPlan" value="deposit">
+                                        <span><%= t('travellers.deposit') %> <small id="depositAmt"></small></span>
+                                    </label>
+                                    <label class="td-choice__opt">
+                                        <input type="radio" name="paymentPlan" value="full">
+                                        <span><%= t('travellers.full') %> <small id="fullAmt"></small></span>
+                                    </label>
+                                </div>
+                                <span class="traveller-error" id="paymentPlan_error"></span>
+                            </div>
+                        </section>
+
+                        <div id="form-error" class="td-form-error" style="display:none;"></div>
+
+                        <div class="td-actions">
+                            <button type="button" id="back-btn" class="btn" onclick="window.location.href=BACK_URL">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i> <%= t('travellers.back') %>
+                            </button>
+                            <button type="submit" id="continue-btn" class="btn btn--primary">
+                                <%= t('travellers.continue') %> <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <footer class="td-footer">
+                    <div class="td-footer__inner">
+                        <div class="td-footer__brand">
+                            <span class="td-footer__logo">Adrenaline</span>
+                            <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+                        </div>
+                        <div class="td-footer__bottom">
+                            <span>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></span>
+                            <span class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></span>
+                            <span class="td-footer__credit"><%= t('footer.credit') %></span>
+                        </div>
+                    </div>
+                </footer>
+
+            </div>
+        </main>
+
+
+    </div>
+
+    <script>
+        window.SERVER_USER = <%- JSON.stringify(user) %>;
+        window.TD = {
+            draftId: '<%= booking._id %>',
+            travelers: <%= booking.travelers %>,
+            totalPrice: <%= booking.totalPrice || 0 %>,
+            backUrl: '<%= booking.tripId ? "/trips/" + booking.tripId._id : (booking.packageId ? "/packages/" + booking.packageId._id : "/custom-trip") %>'
+        };
+        const BACK_URL = window.TD.backUrl;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/travellers.js"></script>
+</body>
+
+</html>

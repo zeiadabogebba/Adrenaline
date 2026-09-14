@@ -1,0 +1,468 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.bookingSummary') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/bookingSummary.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
+                </button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="topbar-left">
+                    <div class="greeting-stack">
+                        <span class="greeting-label"><%= t('booking.summaryLabel') %></span>
+                        <h1 class="greeting-name"><%= t('booking.summaryTitle') %></h1>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                        <div class="account-chip__avatar">
+                            <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                        </div>
+                        <div>
+                            <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                            <strong class="account-chip__name"><%= user.name %></strong>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content editorial-page">
+                <div class="itinerary-document reveal-up">
+                    <div class="itinerary-header">
+                        <h2><%= t('booking.manifest') %></h2>
+                        <div class="itinerary-meta">
+                            <span class="meta-label"><%= t('booking.reference') %></span>
+                            <span class="ref-value" dir="ltr"><%= booking.bookingNumber %></span>
+                            <% const summaryStatus = booking.status === 'cancelled' ? 'cancelled' : (booking.paymentStatus || 'verifying'); %>
+                            <% const statusText = (s) => lang === 'ar' ? t('js.bookings.status.' + s.replace(/\s+/g, '-')) : s; %>
+                            <% const genderText = (g) => g && lang === 'ar' ? t('js.traveller.' + g) : g; %>
+                            <span class="status-badge status-<%= summaryStatus.replace(/\s+/g, '-') %>"><%= statusText(summaryStatus) %></span>
+                        </div>
+                    </div>
+
+                    <div class="itinerary-body">
+                        <div class="itinerary-main">
+                            <div class="editorial-section">
+                                <h3><%= t('booking.travellers') %></h3>
+                                <div class="editorial-grid">
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.lead') %></span>
+                                        <span class="field-value"><%= user.name %></span>
+                                    </div>
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.totalTravellers') %></span>
+                                        <span class="field-value"><%= booking.travelers %></span>
+                                    </div>
+                                </div>
+                                <% if (booking.travellerDetails && booking.travellerDetails.length > 0) { %>
+                                <ul class="summary-travellers">
+                                    <% booking.travellerDetails.forEach((tr, i) => { %>
+                                    <li>
+                                        <span class="summary-travellers__idx"><%= i + 1 %></span>
+                                        <span class="summary-travellers__body">
+                                            <strong><%= tr.name %></strong>
+                                            <span><%= genderText(tr.gender) || '' %><%= tr.gender && tr.phone ? ' · ' : '' %><% if (tr.phone) { %><bdi><%= tr.phone %></bdi><% } %></span>
+                                            <% if (tr.idPhoto) { %><a href="<%= tr.idPhoto %>" target="_blank" rel="noopener"><i class="fas fa-id-card"></i> <%= t('booking.idPhoto') %></a><% } %>
+                                        </span>
+                                    </li>
+                                    <% }) %>
+                                </ul>
+                                <% } %>
+                            </div>
+
+                            <% if (booking.paymentMethod || booking.paymentPlan) { %>
+                            <div class="editorial-section">
+                                <h3><%= t('booking.payment') %></h3>
+                                <div class="editorial-grid">
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.method') %></span>
+                                        <span class="field-value"><%= booking.paymentMethod === 'vodafone-cash' ? t('travellers.vodafoneCash') : (booking.paymentMethod === 'instapay' ? t('travellers.instapay') : t('booking.na')) %></span>
+                                    </div>
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.plan') %></span>
+                                        <span class="field-value"><%= booking.paymentPlan === 'deposit' ? t('booking.planDeposit') : (booking.paymentPlan === 'full' ? t('booking.planFull') : t('booking.na')) %></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+
+                            <div class="editorial-section">
+                                <h3><%= t('booking.tripDetails') %></h3>
+                                <div class="editorial-grid">
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.trip') %></span>
+                                        <span class="field-value"><%= booking.packageName %></span>
+                                    </div>
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.departure') %></span>
+                                        <span class="field-value"><%= booking.date %></span>
+                                    </div>
+                                    <% if (booking.isCustom) { %>
+                                    <div class="editorial-field">
+                                        <span class="field-label"><%= t('booking.tripType') %></span>
+                                        <span class="field-value"><%= booking.tier || t('booking.customTier') %></span>
+                                    </div>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <div class="editorial-section">
+                                <h3><%= t('booking.bookingPolicy') %></h3>
+                                <ul class="editorial-list">
+                                    <li><i class="fas fa-check"></i> <%= t('booking.policy1') %></li>
+                                    <li><i class="fas fa-check"></i> <%= t('booking.policy2') %></li>
+                                    <li><i class="fas fa-exclamation"></i> <%= t('booking.policy3') %></li>
+                                    <li><i class="fas fa-exclamation"></i> <%= t('booking.policy4') %></li>
+                                </ul>
+                            </div>
+
+                            <div class="editorial-section">
+                                <h3><%= t('booking.refundPolicy') %></h3>
+                                <ul class="editorial-list">
+                                    <li><i class="fas fa-check"></i> <%= t('booking.refund1') %></li>
+                                    <li><i class="fas fa-exclamation"></i> <%= t('booking.refund2') %></li>
+                                    <li><i class="fas fa-xmark"></i> <%= t('booking.refund3') %></li>
+                                    <li><i class="fas fa-user-group"></i> <%= t('booking.refund4') %></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <aside class="itinerary-sidebar">
+                            <div class="editorial-section">
+                                <h3><%= t('booking.total') %></h3>
+                                <div class="editorial-price">
+                                    <div class="price-row">
+                                        <span><%= t('booking.basePrice') %></span>
+                                        <span><%= money(booking.basePrice || Math.round(booking.totalPrice / booking.travelers)) %></span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span><%= t('booking.travellers') %></span>
+                                        <span>&times; <%= booking.travelers %></span>
+                                    </div>
+                                    <% if (booking.promoCode && booking.promoDiscount) { %>
+                                    <div class="price-row" style="color:var(--color-success,var(--ok));">
+                                        <span><%= t('booking.promoLine', { code: booking.promoCode, pct: booking.promoDiscount }) %></span>
+                                        <span>&minus;<%= money(Math.round(booking.basePrice * booking.travelers - booking.totalPrice)) %></span>
+                                    </div>
+                                    <% } %>
+                                    <div class="price-row price-row--total">
+                                        <strong><%= t('booking.total') %></strong>
+                                        <strong style="color:var(--crimson);font-size:1.3rem;"><%= money(booking.totalPrice) %></strong>
+                                    </div>
+                                    <% if (booking.paymentPlan === 'deposit') { %>
+                                    <% const dep = Math.round(booking.totalPrice / 2); %>
+                                    <div class="price-row" style="border-top:1px dashed var(--color-border,rgba(128,128,128,0.18));padding-top:0.5rem;margin-top:0.25rem;">
+                                        <span><%= t('booking.depositDue') %></span>
+                                        <strong style="color:var(--crimson);"><%= money(dep) %></strong>
+                                    </div>
+                                    <div class="price-row">
+                                        <span><%= t('booking.balance') %></span>
+                                        <span><%= money(booking.totalPrice - dep) %></span>
+                                    </div>
+                                    <% } %>
+                                    <div class="price-row" id="currency-row" style="border-top:1px dashed var(--color-border,rgba(128,128,128,0.18));padding-top:0.5rem;margin-top:0.25rem;font-size:1rem;color:var(--color-text-muted,#888);opacity:0;transition:opacity 0.3s;">
+                                        <span><i class="fas fa-coins"></i> <%= t('booking.approx') %></span>
+                                        <span id="currency-values" dir="ltr"><%= t('booking.loading') %></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="editorial-section payment-info-section">
+                                <h3><%= t('booking.paymentInfo') %></h3>
+                                <div class="payment-method-row">
+                                    <span class="payment-method-row__label"><i class="fas fa-mobile-screen-button"></i> <%= t('travellers.vodafoneCash') %></span>
+                                    <span class="payment-method-row__value">
+                                        01553905110
+                                        <button type="button" class="copy-number-btn" id="copy-vf-btn" data-copy="01553905110" title="<%= t('booking.copyNumber') %>" aria-label="<%= t('booking.copyNumber') %>"><i class="fas fa-copy"></i></button>
+                                    </span>
+                                </div>
+                                <div class="payment-method-row payment-method-row--soon">
+                                    <span class="payment-method-row__label"><i class="fas fa-wallet"></i> <%= t('travellers.instapay') %></span>
+                                    <span class="payment-method-row__value"><%= t('booking.soon') %></span>
+                                </div>
+                                <p class="payment-info-note"><i class="fas fa-circle-info" aria-hidden="true"></i> <%= t('booking.paymentNote') %></p>
+                            </div>
+
+                            <% if (booking.tripId) { %>
+                            <div class="editorial-section promo-section">
+                                <h3><%= t('booking.promoTitle') %></h3>
+                                <% if (booking.promoCode) { %>
+                                <div class="promo-applied">
+                                    <span><i class="fas fa-tag"></i> <strong><%= booking.promoCode %></strong> <%= t('booking.promoApplied', { pct: booking.promoDiscount }) %></span>
+                                    <button type="button" id="promo-remove-btn" class="promo-remove-btn"><%= t('booking.remove') %></button>
+                                </div>
+                                <% } else { %>
+                                <div class="promo-form">
+                                    <input type="text" id="promo-input" placeholder="<%= t('booking.promoPlaceholder') %>" autocomplete="off" style="text-transform:uppercase;">
+                                    <button type="button" id="promo-apply-btn" class="btn-editorial promo-apply-btn"><%= t('booking.apply') %></button>
+                                </div>
+                                <% } %>
+                                <div id="promo-error" class="promo-error"></div>
+                            </div>
+                            <% } %>
+
+                            <div class="editorial-section screenshot-section">
+                                <h3><%= t('booking.screenshotTitle') %></h3>
+                                <div class="screenshot-upload">
+                                    <input type="file" id="screenshot-file" accept="image/jpeg,image/png,image/webp" hidden>
+                                    <button type="button" class="screenshot-upload__btn" id="screenshot-upload-btn">
+                                        <i class="fas fa-camera" aria-hidden="true"></i> <span id="screenshot-btn-label"><%= booking.paymentScreenshot ? t('booking.replaceScreenshot') : t('booking.uploadScreenshot') %></span>
+                                    </button>
+                                    <div class="screenshot-preview" id="screenshot-preview" <%= booking.paymentScreenshot ? '' : 'hidden' %>>
+                                        <img id="screenshot-preview-img" src="<%= booking.paymentScreenshot || '' %>" alt="<%= t('booking.screenshotAlt') %>">
+                                    </div>
+                                    <span class="screenshot-status" id="screenshot-status"></span>
+                                </div>
+                                <div id="screenshot-error" class="promo-error"></div>
+                            </div>
+
+                            <div class="concierge-action">
+                                <div id="payment-error" style="display:none;color:var(--color-danger);margin-bottom:1rem;text-align:center;"></div>
+                                <button id="payment-booking" class="btn-editorial confirm"<%= booking.paymentScreenshot ? '' : ' disabled' %>><%= t('booking.confirm') %></button>
+                                <p class="confirm-hint" id="confirm-hint"<%= booking.paymentScreenshot ? ' hidden' : '' %>><%= t('booking.confirmHint') %></p>
+                                <button id="cancel-booking-btn" class="btn-editorial cancel" type="button"><%= t('booking.cancelBooking') %></button>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            booking: <%- JSON.stringify(booking) %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+        const DRAFT_ID = '<%= booking._id %>';
+
+        document.getElementById('payment-booking').addEventListener('click', async () => {
+            const payBtn = document.getElementById('payment-booking');
+            const errDiv = document.getElementById('payment-error');
+            payBtn.textContent = window.t('js.bookingSummary.processing');
+            payBtn.disabled = true;
+            try {
+                const res = await fetch('/api/bookings/draft/' + DRAFT_ID + '/confirm', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || window.t('js.common.error'));
+                window.location.href = '/booking/' + data.data.booking._id;
+            } catch (err) {
+                errDiv.style.display = 'block';
+                errDiv.textContent = err.message;
+                payBtn.textContent = window.t('js.bookingSummary.confirm');
+                payBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('copy-vf-btn')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            try {
+                await navigator.clipboard.writeText(btn.dataset.copy);
+                const icon = btn.querySelector('i');
+                icon.className = 'fas fa-check';
+                setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500);
+            } catch (err) {}
+        });
+
+        document.getElementById('screenshot-upload-btn')?.addEventListener('click', () => {
+            document.getElementById('screenshot-file').click();
+        });
+
+        document.getElementById('screenshot-file')?.addEventListener('change', async function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('screenshot-status');
+            const errDiv = document.getElementById('screenshot-error');
+            const btn = document.getElementById('screenshot-upload-btn');
+            errDiv.textContent = '';
+            status.textContent = window.t('js.traveller.uploading');
+            status.className = 'screenshot-status is-loading';
+            btn.disabled = true;
+
+            try {
+                const fd = new FormData();
+                fd.append('screenshot', file);
+                const res = await fetch('/api/bookings/draft/' + DRAFT_ID + '/payment-screenshot', {
+                    method: 'POST', credentials: 'include', body: fd,
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || window.t('js.traveller.uploadFailed'));
+
+                const preview = document.getElementById('screenshot-preview');
+                document.getElementById('screenshot-preview-img').src = data.data.url;
+                preview.hidden = false;
+                document.getElementById('screenshot-btn-label').textContent = window.t('js.bookingSummary.replaceScreenshot');
+                status.textContent = '';
+                status.className = 'screenshot-status';
+
+                const confirmBtn = document.getElementById('payment-booking');
+                confirmBtn.disabled = false;
+                document.getElementById('confirm-hint').hidden = true;
+            } catch (err) {
+                status.textContent = '';
+                errDiv.textContent = err.message;
+            } finally {
+                btn.disabled = false;
+                this.value = '';
+            }
+        });
+
+        document.getElementById('promo-apply-btn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('promo-apply-btn');
+            const input = document.getElementById('promo-input');
+            const errDiv = document.getElementById('promo-error');
+            const code = input.value.trim();
+            errDiv.textContent = '';
+            if (!code) { errDiv.textContent = window.t('js.bookingSummary.enterPromo'); return; }
+            btn.textContent = window.t('js.bookingSummary.applying');
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/bookings/draft/' + DRAFT_ID + '/promo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || window.t('js.bookingSummary.promoFailed'));
+                window.location.reload();
+            } catch (err) {
+                errDiv.textContent = err.message;
+                btn.textContent = window.t('js.bookingSummary.apply');
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('promo-remove-btn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('promo-remove-btn');
+            btn.textContent = window.t('js.bookingSummary.removing');
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/bookings/draft/' + DRAFT_ID + '/promo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: '' }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || window.t('js.bookingSummary.removeFailed'));
+                window.location.reload();
+            } catch (err) {
+                document.getElementById('promo-error').textContent = err.message;
+                btn.textContent = window.t('js.bookingSummary.remove');
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('cancel-booking-btn').addEventListener('click', async () => {
+            if (!confirm(window.t('js.bookingSummary.cancelConfirm'))) return;
+            const cancelBtn = document.getElementById('cancel-booking-btn');
+            const errDiv = document.getElementById('payment-error');
+            cancelBtn.textContent = window.t('js.bookingSummary.cancelling');
+            cancelBtn.disabled = true;
+            try {
+                const res = await fetch('/api/bookings/' + DRAFT_ID + '/cancel', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: 'Cancelled by user before payment' }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || window.t('js.bookingSummary.cancelFailed'));
+                window.location.href = '/my-bookings';
+            } catch (err) {
+                errDiv.style.display = 'block';
+                errDiv.textContent = err.message;
+                cancelBtn.textContent = window.t('js.bookingSummary.cancelBooking');
+                cancelBtn.disabled = false;
+            }
+        });
+
+</script>
+    <script>
+        (async function loadCurrencyConversion() {
+            const totalEGP = <%= booking.totalPrice %>;
+            try {
+                const res = await fetch('/api/external/currency?amount=' + totalEGP + '&from=EGP');
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success') return;
+                const d = data.data;
+                const row = document.getElementById('currency-row');
+                const val = document.getElementById('currency-values');
+                if (row && val) {
+                    val.textContent = '$' + d.USD.toLocaleString('en-US') + ' · €' + d.EUR.toLocaleString('en-US') + ' · £' + d.GBP.toLocaleString('en-US');
+                    row.style.opacity = '1';
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/bookingSummary.js"></script>
+</body>
+
+</html>

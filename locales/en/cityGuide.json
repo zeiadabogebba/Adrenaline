@@ -1,0 +1,13 @@
+{
+  "back": "All city guides",
+  "eyebrow": "City guide",
+  "pageAlt": "{city} city guide, page {n}",
+  "lock": "Log in to read the {city} guide",
+  "readerAria": "Guide pages",
+  "toolbarAria": "Page navigation",
+  "prev": "Previous page",
+  "next": "Next page",
+  "top": "Back to the cover",
+  "pageOf": "{n} / {total}",
+  "more": "More city guides"
+}

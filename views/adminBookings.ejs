@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Booking Management - Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminBookings.css?v=20260915a">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <h2>Adrenaline Ops</h2>
+                <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch Theme">
+                    <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                    <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                    <li class="active"><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                    <li><a href="/admin/packages"><i class="fas fa-cubes"></i> Catalogue Management</a></li>
+                    <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                    <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                    <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                    <li><a href="/admin/users"><i class="fas fa-user-shield"></i> User Management</a></li>
+                    <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="account-chip account-chip--sidebar">
+                    <div class="account-chip__avatar">
+                        <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                    </div>
+                    <div>
+                        <span class="account-chip__label">Signed in as</span>
+                        <strong class="account-chip__name"><%= user.name %></strong>
+                    </div>
+                </div>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="top-bar-left">
+                    <h1>Booking Management</h1>
+                    <p>Manage all customer bookings and reservations</p>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info"><h3>Total</h3><p class="stat-number"><%= stats.total %></p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:var(--color-success);background:rgba(76,175,80,0.1);"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info"><h3>Fully Paid</h3><p class="stat-number" id="stat-fully-paid" style="color:var(--color-success);"><%= stats.fullyPaid %></p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:var(--color-danger);background:rgba(239,68,68,0.1);"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-info"><h3>Cancelled</h3><p class="stat-number" id="stat-cancelled" style="color:var(--color-danger);"><%= stats.cancelled %></p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:var(--crimson);background:rgba(220, 38, 38, 0.1);"><i class="fas fa-coins"></i></div>
+                    <div class="stat-info"><h3>Revenue</h3><p class="stat-number" id="stat-revenue" style="color:var(--crimson);">EGP <%= stats.revenue ? stats.revenue.toLocaleString() : '0' %></p></div>
+                </div>
+            </section>
+
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="search-container">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <input type="text" id="search-input" placeholder="Search by booking #, guest…">
+                    </div>
+                    <select id="status-filter" class="select-modern">
+                        <option value="">All Statuses</option>
+                        <option value="verifying">Verifying</option>
+                        <option value="half-paid">Half Paid</option>
+                        <option value="verifying-payment-2">Verifying Payment 2</option>
+                        <option value="fully-paid">Fully Paid</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <section class="card" style="margin-top:1.5rem;">
+                <div id="bookings-table-container" style="overflow-x:auto;">
+                    <table class="activity-table" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--color-border);">
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Booking #</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Guest</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Package</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Date</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Amount</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Status</th>
+                                <th style="text-align:left;padding:1rem;color:var(--color-text-muted);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-tbody">
+                            <% bookings.forEach(booking => { %>
+                            <% const slug = booking.computedStatus.replace(/\s+/g, '-'); %>
+                            <tr class="booking-row" data-id="<%= booking._id %>" data-status="<%= slug %>" data-search="<%= booking.bookingNumber.toLowerCase() %> <%= (booking.userId ? booking.userId.name : booking.userEmail || '').toLowerCase() %>" style="border-bottom:1px solid var(--color-border);">
+                                <td style="padding:0.8rem 1rem;"><strong style="color:var(--crimson);"><%= booking.bookingNumber %></strong></td>
+                                <td style="padding:0.8rem 1rem;">
+                                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                                        <% if (booking.userId && booking.userId.image) { %><img src="<%= booking.userId.image %>" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;"><% } %>
+                                        <div>
+                                            <div style="color:var(--color-text);font-size:0.9rem;"><%= booking.userId ? booking.userId.name : booking.userEmail %></div>
+                                            <div style="color:var(--color-text-muted);font-size:0.8rem;"><%= booking.userId ? booking.userId.email : '' %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:0.8rem 1rem;color:var(--color-text-secondary);font-size:0.9rem;"><%= booking.packageName %></td>
+                                <td style="padding:0.8rem 1rem;color:var(--color-text-secondary);font-size:0.9rem;"><%= booking.date || new Date(booking.createdAt).toLocaleDateString() %></td>
+                                <td style="padding:0.8rem 1rem;"><strong style="color:var(--crimson);">EGP <%= booking.totalPrice ? booking.totalPrice.toLocaleString() : '-' %></strong></td>
+                                <td style="padding:0.8rem 1rem;">
+                                    <span class="status-badge status-<%= slug %>"><%= booking.computedStatus %></span>
+                                </td>
+                                <td style="padding:0.8rem 1rem;">
+                                    <div style="display:flex;gap:0.5rem;">
+                                        <button class="view-booking-btn" data-id="<%= booking._id %>">View</button>
+                                        <% if (booking.computedStatus !== 'cancelled') { %>
+                                        <button class="cancel-booking-btn" data-id="<%= booking._id %>" data-status="cancelled">Cancel</button>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="viewBookingModal">
+        <div class="modal-container" style="max-width:680px;">
+            <div class="modal-header">
+                <h3>Booking Details</h3>
+                <button class="modal-close" onclick="closeModal('viewBookingModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewBookingBody" style="max-height:70vh;overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_DATA = { user: <%- JSON.stringify(user) %>, bookings: <%- JSON.stringify(bookings) %>, stats: <%- JSON.stringify(stats) %> };
+        window.SERVER_USER = SERVER_DATA.user;
+
+        document.getElementById('status-filter').addEventListener('change', (e) => {
+            const val = e.target.value;
+            document.querySelectorAll('.booking-row').forEach(row => {
+                row.style.display = (!val || row.dataset.status === val) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('.booking-row').forEach(row => {
+                row.style.display = (row.dataset.search || '').includes(q) ? '' : 'none';
+            });
+        });
+
+        const REVENUE_STATUSES = ['half paid', 'verifying payment 2', 'fully paid'];
+        const stats = { ...SERVER_DATA.stats };
+
+        function effectiveStatus(b) {
+            return b.status === 'cancelled' ? 'cancelled' : (b.paymentStatus || 'verifying');
+        }
+
+        // Mirrors the server's stat queries so the cards stay correct without a reload.
+        function statContribution(b) {
+            const live = b.status !== 'cancelled';
+            return {
+                fullyPaid: live && b.paymentStatus === 'fully paid' ? 1 : 0,
+                cancelled: live ? 0 : 1,
+                revenue: live && REVENUE_STATUSES.includes(b.paymentStatus) ? (b.totalPrice || 0) : 0,
+            };
+        }
+
+        function applyBookingUpdate(id, updated) {
+            const b = SERVER_DATA.bookings.find(x => x._id === id);
+            if (!b) return;
+
+            const before = statContribution(b);
+            b.status = updated.status;
+            b.paymentStatus = updated.paymentStatus;
+            b.computedStatus = effectiveStatus(b);
+            const after = statContribution(b);
+            Object.keys(before).forEach(k => { stats[k] += after[k] - before[k]; });
+            document.getElementById('stat-fully-paid').textContent = stats.fullyPaid;
+            document.getElementById('stat-cancelled').textContent = stats.cancelled;
+            document.getElementById('stat-revenue').textContent = 'EGP ' + (stats.revenue || 0).toLocaleString();
+
+            const row = document.querySelector(`.booking-row[data-id="${id}"]`);
+            if (!row) return;
+            const slug = b.computedStatus.replace(/\s+/g, '-');
+            row.dataset.status = slug;
+            const badge = row.querySelector('.status-badge');
+            badge.className = 'status-badge status-' + slug;
+            badge.textContent = b.computedStatus;
+            if (b.computedStatus === 'cancelled') row.querySelector('.cancel-booking-btn')?.remove();
+            const filter = document.getElementById('status-filter').value;
+            if (filter && slug !== filter) row.style.display = 'none';
+        }
+
+        // Updates in place instead of reloading: the full page takes seconds to
+        // rebuild, and with no feedback in the meantime admins clicked again.
+        async function updateBookingStatus(id, status, btn, pendingLabel) {
+            const group = [...btn.parentElement.querySelectorAll('button')];
+            const label = btn.textContent;
+            group.forEach(b => { b.disabled = true; });
+            btn.textContent = pendingLabel;
+            try {
+                const res = await fetch('/api/admin/bookings/' + id + '/status', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status }),
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(d.message || 'Update failed');
+                applyBookingUpdate(id, d.data.booking);
+                return true;
+            } catch (err) {
+                alert(err.message || 'An error occurred');
+                return false;
+            } finally {
+                group.forEach(b => { b.disabled = false; });
+                btn.textContent = label;
+            }
+        }
+
+        document.querySelectorAll('.cancel-booking-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.disabled || !confirm('Cancel this booking?')) return;
+                updateBookingStatus(btn.dataset.id, 'cancelled', btn, 'Cancelling…');
+            });
+        });
+
+        function esc(v) {
+            return (v == null ? '' : v).toString()
+                .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        window.closeModal = closeModal;
+
+        const PAYMENT_METHOD_LABELS = { instapay: 'InstaPay', 'vodafone-cash': 'Vodafone Cash' };
+        const PAYMENT_PLAN_LABELS = { deposit: '50% deposit', full: 'Paid in full' };
+
+        function travellerCardHtml(t, i) {
+            return `
+                <div style="padding:0.75rem;margin-bottom:0.5rem;background:var(--color-surface-alt,#f8f9fa);border:1px solid var(--color-border-light,#e4e4e4);border-radius:8px;">
+                    <strong>${i + 1}. ${esc(t.name)}</strong>
+                    <div style="font-size:0.85rem;color:var(--color-text-secondary);margin-top:2px;">${esc([t.gender, t.phone].filter(Boolean).join(' · '))}</div>
+                    ${t.idNumber ? `<div style="font-size:0.85rem;color:var(--color-text-secondary);">ID/Passport: ${esc(t.idNumber)}</div>` : ''}
+                    ${t.idPhoto ? `<a href="${esc(t.idPhoto)}" target="_blank" rel="noopener" style="font-size:0.85rem;"><i class="fas fa-id-card"></i> View ID photo</a>` : ''}
+                    ${(t.emergencyName || t.emergencyPhone) ? `<div style="font-size:0.85rem;color:var(--color-text-secondary);">Emergency: ${esc([t.emergencyName, t.emergencyPhone].filter(Boolean).join(' · '))}</div>` : ''}
+                    ${t.knownDisease ? `<div style="font-size:0.85rem;color:var(--color-text-secondary);">Medical: ${esc(t.knownDisease)}</div>` : ''}
+                </div>`;
+        }
+
+        function viewBooking(id) {
+            const b = SERVER_DATA.bookings.find(x => x._id === id);
+            if (!b) return;
+
+            const statusSlug = (b.computedStatus || '').replace(/\s+/g, '-');
+            const guestName = b.userId ? b.userId.name : (b.userEmail || 'Guest');
+            const guestEmail = b.userId ? b.userId.email : '';
+            const travellers = (b.travellerDetails || []).map(travellerCardHtml).join('')
+                || '<p style="color:var(--color-text-muted);">No traveller details on file.</p>';
+            const canVerify = b.computedStatus !== 'cancelled';
+            const originalAmount = (b.basePrice || 0) * (b.travelers || 1);
+            const hasPromo = !!(b.promoCode && b.promoDiscount);
+            const amountHtml = hasPromo
+                ? `<div style="color:var(--color-text-muted);text-decoration:line-through;font-size:0.82rem;">EGP ${originalAmount.toLocaleString()}</div><div style="color:var(--crimson);font-weight:700;">EGP ${(b.totalPrice || 0).toLocaleString()}</div>`
+                : `<div style="color:var(--crimson);font-weight:700;">EGP ${(b.totalPrice || 0).toLocaleString()}</div>`;
+
+            document.getElementById('viewBookingBody').innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--crimson);">${esc(b.bookingNumber)}</div>
+                        <div style="color:var(--color-text-secondary);">${esc(b.packageName)}</div>
+                    </div>
+                    <span class="status-badge status-${statusSlug}">${esc(b.computedStatus)}</span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:1.25rem;">
+                    <div><label style="font-size:0.75rem;color:var(--color-text-muted);display:block;">Guest</label><div>${esc(guestName)}</div>${guestEmail ? `<div style="font-size:0.8rem;color:var(--color-text-muted);">${esc(guestEmail)}</div>` : ''}</div>
+                    <div><label style="font-size:0.75rem;color:var(--color-text-muted);display:block;">Travellers</label><div>${b.travelers}</div></div>
+                    <div><label style="font-size:0.75rem;color:var(--color-text-muted);display:block;">Amount</label>${amountHtml}</div>
+                    <div><label style="font-size:0.75rem;color:var(--color-text-muted);display:block;">Payment</label><div>${b.paymentMethod ? esc(PAYMENT_METHOD_LABELS[b.paymentMethod] || b.paymentMethod) : 'N/A'}${b.paymentPlan ? ' · ' + esc(PAYMENT_PLAN_LABELS[b.paymentPlan] || b.paymentPlan) : ''}</div></div>
+                    <div><label style="font-size:0.75rem;color:var(--color-text-muted);display:block;">Promo Code</label><div>${hasPromo ? `<strong>${esc(b.promoCode)}</strong> (${b.promoDiscount}% off)` : 'None'}</div></div>
+                </div>
+
+                <div style="margin-bottom:1.25rem;">
+                    <label style="font-size:0.75rem;color:var(--color-text-muted);display:block;margin-bottom:0.5rem;">Payment Screenshot${b.paymentScreenshot2 ? ' (1st / deposit)' : ''}</label>
+                    ${b.paymentScreenshot
+                        ? `<a href="${esc(b.paymentScreenshot)}" target="_blank" rel="noopener"><img src="${esc(b.paymentScreenshot)}" alt="Payment screenshot" style="max-width:220px;border-radius:8px;border:1px solid var(--color-border);"></a>`
+                        : '<p style="color:var(--color-text-muted);margin:0;">No payment screenshot uploaded yet.</p>'}
+                </div>
+
+                ${b.paymentScreenshot2 ? `
+                <div style="margin-bottom:1.25rem;">
+                    <label style="font-size:0.75rem;color:var(--color-text-muted);display:block;margin-bottom:0.5rem;">Payment Screenshot (2nd / remaining)</label>
+                    <a href="${esc(b.paymentScreenshot2)}" target="_blank" rel="noopener"><img src="${esc(b.paymentScreenshot2)}" alt="Second payment screenshot" style="max-width:220px;border-radius:8px;border:1px solid var(--color-border);"></a>
+                </div>` : ''}
+
+                <div style="margin-bottom:1.25rem;">
+                    <label style="font-size:0.75rem;color:var(--color-text-muted);display:block;margin-bottom:0.5rem;">Travellers</label>
+                    ${travellers}
+                </div>
+
+                ${canVerify ? `
+                <div style="display:flex;gap:0.6rem;padding-top:1rem;border-top:1px solid var(--color-border);">
+                    <button class="btn-primary" onclick="setBookingStatus('${b._id}', 'half paid', this)">Mark Half Paid</button>
+                    <button class="btn-primary" onclick="setBookingStatus('${b._id}', 'fully paid', this)">Mark Fully Paid</button>
+                </div>` : ''}
+            `;
+            openModal('viewBookingModal');
+        }
+        window.viewBooking = viewBooking;
+
+        async function setBookingStatus(id, status, btn) {
+            // Re-render the open modal so its badge reflects the new status.
+            if (await updateBookingStatus(id, status, btn, 'Saving…')) viewBooking(id);
+        }
+        window.setBookingStatus = setBookingStatus;
+
+        document.querySelectorAll('.view-booking-btn').forEach(btn => {
+            btn.addEventListener('click', () => viewBooking(btn.dataset.id));
+        });
+
+</script>
+    <script src="/js/global.js"></script>
+    <script src="/js/admin-theme.js"></script>
+</body>
+</html>

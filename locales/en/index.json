@@ -1,0 +1,80 @@
+{
+  "metaDescription": "Adrenaline: the youth trips & experiences brand for university and high school students in Egypt. Tal3a Packages, Rehla Packages, Pump ur Adrenaline and fully custom trips. Feel the rush, live the moment.",
+  "title": "Adrenaline: Feel the Rush, Live the Moment",
+  "hero": {
+    "gpsLive": "Live: trips running across Egypt",
+    "gpsCoord": "16–25 · University & high school students",
+    "badge": "Egypt’s youth trips & experiences brand",
+    "titleHtml": "Feel the <span class=\"hero__title-accent\">rush</span>,<br>live the moment.",
+    "lead": "Trips shouldn't be boring. Tal3a Packages, Rehla Packages and Pump ur Adrenaline: built by students, for students, to make your heart race.",
+    "browse": "Browse Trips",
+    "createAccount": "Create Account",
+    "kitTrips": "Tal3a, Rehla & custom trips",
+    "kitGuides": "Tour guides included",
+    "kitPhotoBook": "Electronic photo book",
+    "kitTribe": "A tribe, not just a booking",
+    "tickerAria": "Rehla destinations we run"
+  },
+  "catalogues": {
+    "title": "Three Ways to Go",
+    "subtitle": "One pick from each catalogue — the rest is waiting behind it.",
+    "viewAll": "Click to view the whole catalogue",
+    "comingSoon": "New drops coming soon"
+  },
+  "metric": {
+    "eyebrow": "Calibrated intensity scale",
+    "heading": "The Adrenaline Metric",
+    "bpm": "BPM peak",
+    "status": "Status",
+    "title": "Trip Intensity Tiers",
+    "subtitle": "Every trip is rated for effort and hazard, so you can match the terrain to your appetite.",
+    "tier1Status": "Level 1 · Scout",
+    "tier1Name": "Level 1: Scenic",
+    "tier1Badge": "Beginner",
+    "tier1Desc": "Fundays, gatherings, camping and Ramadan iftars: easy energy, big memories.",
+    "tier2Status": "Level 2 · Rush",
+    "tier2Name": "Level 2: High Adrenaline",
+    "tier2Badge": "Some fitness",
+    "tier2Desc": "Kayaking, hiking, horse riding and treasure hunts with the crew.",
+    "tier3Status": "Level 3 · Berserk",
+    "tier3Name": "Level 3: Berserk",
+    "tier3Badge": "Experienced",
+    "tier3Desc": "Skydiving, diving, kitesurfing and paintball: full send."
+  },
+  "why": {
+    "title": "Why Go With Adrenaline",
+    "subtitle": "What comes with every trip, without asking.",
+    "guideTitle": "Tour guide included",
+    "guideDesc": "Someone who knows the route and the place, not just a schedule.",
+    "photoTitle": "Electronic photo book",
+    "photoDesc": "You come back with the shots, not just the memory. Sent over after the trip.",
+    "transportTitle": "Transportation & hotel booking",
+    "transportDesc": "Sorted for you, so the only thing you plan is who you're bringing.",
+    "communityTitle": "Real community",
+    "communityDesc": "A tribe of students who share the experience, not a crowd of strangers."
+  },
+  "cityGuides": {
+    "title": "City Guides",
+    "subtitle": "Where to go, eat and hang out — curated by the crew.",
+    "lock": "Login to view the city guide",
+    "coverAlt": "{city} city guide cover",
+    "pages": {
+      "one": "{n} page",
+      "other": "{n} pages"
+    },
+    "open": "Open guide"
+  },
+  "reports": {
+    "title": "Field Reports",
+    "subtitle": "Written by people who actually went.",
+    "starsAria": "{n} out of 5",
+    "verified": "Verified traveller",
+    "empty": "No reports in yet. Be the first to write one after your trip."
+  },
+  "dispatch": {
+    "titleHtml": "Ready to feel the rush?<br>Talk to the team.",
+    "lead": "Want a private trip for your group, or not sure which package fits you? Send us the details and we will come back with a plan.",
+    "request": "Request Your Own Trip",
+    "seeTrips": "See the Trips"
+  }
+}

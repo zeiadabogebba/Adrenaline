@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<%= t('index.metaDescription') %>">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('index.title') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/public.css?v=20260916guides">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <div id="scroll-progress" class="scroll-progress"></div>
+
+    <nav class="navbar" id="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" class="wordmark wordmark--nav" aria-label="<%= t('nav.homeAria') %>">
+                    <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                        <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                        <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                    </svg>
+                    <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link" aria-current="page"><%= t('nav.home') %></a></li>
+                <li><a href="/packages/day" class="nav-link"><%= t('nav.tal3a') %></a></li>
+                <li><a href="/packages/week" class="nav-link"><%= t('nav.rehla') %></a></li>
+                <li><a href="/packages/single" class="nav-link"><%= t('nav.pump') %></a></li>
+                <li><a href="/custom-trip" class="nav-link"><%= t('nav.requestYourOwn') %></a></li>
+                <li id="nav-dashboard-link"><a href="/dashboard" class="nav-link"><%= t('nav.dashboard') %></a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="<%= langSwitchHref %>" class="lang-toggle" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><%= t('nav.langShort') %></a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="<%= t('nav.toggleTheme') %>">
+                    <i class="fas fa-sun sun-icon" aria-hidden="true"></i>
+                    <i class="fas fa-moon moon-icon" aria-hidden="true"></i>
+                </button>
+                <div class="nav-buttons">
+                    <% if (user) { %>
+                    <a href="/dashboard" class="btn btn--outline btn--small"><i class="fas fa-user" aria-hidden="true"></i> <%= user.name.split(' ')[0] %></a>
+                    <a href="#" id="logout-btn" class="btn btn--ghost btn--small"><%= t('nav.logOut') %></a>
+                    <% } else { %>
+                    <a href="/login" class="btn btn--outline btn--small"><%= t('nav.logIn') %></a>
+                    <a href="/register" class="btn btn--primary btn--small"><%= t('nav.signUp') %></a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="hero__bg">
+                <video class="hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+                    <source src="/images/LandingPageVideo1.mp4" type="video/mp4">
+                </video>
+                <div class="hero__scrim"></div>
+            </div>
+
+            <div class="hero__gps" aria-hidden="true">
+                <span class="hero__gps-live"><span class="ping"></span> <%= t('index.hero.gpsLive') %></span>
+                <span class="hero__gps-coord"><%= t('index.hero.gpsCoord') %></span>
+            </div>
+
+            <div class="hero-content container">
+                <p class="hero__badge">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <%= t('index.hero.badge') %>
+                </p>
+
+                <h1 class="hero__title">
+                    <%- t('index.hero.titleHtml') %>
+                </h1>
+
+                <p class="hero__lead">
+                    <%= t('index.hero.lead') %>
+                </p>
+
+                <div class="hero__cta">
+                    <a href="#deployments" class="btn btn--primary btn--large pulse"><%= t('index.hero.browse') %></a>
+                    <a href="/register" id="hero-start-journey" class="btn btn--glass btn--large"><%= t('index.hero.createAccount') %></a>
+                </div>
+
+                <ul class="hero__kit">
+                    <li><i class="fas fa-route" aria-hidden="true"></i> <%= t('index.hero.kitTrips') %></li>
+                    <li><i class="fas fa-user-tie" aria-hidden="true"></i> <%= t('index.hero.kitGuides') %></li>
+                    <li><i class="fas fa-images" aria-hidden="true"></i> <%= t('index.hero.kitPhotoBook') %></li>
+                    <li><i class="fas fa-people-group" aria-hidden="true"></i> <%= t('index.hero.kitTribe') %></li>
+                </ul>
+            </div>
+
+            <%
+                const heroCities = [...new Set((rehlaCities || []).filter(Boolean))].sort();
+                const tickerDuration = Math.max(24, heroCities.length * 3.5);
+            %>
+            <% if (heroCities.length) { %>
+            <div class="ticker" aria-label="<%= t('index.hero.tickerAria') %>">
+                <div class="ticker__track" style="animation-duration:<%= tickerDuration %>s">
+                    <% for (let pass = 0; pass < 2; pass++) { %>
+                        <% heroCities.forEach(city => { %>
+                        <span class="ticker__item" <%- pass === 1 ? 'aria-hidden="true"' : '' %>><%= city %></span>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
+        </section>
+
+        <section id="deployments" class="section">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title"><%= t('index.catalogues.title') %></h2>
+                        <p class="section-subtitle"><%= t('index.catalogues.subtitle') %></p>
+                    </div>
+                </div>
+
+                <%
+                    const catalogues = [
+                        { key: 'day',    label: t('nav.tal3a'),  icon: 'fa-sun',            href: '/packages/day',    pkg: (dayPackages || [])[0] },
+                        { key: 'week',   label: t('nav.rehla'),  icon: 'fa-calendar-week',  href: '/packages/week',   pkg: featuredWeekPackage },
+                        { key: 'single', label: t('nav.pump'),   icon: 'fa-location-dot',   href: '/packages/single', pkg: featuredSinglePackage },
+                    ];
+                %>
+                <div class="catalogue-grid" id="catalogueGrid">
+                    <% catalogues.forEach(cat => { %>
+                    <a href="<%= cat.href %>" class="catalogue-card reveal-up">
+                        <% if (cat.pkg) { %>
+                        <div class="catalogue-card__media" style="background-image:url('<%= cat.pkg.image || '/images/layoutImage.jpg' %>')">
+                            <span class="tag"><i class="fas <%= cat.icon %>" aria-hidden="true"></i> <%= cat.label %></span>
+                            <div class="catalogue-card__overlay">
+                                <span><i class="fas fa-arrow-right" aria-hidden="true"></i> <%= t('index.catalogues.viewAll') %></span>
+                            </div>
+                        </div>
+                        <div class="catalogue-card__body">
+                            <h3 class="catalogue-card__title"><%= cat.pkg.name %></h3>
+                            <% if (cat.pkg.city) { %><p class="catalogue-card__meta"><i class="fas fa-location-dot" aria-hidden="true"></i> <%= cat.pkg.city %></p><% } %>
+                        </div>
+                        <% } else { %>
+                        <div class="catalogue-card__media catalogue-card__media--empty">
+                            <span class="tag"><i class="fas <%= cat.icon %>" aria-hidden="true"></i> <%= cat.label %></span>
+                            <div class="catalogue-card__overlay">
+                                <span><i class="fas fa-arrow-right" aria-hidden="true"></i> <%= t('index.catalogues.viewAll') %></span>
+                            </div>
+                        </div>
+                        <div class="catalogue-card__body">
+                            <h3 class="catalogue-card__title"><%= cat.label %></h3>
+                            <p class="catalogue-card__meta"><%= t('index.catalogues.comingSoon') %></p>
+                        </div>
+                        <% } %>
+                    </a>
+                    <% }) %>
+                </div>
+            </div>
+        </section>
+
+        <section class="section metric-section">
+            <div class="container metric">
+                <div class="metric__dial-panel">
+                    <p class="label label--sm metric__eyebrow"><%= t('index.metric.eyebrow') %></p>
+                    <h3 class="metric__heading"><%= t('index.metric.heading') %></h3>
+
+                    <div class="dial">
+                        <svg class="dial__svg" viewBox="0 0 100 100" aria-hidden="true">
+                            <circle class="dial__track" cx="50" cy="50" r="42" fill="none" stroke-width="7"/>
+                            <circle class="dial__ring" id="dialRing" cx="50" cy="50" r="42" fill="none"
+                                    stroke-width="7" stroke-linecap="round"
+                                    stroke-dasharray="264" stroke-dashoffset="0"/>
+                        </svg>
+                        <div class="dial__readout">
+                            <span class="dial__value" id="dialValue">174</span>
+                            <span class="dial__unit"><%= t('index.metric.bpm') %></span>
+                        </div>
+                    </div>
+
+                    <p class="dial__status">
+                        <%= t('index.metric.status') %> <strong id="dialStatus"><%= t('index.metric.tier3Status') %></strong>
+                    </p>
+                </div>
+
+                <div class="metric__tiers">
+                    <h2 class="section-title"><%= t('index.metric.title') %></h2>
+                    <p class="section-subtitle">
+                        <%= t('index.metric.subtitle') %>
+                    </p>
+
+                    <ul class="tier-list">
+                        <li>
+                            <button type="button" class="tier" data-level="1" data-bpm="110" data-status="<%= t('index.metric.tier1Status') %>">
+                                <span class="tier__head">
+                                    <span class="gauge" data-level="1" aria-hidden="true">
+                                        <span class="gauge__bar"></span><span class="gauge__bar"></span><span class="gauge__bar"></span>
+                                    </span>
+                                    <span class="tier__name"><%= t('index.metric.tier1Name') %></span>
+                                    <span class="badge"><%= t('index.metric.tier1Badge') %></span>
+                                </span>
+                                <span class="tier__desc"><%= t('index.metric.tier1Desc') %></span>
+                                <span class="tier__meter"><span style="width:33%"></span></span>
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="tier" data-level="2" data-bpm="142" data-status="<%= t('index.metric.tier2Status') %>">
+                                <span class="tier__head">
+                                    <span class="gauge" data-level="2" aria-hidden="true">
+                                        <span class="gauge__bar"></span><span class="gauge__bar"></span><span class="gauge__bar"></span>
+                                    </span>
+                                    <span class="tier__name"><%= t('index.metric.tier2Name') %></span>
+                                    <span class="badge"><%= t('index.metric.tier2Badge') %></span>
+                                </span>
+                                <span class="tier__desc"><%= t('index.metric.tier2Desc') %></span>
+                                <span class="tier__meter"><span style="width:66%"></span></span>
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="tier is-active" data-level="3" data-bpm="174" data-status="<%= t('index.metric.tier3Status') %>">
+                                <span class="tier__head">
+                                    <span class="gauge" data-level="3" aria-hidden="true">
+                                        <span class="gauge__bar"></span><span class="gauge__bar"></span><span class="gauge__bar"></span>
+                                    </span>
+                                    <span class="tier__name"><%= t('index.metric.tier3Name') %></span>
+                                    <span class="badge"><%= t('index.metric.tier3Badge') %></span>
+                                </span>
+                                <span class="tier__desc"><%= t('index.metric.tier3Desc') %></span>
+                                <span class="tier__meter"><span style="width:100%"></span></span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section bg-alt">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title"><%= t('index.why.title') %></h2>
+                        <p class="section-subtitle"><%= t('index.why.subtitle') %></p>
+                    </div>
+                </div>
+
+                <ul class="kit-grid">
+                    <li class="kit">
+                        <i class="fas fa-user-tie" aria-hidden="true"></i>
+                        <h3><%= t('index.why.guideTitle') %></h3>
+                        <p><%= t('index.why.guideDesc') %></p>
+                    </li>
+                    <li class="kit">
+                        <i class="fas fa-images" aria-hidden="true"></i>
+                        <h3><%= t('index.why.photoTitle') %></h3>
+                        <p><%= t('index.why.photoDesc') %></p>
+                    </li>
+                    <li class="kit">
+                        <i class="fas fa-bus" aria-hidden="true"></i>
+                        <h3><%= t('index.why.transportTitle') %></h3>
+                        <p><%= t('index.why.transportDesc') %></p>
+                    </li>
+                    <li class="kit">
+                        <i class="fas fa-people-group" aria-hidden="true"></i>
+                        <h3><%= t('index.why.communityTitle') %></h3>
+                        <p><%= t('index.why.communityDesc') %></p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="city-guides" class="section">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title"><%= t('index.cityGuides.title') %></h2>
+                        <p class="section-subtitle"><%= t('index.cityGuides.subtitle') %></p>
+                    </div>
+                </div>
+
+                <% if (!user) { %>
+                <div class="cityguide-lock reveal-up">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <p class="cityguide-lock__text"><%= t('index.cityGuides.lock') %></p>
+                    <a href="/login" class="btn btn--primary btn--small"><%= t('nav.logIn') %></a>
+                </div>
+                <% } else if (cityGuides && cityGuides.length) { %>
+                <ul class="guide-shelf reveal-up">
+                    <% cityGuides.forEach((cg) => { const cover = cg.pages[0]; %>
+                    <li>
+                        <a class="guide-card" href="/city-guides/<%= cg.slug %>">
+                            <span class="guide-card__cover">
+                                <img src="<%= cover.thumb || cover.src %>" alt="<%= t('index.cityGuides.coverAlt', { city: cg.name }) %>" width="600" height="849" loading="lazy">
+                                <span class="guide-card__pages"><i class="fas fa-book-open" aria-hidden="true"></i> <%= tp('index.cityGuides.pages', cg.pages.length) %></span>
+                            </span>
+                            <span class="guide-card__body">
+                                <span class="guide-card__name"><%= cg.name %></span>
+                                <span class="guide-card__cta"><%= t('index.cityGuides.open') %> <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                            </span>
+                        </a>
+                    </li>
+                    <% }) %>
+                </ul>
+                <% } %>
+            </div>
+        </section>
+
+        <section class="section bg-alt">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title"><%= t('index.reports.title') %></h2>
+                        <p class="section-subtitle"><%= t('index.reports.subtitle') %></p>
+                    </div>
+                </div>
+
+                <div id="testimonialsContainer" class="reports reports--row">
+                    <% if (recentReviews && recentReviews.length) { %>
+                        <% recentReviews.forEach(review => { %>
+                        <figure class="report reveal-up">
+                            <div class="report__stars" aria-label="<%= t('index.reports.starsAria', { n: review.rating }) %>">
+                                <% for (let i = 0; i < 5; i++) { %>
+                                <i class="fa<%= i < review.rating ? 's' : 'r' %> fa-star" aria-hidden="true"></i>
+                                <% } %>
+                            </div>
+                            <blockquote class="report__body">
+                                <h3 class="report__title"><%= review.title %></h3>
+                                <p><%= review.text.length > 160 ? review.text.substring(0, 160) + '…' : review.text %></p>
+                            </blockquote>
+                            <% if (review.photos && review.photos.length) { %>
+                            <div class="review-photos">
+                                <% review.photos.slice(0, 4).forEach(photo => { %>
+                                <a href="<%= photo %>" target="_blank" rel="noopener">
+                                    <img src="<%= photo %>" alt="" class="review-photo-thumb" loading="lazy">
+                                </a>
+                                <% }) %>
+                            </div>
+                            <% } %>
+                            <figcaption class="report__by">
+                                <% if (review.userId && review.userId.image) { %>
+                                <img src="<%= review.userId.image %>" alt="" loading="lazy">
+                                <% } else { %>
+                                <span class="report__initial" aria-hidden="true"><i class="fas fa-user"></i></span>
+                                <% } %>
+                                <span><%= review.userId ? review.userId.name : t('index.reports.verified') %></span>
+                            </figcaption>
+                        </figure>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="empty-note"><%= t('index.reports.empty') %></p>
+                    <% } %>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="dispatch">
+            <div class="container dispatch__inner">
+                <div>
+                    <h2 class="dispatch__title"><%- t('index.dispatch.titleHtml') %></h2>
+                    <p class="dispatch__lead">
+                        <%= t('index.dispatch.lead') %>
+                    </p>
+                </div>
+                <div class="dispatch__cta">
+                    <a href="/custom-trip" class="btn btn--primary btn--large"><%= t('index.dispatch.request') %></a>
+                    <a href="/packages/week" class="btn btn--outline btn--large"><%= t('index.dispatch.seeTrips') %></a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="wordmark footer-logo" style="font-size:1.5rem" aria-label="<%= t('nav.homeAria') %>">
+                    <svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false">
+                        <path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/>
+                        <path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/>
+                    </svg>
+                    <span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span>
+                </a>
+                <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+            </div>
+            <nav class="footer-nav" aria-label="<%= t('footer.navAria') %>">
+                <div class="footer-group">
+                    <h4><%= t('footer.explore') %></h4>
+                    <ul>
+                        <li><a href="/packages/day"><%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><%= t('nav.pump') %></a></li>
+                        <li><a href="/custom-trip"><%= t('nav.requestYourOwn') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.operations') %></h4>
+                    <ul>
+                        <li><a href="/about"><%= t('nav.about') %></a></li>
+                        <li><a href="/faq"><%= t('nav.faq') %></a></li>
+                    </ul>
+                </div>
+                <div class="footer-group">
+                    <h4><%= t('footer.dispatch') %></h4>
+                    <ul>
+                        <li><a href="/contact"><%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="footer-bottom container">
+            <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+        <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+        </div>
+    </footer>
+
+    <script>
+        const SERVER_DATA = {
+            user: <%- JSON.stringify(user) %>,
+            singlePackages: <%- JSON.stringify(singlePackages) %>,
+            dayPackages: <%- JSON.stringify(dayPackages) %>,
+            weekPackages: <%- JSON.stringify(weekPackages) %>,
+            reviews: <%- JSON.stringify(recentReviews) %>
+        };
+        window.SERVER_USER = SERVER_DATA.user;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+</html>

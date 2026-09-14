@@ -1,0 +1,15 @@
+{
+  "heroHtml": "<span class=\"text-gold\">حجوزاتي</span>",
+  "desc": "كل الرحلات اللي حجزتها، اللي فاتت واللي جاية.",
+  "filters": "فلاتر",
+  "status": "الحالة",
+  "allStatuses": "كل الحالات",
+  "tripType": "نوع الرحلة",
+  "allTypes": "كل الأنواع",
+  "noTripsYet": "لسه مفيش رحلات",
+  "noTripsYetDesc": "رحلاتك هتظهر هنا أول ما تعمل أول حجز.",
+  "browsePackages": "شوف الباكدجات",
+  "viewDetails": "شوف التفاصيل",
+  "cancel": "إلغاء",
+  "modalTitle": "تفاصيل الرحلة"
+}

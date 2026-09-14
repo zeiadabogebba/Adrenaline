@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Trip Management | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminPackages.css?v=20260915a">
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li class="active"><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="top-bar-left">
+                <h1>Trip Inventory</h1>
+                <p>Scheduled departures customers can book, each with a fixed date, price and seat count</p>
+            </div>
+            <div class="top-bar-right">
+                <button class="btn-primary" id="createTripBtn"><i class="fas fa-plus"></i> Create New Trip</button>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-rocket"></i></div>
+                <div class="stat-info"><h3>Total Trips</h3><div class="stat-value" id="totalTrips">0</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--color-success)"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-info"><h3>Upcoming</h3><div class="stat-value" id="upcomingTrips">0</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--crimson)"><i class="fas fa-users"></i></div>
+                <div class="stat-info"><h3>Seats Open</h3><div class="stat-value" id="seatsOpen">0</div></div>
+            </div>
+        </section>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by title or location...">
+                </div>
+                <select id="kindFilter" class="select-modern">
+                    <option value="all">All Trips</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="past">Past</option>
+                </select>
+                <select id="statusFilter" class="select-modern">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <section class="packages-grid" id="tripsContainer"></section>
+    </main>
+</div>
+
+<div class="modal-overlay" id="tripModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="modalTitle">Create Trip</h3>
+            <button class="modal-close" onclick="closeModal('tripModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="tripForm" class="form-grid" onsubmit="return false;">
+                <input type="hidden" id="tripId">
+
+                <div class="form-group full-width">
+                    <label>Trip Image</label>
+                    <div id="imagePreviewArea" onclick="document.getElementById('tripImageFile').click()" style="width:100%;height:160px;border:2px dashed var(--color-border);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--color-surface-alt);cursor:pointer;margin-bottom:8px;">
+                        <img id="imagePreview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Selected trip image preview" style="display:none;width:100%;height:100%;object-fit:cover;">
+                        <div id="imageUploadPlaceholder" style="text-align:center;color:var(--color-text-muted);pointer-events:none;">
+                            <i class="fas fa-image" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+                            <span style="font-size:0.85rem;">Click to choose image</span>
+                        </div>
+                    </div>
+                    <input type="file" id="tripImageFile" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Trip Title *</label>
+                    <input type="text" id="tripTitle" required placeholder="e.g., Fayoum Desert Weekend">
+                </div>
+
+                <div class="form-group">
+                    <label>Kind *</label>
+                    <select id="tripKind">
+                        <option value="upcoming">Upcoming (bookable)</option>
+                        <option value="past">Past (gallery only)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Brand Category</label>
+                    <select id="tripCategory">
+                        <option value="other">Other</option>
+                        <option value="tal3a">Tal3a</option>
+                        <option value="rehla">Rehla</option>
+                        <option value="pump">Pump ur Adrenaline</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Departure Date</label>
+                    <input type="text" id="tripDate" placeholder="e.g., March 15, 2026">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="tripLocation" placeholder="e.g., Fayoum">
+                </div>
+
+                <div class="form-group">
+                    <label>Duration Text</label>
+                    <input type="text" id="tripDuration" placeholder="e.g., 2 days / 1 night">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="tripStatus">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea id="tripDescription" rows="3" placeholder="Describe the trip in 1–2 sentences..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <fieldset>
+                        <legend>Booking</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Price (EGP) *</label>
+                                <input type="number" id="tripPrice" placeholder="e.g. 2500" min="0">
+                                <small style="color:var(--color-text-muted);font-size:0.75rem;">Per person</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Capacity</label>
+                                <input type="number" id="tripCapacity" placeholder="Total seats" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Spots Left</label>
+                                <input type="number" id="tripSpotsLeft" placeholder="Remaining seats" min="0">
+                                <small style="color:var(--color-text-muted);font-size:0.75rem;">Leave blank to not track seats</small>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Promo codes</label>
+                    <p style="font-size:0.78rem;color:var(--color-text-muted);margin:0 0 8px;">Optional, add as many as you like. Travellers can enter any of these on the booking summary page for a percentage off.</p>
+                    <div id="promoBuilder" class="itin-builder"></div>
+                    <button type="button" class="add-row-btn" id="addPromoBtn"><i class="fas fa-plus"></i> Add promo code</button>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Included Services</label>
+                    <input type="text" id="tripIncluded" placeholder="Comma-separated: Transport, Meals, Guide">
+                </div>
+                <div class="form-group full-width">
+                    <label>Highlights</label>
+                    <input type="text" id="tripHighlights" placeholder="Pipe-separated: Sunset hike | Bonfire | Sandboarding">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Day-by-day itinerary</label>
+                    <p style="font-size:0.78rem;color:var(--color-text-muted);margin:0 0 8px;">Each day: a title and an optional description. Shown on the trip page.</p>
+                    <div id="itinBuilder" class="itin-builder"></div>
+                    <button type="button" class="add-row-btn" id="addItinBtn"><i class="fas fa-plus"></i> Add day</button>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Trip photos <span style="font-weight:400;text-transform:none;color:var(--color-text-muted);">(hotel, activity &amp; what travellers will be doing - shown on this trip's own page, before it's booked)</span></label>
+                    <div id="experienceGrid" class="trip-gallery-grid"></div>
+                    <button type="button" class="add-row-btn" id="addExperienceBtn"><i class="fas fa-camera-retro"></i> Add photos</button>
+                    <input type="file" id="experienceFile" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                    <span id="experienceStatus" style="font-size:0.8rem;color:var(--color-text-muted);"></span>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Gallery photos <span style="font-weight:400;text-transform:none;color:var(--color-text-muted);">(shown on the public Gallery page, tagged by Location, mainly for past trips)</span></label>
+                    <div id="galleryGrid" class="trip-gallery-grid"></div>
+                    <button type="button" class="add-row-btn" id="addGalleryBtn"><i class="fas fa-images"></i> Add photos</button>
+                    <input type="file" id="galleryFile" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                    <span id="galleryStatus" style="font-size:0.8rem;color:var(--color-text-muted);"></span>
+                </div>
+
+                <div class="form-group full-width">
+                    <fieldset class="ar-fieldset">
+                        <legend>Arabic version <span style="font-weight:400;text-transform:none;color:var(--color-text-muted);">(optional)</span></legend>
+                        <p style="font-size:0.78rem;color:var(--color-text-muted);margin:0 0 8px;">Shown when a visitor switches the site to Arabic. Any field left blank falls back to the English text above; English dates get Arabic month names automatically.</p>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>Trip Title (Arabic)</label>
+                                <input type="text" id="arTripTitle" dir="rtl" lang="ar">
+                            </div>
+                            <div class="form-group">
+                                <label>Departure Date (Arabic)</label>
+                                <input type="text" id="arTripDate" dir="rtl" lang="ar">
+                            </div>
+                            <div class="form-group">
+                                <label>Location (Arabic)</label>
+                                <input type="text" id="arTripLocation" dir="rtl" lang="ar">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Duration Text (Arabic)</label>
+                                <input type="text" id="arTripDuration" dir="rtl" lang="ar">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Description (Arabic)</label>
+                                <textarea id="arTripDescription" rows="3" dir="rtl" lang="ar"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Included Services (Arabic)</label>
+                                <input type="text" id="arTripIncluded" dir="rtl" lang="ar" placeholder="Comma-separated, same order as English">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Highlights (Arabic)</label>
+                                <input type="text" id="arTripHighlights" dir="rtl" lang="ar" placeholder="Pipe-separated, same order as English">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Day-by-day itinerary (Arabic)</label>
+                                <div id="arItinBuilder" class="itin-builder"></div>
+                                <button type="button" class="add-row-btn" id="addArItinBtn"><i class="fas fa-plus"></i> Add day</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div id="formError" class="form-error" style="display:none;grid-column:1/-1;color:var(--color-danger);padding:10px;background:rgba(220,38,38,0.08);border-radius:6px;">
+                    <span id="formErrorMsg"></span>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="closeModal('tripModal')">Cancel</button>
+            <button class="btn-primary" id="saveTripBtn">Save Trip</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-container" style="max-width:440px;">
+        <div class="modal-header">
+            <h3>Delete Trip</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Delete <strong id="deleteTripName"></strong> permanently? Existing bookings keep their saved trip name.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+            <button class="btn-primary" style="background:var(--color-danger)" id="confirmDeleteBtn">Delete Forever</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SERVER_DATA = {
+        user: <%- JSON.stringify(user) %>,
+        trips: <%- JSON.stringify(trips.map(t => ({
+            id: String(t._id),
+            _id: String(t._id),
+            title: t.title,
+            kind: t.kind,
+            category: t.category || 'other',
+            date: t.date || '',
+            location: t.location || '',
+            description: t.description || '',
+            image: t.image || '',
+            durationText: t.durationText || '',
+            price: t.price || 0,
+            capacity: t.capacity,
+            spotsLeft: t.spotsLeft,
+            includedServices: t.includedServices || '',
+            highlights: t.highlights || '',
+            promoCodes: (t.promoCodes || []).map(p => ({ code: p.code, discount: p.discount })),
+            itinerary: (t.itinerary || []).map(r => ({ day: r.day, title: r.title || '', desc: r.desc || '' })),
+            gallery: t.gallery || [],
+            experiencePhotos: t.experiencePhotos || [],
+            status: t.status || 'active',
+            ar: {
+                title: (t.ar && t.ar.title) || '',
+                date: (t.ar && t.ar.date) || '',
+                location: (t.ar && t.ar.location) || '',
+                description: (t.ar && t.ar.description) || '',
+                durationText: (t.ar && t.ar.durationText) || '',
+                includedServices: (t.ar && t.ar.includedServices) || '',
+                highlights: (t.ar && t.ar.highlights) || '',
+                itinerary: ((t.ar && t.ar.itinerary) || []).map(r => ({ day: r.day, title: r.title || '', desc: r.desc || '' })),
+            },
+        }))) %>
+    };
+    window.SERVER_DATA = SERVER_DATA;
+    window.SERVER_USER = SERVER_DATA.user;
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+<script src="/js/adminTrips.js"></script>
+</body>
+</html>

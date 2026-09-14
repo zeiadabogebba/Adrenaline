@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.customTrip') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="/css/global.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/customTrip.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/travellers.css?v=20260915i18n">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="<%= i18nScript %>"></script>
+</head>
+
+<body>
+
+    <div class="page-shell">
+
+        <aside class="page-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <span><%= t('nav.home') %></span></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <span><%= t('nav.tal3a') %></span></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <span><%= t('nav.rehla') %></span></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <span><%= t('nav.pump') %></span></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <span><%= t('nav.upcomingTrips') %></span></a></li>
+                        <li class="active"><a href="/custom-trip"><i class="fas fa-compass"></i> <span><%= t('nav.requestYourOwn') %></span></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <span><%= t('nav.gallery') %></span></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <span><%= t('nav.dashboard') %></span></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <span><%= t('nav.myBookings') %></span></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <span><%= t('nav.profile') %></span></a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <span><%= t('nav.faq') %></span></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <span><%= t('nav.contact') %></span></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <span><%= t('nav.reviews') %></span></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
+                </button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <span><%= t('nav.logout') %></span></a>
+            </div>
+        </aside>
+
+        <div class="page-content">
+
+            <div class="page-title reveal-up">
+                <h1 class="hero-title"><%- t('customTrip.heroTitleHtml') %></h1>
+                <p class="hero-description"><%= t('customTrip.heroDesc') %></p>
+                <div class="account-chip" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+                    <div class="account-chip__avatar">
+                        <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                    </div>
+                    <div>
+                        <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                        <strong class="account-chip__name"><%= user.name %></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container reveal-up">
+                <ol class="stepper" id="stepper">
+                    <li class="stepper-step active" data-step="0"><span class="stepper-step__dot"></span><%= t('customTrip.stepDestination') %></li>
+                    <li class="stepper-step" data-step="1"><span class="stepper-step__dot"></span><%= t('customTrip.stepDates') %></li>
+                    <li class="stepper-step" data-step="2"><span class="stepper-step__dot"></span><%= t('customTrip.stepTravellers') %></li>
+                    <li class="stepper-step" data-step="3"><span class="stepper-step__dot"></span><%= t('customTrip.stepRooms') %></li>
+                    <li class="stepper-step" data-step="4"><span class="stepper-step__dot"></span><%= t('customTrip.stepReview') %></li>
+                </ol>
+            </div>
+
+            <div class="builder-layout reveal-up">
+
+                <div class="wizard-panel">
+
+                    <section class="wizard-step active" id="step-0" aria-labelledby="step-0-h">
+                        <h2 id="step-0-h"><%= t('customTrip.destTitle') %></h2>
+                        <p class="wizard-step__hint"><%= t('customTrip.destHint') %></p>
+
+                        <% if (destinations && destinations.length) { %>
+                        <div class="dest-search">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                            <input type="text" id="dest-search-input" placeholder="<%= t('customTrip.searchPlaceholder') %>" autocomplete="off">
+                        </div>
+                        <div class="dest-grid" id="dest-grid" role="radiogroup" aria-label="<%= t('customTrip.stepDestination') %>">
+                            <% destinations.forEach(d => { %>
+                            <button type="button" class="dest-card" role="radio" aria-checked="false"
+                                    data-id="<%= d._id %>" data-name="<%= d.name %>" data-image="<%= d.image || '/images/layoutImage.jpg' %>">
+                                <span class="dest-card__media" style="background-image:url('<%= d.image || '/images/layoutImage.jpg' %>')"></span>
+                                <span class="dest-card__body">
+                                    <span class="dest-card__name"><%= d.name %></span>
+                                    <span class="dest-card__city"><i class="fas fa-location-dot" aria-hidden="true"></i> <%= d.city || t('common.egypt') %></span>
+                                </span>
+                                <span class="dest-card__check" aria-hidden="true"><i class="fas fa-check"></i></span>
+                            </button>
+                            <% }) %>
+                        </div>
+                        <p class="dest-empty" id="dest-no-results" hidden><%= t('customTrip.noResults') %></p>
+                        <% } else { %>
+                        <p class="dest-empty"><%= t('customTrip.noDestinations') %></p>
+                        <% } %>
+
+                        <div class="error-msg" id="dest-error"></div>
+
+                        <div class="step-nav">
+                            <span></span>
+                            <button type="button" class="btn btn--primary" data-action="next"><%= t('customTrip.continue') %> <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="wizard-step" id="step-1" aria-labelledby="step-1-h">
+                        <h2 id="step-1-h"><%= t('customTrip.datesTitle') %></h2>
+                        <p class="wizard-step__hint"><%= t('customTrip.datesHint') %></p>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="trip-start"><%= t('customTrip.startDate') %></label>
+                                <input type="date" id="trip-start">
+                            </div>
+                            <div class="field">
+                                <label for="trip-end"><%= t('customTrip.endDate') %></label>
+                                <input type="date" id="trip-end">
+                            </div>
+                        </div>
+                        <p class="duration-chip" id="duration-display"><i class="fas fa-moon" aria-hidden="true"></i> <%= t('customTrip.selectBoth') %></p>
+
+                        <div class="error-msg" id="date-error"></div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn" data-action="prev"><i class="fas fa-arrow-left"></i> <%= t('customTrip.back') %></button>
+                            <button type="button" class="btn btn--primary" data-action="next"><%= t('customTrip.continue') %> <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="wizard-step" id="step-2" aria-labelledby="step-2-h">
+                        <h2 id="step-2-h"><%= t('customTrip.stepTravellers') %></h2>
+                        <p class="wizard-step__hint"><%= t('customTrip.travellersHint') %></p>
+
+                        <div class="field field--narrow">
+                            <label for="traveler-count"><%= t('customTrip.travellerCount') %></label>
+                            <div class="stepper-input" id="traveler-stepper">
+                                <button type="button" class="stepper-input__btn" data-delta="-1" aria-label="<%= t('customTrip.fewerTravellers') %>"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="traveler-count" min="1" max="15" value="2" inputmode="numeric">
+                                <button type="button" class="stepper-input__btn" data-delta="1" aria-label="<%= t('customTrip.moreTravellers') %>"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="error-msg" id="traveler-error"></div>
+
+                        <div id="traveller-details-list"></div>
+
+                        <div class="error-msg" id="traveller-details-error"></div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn" data-action="prev"><i class="fas fa-arrow-left"></i> <%= t('customTrip.back') %></button>
+                            <button type="button" class="btn btn--primary" data-action="next"><%= t('customTrip.continue') %> <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="wizard-step" id="step-3" aria-labelledby="step-3-h">
+                        <h2 id="step-3-h"><%= t('customTrip.stepRooms') %></h2>
+                        <p class="wizard-step__hint"><%= t('customTrip.roomsHint') %></p>
+
+                        <div class="field field--narrow">
+                            <label for="room-count"><%= t('customTrip.roomCount') %></label>
+                            <div class="stepper-input" id="room-stepper">
+                                <button type="button" class="stepper-input__btn" data-delta="-1" aria-label="<%= t('customTrip.fewerRooms') %>"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="room-count" min="1" max="10" value="1" inputmode="numeric">
+                                <button type="button" class="stepper-input__btn" data-delta="1" aria-label="<%= t('customTrip.moreRooms') %>"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="room-list" id="room-list"></div>
+
+                        <div class="error-msg" id="room-error"></div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn" data-action="prev"><i class="fas fa-arrow-left"></i> <%= t('customTrip.back') %></button>
+                            <button type="button" class="btn btn--primary" data-action="next"><%= t('customTrip.continue') %> <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="wizard-step" id="step-4" aria-labelledby="step-4-h">
+                        <h2 id="step-4-h"><%= t('customTrip.reviewTitle') %></h2>
+                        <p class="wizard-step__hint"><%= t('customTrip.reviewHint') %></p>
+
+                        <dl class="review-list" id="review-body"></dl>
+
+                        <div class="field">
+                            <label for="notes"><%= t('customTrip.notes') %> <span class="field__opt"><%= t('customTrip.optional') %></span></label>
+                            <textarea id="notes" rows="3" maxlength="1000" placeholder="<%= t('customTrip.notesPlaceholder') %>"></textarea>
+                        </div>
+
+                        <label class="checkbox-row" for="terms-check">
+                            <input type="checkbox" id="terms-check">
+                            <span><%- t('customTrip.termsHtml') %></span>
+                        </label>
+
+                        <div class="error-msg" id="review-error"></div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn" data-action="prev"><i class="fas fa-arrow-left"></i> <%= t('customTrip.back') %></button>
+                            <button type="button" class="btn btn--primary" id="submit-btn" data-action="submit"><i class="fas fa-paper-plane"></i> <%= t('customTrip.sendRequest') %></button>
+                        </div>
+                    </section>
+
+                    <section class="wizard-step" id="step-done" aria-live="polite">
+                        <div class="request-done">
+                            <div class="request-done__mark"><i class="fas fa-check"></i></div>
+                            <h2><%= t('customTrip.doneTitle') %></h2>
+                            <p><%= t('customTrip.doneDesc') %></p>
+                            <div class="request-done__actions">
+                                <a href="/my-bookings" class="btn"><%= t('customTrip.goBookings') %></a>
+                                <a href="/trips/upcoming" class="btn btn--primary"><%= t('customTrip.browseUpcoming') %></a>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <aside class="summary-rail" id="summary-rail" aria-label="<%= t('customTrip.summaryAria') %>">
+                    <div class="summary-card">
+                        <h3><%= t('customTrip.summaryTitle') %></h3>
+                        <div class="summary-hero" id="summary-hero" hidden>
+                            <span class="summary-hero__media" id="summary-hero-media"></span>
+                            <span class="summary-hero__name" id="summary-hero-name"></span>
+                        </div>
+                        <dl class="summary-lines">
+                            <div class="summary-line">
+                                <dt><i class="fas fa-location-dot" aria-hidden="true"></i> <%= t('customTrip.stepDestination') %></dt>
+                                <dd id="sum-dest"><%= t('customTrip.notSet') %></dd>
+                            </div>
+                            <div class="summary-line">
+                                <dt><i class="fas fa-calendar" aria-hidden="true"></i> <%= t('customTrip.stepDates') %></dt>
+                                <dd id="sum-dates"><%= t('customTrip.notSet') %></dd>
+                            </div>
+                            <div class="summary-line">
+                                <dt><i class="fas fa-users" aria-hidden="true"></i> <%= t('customTrip.stepTravellers') %></dt>
+                                <dd id="sum-travelers"><%= t('customTrip.notSet') %></dd>
+                            </div>
+                            <div class="summary-line">
+                                <dt><i class="fas fa-bed" aria-hidden="true"></i> <%= t('customTrip.stepRooms') %></dt>
+                                <dd id="sum-rooms"><%= t('customTrip.notSet') %></dd>
+                            </div>
+                        </dl>
+                        <p class="summary-note"><i class="fas fa-circle-info" aria-hidden="true"></i> <%= t('customTrip.summaryNote') %></p>
+                    </div>
+                </aside>
+
+            </div>
+
+            <footer class="main-footer reveal-up">
+                <div class="container footer-grid">
+                    <div class="footer-brand">
+                        <a href="/" class="wordmark footer-logo" style="font-size:1.4rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+                        <p class="brand-tagline"><%- t('footer.taglineHtml') %></p>
+                    </div>
+                    <nav class="footer-nav" aria-label="<%= t('footer.navAria') %>">
+                        <div class="footer-group">
+                            <h4><%= t('footer.explore') %></h4>
+                            <ul>
+                                <li><a href="/packages/day"><%= t('nav.tal3a') %></a></li>
+                                <li><a href="/packages/week"><%= t('nav.rehla') %></a></li>
+                                <li><a href="/packages/single"><%= t('nav.pump') %></a></li>
+                                <li><a href="/custom-trip"><%= t('nav.requestYourOwn') %></a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-group">
+                            <h4><%= t('footer.operations') %></h4>
+                            <ul>
+                                <li><a href="/about"><%= t('nav.about') %></a></li>
+                                <li><a href="/faq"><%= t('nav.faq') %></a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-group">
+                            <h4><%= t('footer.dispatch') %></h4>
+                            <ul>
+                                <li><a href="/contact"><%= t('nav.contact') %></a></li>
+                                <li><a href="/reviews/write"><%= t('nav.writeReview') %></a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+                <div class="footer-bottom container">
+                    <p>&copy; <%= new Date().getFullYear() %> <%= t('footer.rights') %></p>
+                    <div class="footer-social"><a href="https://www.instagram.com/98adrenaline98" target="_blank" rel="noopener" aria-label="<%= t('footer.instagramAria') %>"><i class="fab fa-instagram"></i></a><a href="https://www.tiktok.com/@adrenaline985?_r=1" target="_blank" rel="noopener" aria-label="<%= t('footer.tiktokAria') %>"><i class="fab fa-tiktok"></i></a><a href="https://chat.whatsapp.com/Er5z0p7Hrsf6l1394EycnO?mode=gi_t" target="_blank" rel="noopener" aria-label="<%= t('footer.whatsappAria') %>"><i class="fab fa-whatsapp"></i></a></div>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        window.SERVER_USER = <%- JSON.stringify(user) %>;
+    </script>
+    <script src="/js/global.js"></script>
+    <script src="/js/customTrip.js"></script>
+</body>
+
+</html>
