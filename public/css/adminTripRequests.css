@@ -1,0 +1,324 @@
+[hidden] {
+    display: none !important;
+}
+
+.tr-select {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.55rem 0.9rem;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.tr-table-wrap {
+    overflow-x: auto;
+}
+
+.tr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tr-table thead th {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.tr-table tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    vertical-align: top;
+}
+
+.tr-row:hover td {
+    background: color-mix(in srgb, var(--crimson) 5%, transparent);
+}
+
+.tr-strong {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.tr-muted {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.tr-nights {
+    opacity: 0.7;
+}
+
+.tr-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+.tr-badge--new {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tr-badge--contacted {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning, #f59e0b);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.tr-badge--closed {
+    background: rgba(39, 174, 96, 0.12);
+    color: var(--color-success);
+    border-color: rgba(39, 174, 96, 0.3);
+}
+
+.tr-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--color-text-muted);
+}
+
+.tr-empty i {
+    font-size: 2.5rem;
+    color: var(--crimson);
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.tr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.tr-modal__panel {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 14px);
+    padding: 2rem;
+    width: min(620px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.tr-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.tr-modal__title {
+    margin: 0 0 1.5rem;
+    color: var(--crimson);
+    font-size: 1.3rem;
+}
+
+.tr-modal__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.tr-modal__grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tr-modal__k {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.tr-modal__grid strong,
+.tr-modal__grid span {
+    color: var(--color-text);
+    font-size: 0.92rem;
+}
+
+.tr-modal__section {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.tr-modal__big {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.tr-modal__quote {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    background: var(--color-surface-alt, rgba(128, 128, 128, 0.08));
+    border-radius: 8px;
+    color: var(--color-text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.tr-rooms {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.tr-rooms li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.85rem;
+    background: var(--color-surface-alt, rgba(128, 128, 128, 0.08));
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.tr-rooms li strong {
+    text-transform: capitalize;
+    color: var(--crimson);
+}
+
+.tr-travellers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tr-traveller {
+    padding: 0.7rem 0.9rem;
+    background: var(--color-surface-alt, rgba(128, 128, 128, 0.08));
+    border: 1px solid var(--color-border-light, rgba(128,128,128,0.15));
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: var(--color-text);
+}
+
+.tr-traveller__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    text-transform: capitalize;
+}
+
+.tr-traveller__rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+}
+
+.tr-traveller__rows > * {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.tr-traveller__rows i {
+    color: var(--color-text-muted);
+    width: 14px;
+    text-align: center;
+}
+
+.tr-traveller__emergency {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--color-border);
+}
+
+.tr-traveller__medical {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
+.tr-traveller__medical i {
+    color: var(--crimson);
+    margin-right: 0.3rem;
+}
+
+.tr-call-link {
+    color: var(--crimson);
+    font-weight: 600;
+    text-decoration: none;
+}
+.tr-call-link:hover {
+    text-decoration: underline;
+}
+.tr-call-link i {
+    color: var(--crimson) !important;
+}
+
+.tr-textarea {
+    width: 100%;
+    background: var(--color-surface-alt, rgba(128, 128, 128, 0.08));
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.75rem;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.tr-modal__error {
+    color: var(--color-danger);
+    font-size: 0.88rem;
+    margin-bottom: 0.85rem;
+}
+
+.tr-modal__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+    .tr-modal__grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,23 @@
+{
+  "heroHtml": "<span class=\"text-gold\">كلّمنا</span>",
+  "heroDesc": "رحلتك مع أدرينالين بتبدأ بكلمة.",
+  "supportHtml": "بيانات <span class=\"text-gold\">التواصل</span>",
+  "supportDesc": "عندك سؤال، أو شلة عايز تظبطلها رحلة، أو فكرة رحلة؟ كلّمنا من أي حساب من حساباتنا.",
+  "findUs": "هتلاقينا هنا",
+  "responseTime": "وقت الرد",
+  "replyWithin": "بنرد خلال 24 ساعة",
+  "formHtml": "ابعت <span class=\"text-gold\">رسالة</span>",
+  "formDesc": "عندك فكرة معيّنة أو سؤال؟ هنرد عليك خلال 24 ساعة.",
+  "fullName": "الاسم بالكامل",
+  "namePlaceholder": "مثلاً: أحمد محمد",
+  "email": "الإيميل",
+  "emailPlaceholder": "you@email.com",
+  "subject": "موضوع الرسالة",
+  "subjectPlaceholder": "مثلاً: رحلة مخصوص لدهب",
+  "message": "رسالتك",
+  "messagePlaceholder": "احكيلنا عايز إيه...",
+  "submit": "ابعت الرسالة",
+  "inquiriesHtml": "<span class=\"text-gold\">رسايلك</span>",
+  "inquiriesDesc": "تابع حالة الرسايل اللي بعتهالنا.",
+  "loadingInquiries": "بنحمّل رسايلك..."
+}

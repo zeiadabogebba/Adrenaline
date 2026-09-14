@@ -1,0 +1,13 @@
+{
+  "subject": "{otp} is your Adrenaline verification code",
+  "title": "Verify your email",
+  "greeting": "Hey {name},",
+  "there": "there",
+  "intro": "Use the code below to confirm this email address and finish setting up your Adrenaline account.",
+  "expiry": "This code expires in {minutes} minutes. If you didn't try to create an Adrenaline account, you can safely ignore this email.",
+  "taglineHtml": "Feel the <span style=\"color:#DC2626;\">rush</span>, live the moment.",
+  "tagline": "Feel the rush, live the moment.",
+  "rights": "Adrenaline. All rights reserved.",
+  "textCode": "Your Adrenaline verification code is: {otp}",
+  "brand": "Adrenaline"
+}

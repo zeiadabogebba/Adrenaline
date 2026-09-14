@@ -1,0 +1,23 @@
+{
+  "tal3aHeroHtml": "Tal3a <span class=\"text-gold\">Packages</span>",
+  "tal3aDescHtml": "Out early, back the same night. One day, one hit: a taste of what we run. Watch <a href=\"/trips/upcoming\">Upcoming Trips</a> to book a dated departure.",
+  "rehlaHeroHtml": "Rehla <span class=\"text-gold\">Packages</span>",
+  "rehlaDescHtml": "Days on the move: camps, coastline and long desert road. A look at what we run; book a dated departure from <a href=\"/trips/upcoming\">Upcoming Trips</a>.",
+  "pumpHeroHtml": "Pump ur <span class=\"text-gold\">Adrenaline</span>",
+  "pumpDescHtml": "The places we take groups to. A look at what we run; book a dated departure from <a href=\"/trips/upcoming\">Upcoming Trips</a>.",
+  "upcomingHeroHtml": "Upcoming <span class=\"text-gold\">Trips</span>",
+  "upcomingDesc": "What's next on the calendar. Lock your spot before it fills.",
+  "soldOut": "Sold out",
+  "spotsLeft": { "one": "{n} spot left", "other": "{n} spots left" },
+  "dateTba": "Date TBA",
+  "perPerson": "per person",
+  "viewTrip": "View Trip",
+  "viewBook": "View & Book",
+  "noUpcoming": "No upcoming trips announced yet. Check back soon.",
+  "galleryHeroHtml": "The <span class=\"text-gold\">Gallery</span>",
+  "galleryDesc": "Every trip we've run, in photos. Tap a place to see just those shots.",
+  "filterAria": "Filter by location",
+  "all": "All",
+  "noPhotosLocation": "No photos from that location yet.",
+  "noPhotos": "No photos in the gallery yet."
+}
