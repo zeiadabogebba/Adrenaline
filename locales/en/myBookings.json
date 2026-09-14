@@ -1,0 +1,15 @@
+{
+  "heroHtml": "My <span class=\"text-gold\">Bookings</span>",
+  "desc": "Every trip you have booked, past and upcoming.",
+  "filters": "Filters",
+  "status": "Status",
+  "allStatuses": "All Statuses",
+  "tripType": "Trip Type",
+  "allTypes": "All Types",
+  "noTripsYet": "No trips yet",
+  "noTripsYetDesc": "Your travel history will appear here once you make your first booking.",
+  "browsePackages": "Browse Packages",
+  "viewDetails": "View Details",
+  "cancel": "Cancel",
+  "modalTitle": "Trip Manifesto"
+}

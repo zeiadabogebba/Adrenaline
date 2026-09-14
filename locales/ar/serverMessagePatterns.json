@@ -1,0 +1,8 @@
+{
+  "Route (.+) not found": "الصفحة $1 مش موجودة",
+  "Only (\\d+) spots? left on this trip\\.": "الأماكن الفاضلة في الرحلة دي: $1 بس.",
+  "Sorry — only (\\d+) spots? left\\. Please adjust your booking\\.": "معلش — الأماكن الفاضلة $1 بس. عدّل حجزك.",
+  "Invalid input: (.+)": "البيانات مش صحيحة: $1",
+  "Duplicate value for field: (.+)\\.": "القيمة دي مستخدمة قبل كده ($1).",
+  "Invalid ([\\w.]+): (.+)": "قيمة مش صحيحة ($1): $2"
+}

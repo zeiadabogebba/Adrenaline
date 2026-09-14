@@ -1,0 +1,12 @@
+{
+  "403Heading": "No entry",
+  "403Desc": "You do not have clearance for this page. Log in with an account that does, or head back to the trips.",
+  "404Heading": "Off the map",
+  "404Desc": "This route does not exist any more. The trip may have been pulled, or the link is wrong. Check the trips index and pick up the trail from there.",
+  "500Heading": "Something broke",
+  "500Desc": "That one is on us, not you. The error has been logged and we are on it. Give it a moment and try again.",
+  "browseTrips": "Browse Trips",
+  "goBack": "Go Back",
+  "tryAgain": "Try Again",
+  "backHome": "Back to Home"
+}

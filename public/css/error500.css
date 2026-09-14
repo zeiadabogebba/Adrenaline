@@ -1,0 +1,99 @@
+.error-page-body {
+    min-height: 100vh;
+    min-height: 100svh;
+    background-color: var(--floor);
+}
+
+.error-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: var(--s-2xl) var(--gutter);
+    overflow: hidden;
+}
+
+.error-ridge {
+    position: absolute;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--hairline-strong);
+    pointer-events: none;
+}
+
+.error-ridge svg {
+    width: 100%;
+    height: clamp(160px, 30vh, 260px);
+}
+
+.error-content {
+    position: relative;
+    z-index: 1;
+    max-width: 54ch;
+    text-align: center;
+}
+
+.error-logo {
+    display: inline-flex;
+    margin-bottom: var(--s-2xl);
+    font-size: 1.35rem;
+}
+
+.error-code {
+    margin-bottom: var(--s-xs);
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--crimson);
+    font-variant-numeric: tabular-nums;
+    max-width: none;
+}
+
+.error-heading {
+    margin-bottom: var(--s-md);
+    font-family: var(--font-display);
+    font-size: var(--type-hero);
+    font-weight: 900;
+    line-height: var(--lh-display);
+    letter-spacing: var(--tracking-display);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.error-description {
+    margin: 0 auto var(--s-xl);
+    font-size: var(--type-body-lg);
+    line-height: 1.55;
+    color: var(--ink-dim);
+    max-width: 46ch;
+}
+
+.error-detail {
+    margin: 0 auto var(--s-lg);
+    padding: var(--s-xs) var(--s-md);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r);
+    background-color: var(--surface);
+    font-size: var(--type-body-sm);
+    color: var(--ink-faint);
+    max-width: 46ch;
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--s-sm);
+}
+
+@media (max-width: 640px) {
+    .error-actions .btn {
+        flex: 1 1 auto;
+    }
+}

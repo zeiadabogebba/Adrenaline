@@ -1,0 +1,559 @@
+.dash-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-md);
+    padding: var(--s-lg) var(--s-2xl);
+    border-bottom: 1px solid var(--hairline);
+    background-color: var(--surface);
+}
+
+.topbar-left,
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--s-sm);
+}
+
+.greeting-stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.greeting-label {
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.greeting-name {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    color: var(--ink);
+}
+
+.topbar-avatar {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--r);
+    border: 1px solid var(--hairline-strong);
+    background: var(--surface);
+    color: var(--ink-faint);
+}
+
+.topbar-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.booking-header {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--s-lg) var(--gutter) 0;
+}
+
+.editorial-booking-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: var(--s-xl);
+    align-items: start;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--s-lg) var(--gutter) var(--s-4xl);
+}
+
+.editorial-booking-main {
+    min-width: 0;
+}
+
+.editorial-title {
+    margin-bottom: var(--s-2xs);
+    font-family: var(--font-display);
+    font-size: var(--type-h1);
+    font-weight: 900;
+    line-height: var(--lh-heading);
+    letter-spacing: var(--tracking-display);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.editorial-subtitle {
+    margin: 0;
+    font-size: var(--type-body-lg);
+    color: var(--ink-dim);
+}
+
+.editorial-card {
+    padding: var(--s-lg);
+    margin-bottom: var(--s-md);
+    background-color: var(--surface-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+}
+
+.editorial-card__heading,
+.card-title {
+    margin-bottom: var(--s-md);
+    padding-bottom: var(--s-xs);
+    border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.info-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: var(--s-md);
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.info-row .label,
+.label {
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.info-row .value,
+.value {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    color: var(--ink);
+    word-break: break-word;
+}
+
+/* Arabic glyphs are taller; give stacked label/value rows room so they don't touch. */
+html[lang="ar"] .info-row .value { line-height: 1.5; }
+html[lang="ar"] .editorial-card > .info-row + .info-row { margin-top: var(--s-sm, 0.5rem); }
+
+.itinerary-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-sm);
+    padding-inline-start: var(--s-lg);
+}
+
+.itinerary-list::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    inset-inline-start: 4px;
+    width: 1px;
+    background: linear-gradient(180deg, var(--crimson), var(--hairline-strong));
+}
+
+.itinerary-list li {
+    position: relative;
+    font-size: var(--type-body-sm);
+    line-height: 1.55;
+    color: var(--ink-dim);
+}
+
+.itinerary-list li::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    inset-inline-start: calc(-1 * var(--s-lg) + 1px);
+    width: 7px;
+    height: 7px;
+    border-radius: var(--r-full);
+    background-color: var(--crimson);
+}
+
+.itinerary-list li strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.editorial-booking-sidebar {
+    position: sticky;
+    top: var(--s-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-md);
+}
+
+.voucher-ticket {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--surface-high);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    box-shadow: var(--lift-3);
+}
+
+.ticket-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-sm);
+    padding: var(--s-md) var(--s-lg);
+    background-color: var(--crimson);
+    color: #FFFFFF;
+}
+
+.ticket-logo {
+    font-family: var(--font-display);
+    font-size: var(--type-h4);
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    color: #FFFFFF;
+}
+
+.ticket-status {
+    padding: 3px 9px;
+    border-radius: var(--r-full);
+    background-color: rgba(0, 0, 0, 0.28);
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: #FFFFFF;
+}
+
+.ticket-body {
+    position: relative;
+    padding: var(--s-lg);
+}
+
+.ticket-body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline-start: var(--s-md);
+    inset-inline-end: var(--s-md);
+    border-top: 1px dashed var(--hairline-strong);
+}
+
+.ticket-ref {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: var(--s-md);
+}
+
+.ref-label {
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.ref-code {
+    font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+    font-size: var(--type-h4);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--crimson);
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+}
+
+.ticket-barcode {
+    margin-top: var(--s-md);
+    padding-top: var(--s-md);
+    border-top: 1px dashed var(--hairline-strong);
+}
+
+.barcode-lines {
+    height: 46px;
+    background-image: repeating-linear-gradient(
+        90deg,
+        var(--ink) 0 2px,
+        transparent 2px 4px,
+        var(--ink) 4px 5px,
+        transparent 5px 9px,
+        var(--ink) 9px 12px,
+        transparent 12px 14px
+    );
+    opacity: 0.85;
+}
+
+.barcode-number {
+    margin-top: var(--s-2xs);
+    text-align: center;
+    font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+    font-size: var(--type-body-sm);
+    letter-spacing: 0.22em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+.receipt-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2xs);
+}
+
+.receipt-line,
+.payment-method {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-sm);
+    font-size: var(--type-body-sm);
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.receipt-divider {
+    height: 1px;
+    margin: var(--s-xs) 0;
+    background-color: var(--hairline);
+    border: 0;
+}
+
+.total-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-sm);
+    padding-top: var(--s-sm);
+    border-top: 1px solid var(--hairline-strong);
+    font-family: var(--font-display);
+    font-size: var(--type-h3);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.ticket-print-footer {
+    display: none;
+    margin-top: var(--s-sm);
+    padding-top: var(--s-sm);
+    border-top: 1px dashed var(--hairline-strong);
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.ticket-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-xs);
+}
+
+.ticket-actions .btn,
+.ticket-actions button {
+    width: 100%;
+}
+
+.concierge-box {
+    padding: var(--s-md);
+    background-color: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+}
+
+.concierge-box h4 {
+    margin-bottom: var(--s-2xs);
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.concierge-box p {
+    margin: 0 0 var(--s-xs);
+    font-size: var(--type-body-sm);
+    color: var(--ink-dim);
+}
+
+.concierge-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2xs);
+    font-family: var(--font-display);
+    font-size: var(--type-label);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--crimson);
+    text-decoration: none;
+}
+
+.concierge-link:hover {
+    color: var(--crimson-hot);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 1024px) {
+    .editorial-booking-container {
+        grid-template-columns: 1fr;
+    }
+
+    .editorial-booking-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media print {
+    @page {
+        margin: 14mm 12mm;
+    }
+
+    :root {
+        --floor: #EDECE8;
+        --surface: #F6F5F2;
+        --surface-raised: #FFFFFF;
+        --surface-high: #FFFFFF;
+        --hairline: #DAD7CF;
+        --hairline-strong: #BFBBB1;
+        --ink: #0A0A0B;
+        --ink-dim: #56534C;
+        --ink-faint: #8B867B;
+    }
+
+    .dash-topbar,
+    .dashboard-sidebar,
+    .ticket-actions,
+    .concierge-box,
+    .voucher-quicklinks,
+    .booking-header,
+    .policy-card {
+        display: none !important;
+    }
+
+    html, body,
+    .dashboard-shell,
+    .dashboard-main,
+    .dash-scroll-area {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+        background: #fff !important;
+    }
+
+    /* Phones print at their own narrow width: stack the voucher under the
+       details there, and only sit it beside them on page-wide layouts. */
+    .editorial-booking-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        max-width: none;
+        gap: var(--s-lg);
+        padding: 0;
+    }
+
+    .editorial-booking-sidebar {
+        position: static;
+    }
+
+    .editorial-card {
+        break-inside: avoid;
+    }
+
+    .voucher-ticket {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--hairline-strong);
+    }
+
+    .ticket-header,
+    .ticket-status,
+    .barcode-lines {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .ticket-print-footer {
+        display: block;
+    }
+}
+
+@media print and (min-width: 640px) {
+    .editorial-booking-container {
+        grid-template-columns: minmax(0, 1fr) 300px;
+    }
+}
+
+.bd-travellers li::before { display: none; }
+
+.bd-travellers {
+    padding-inline-start: 0;
+}
+
+.bd-travellers li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.5rem;
+    background: var(--color-surface-alt, rgba(128, 128, 128, 0.07));
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.bd-travellers li strong { color: var(--color-text); font-size: 0.92rem; }
+
+.bd-travellers li a {
+    color: var(--crimson);
+    text-decoration: none;
+    font-size: 0.82rem;
+    margin-top: 2px;
+}

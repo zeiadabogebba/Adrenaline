@@ -1,0 +1,20 @@
+{
+  "goodDay": "Good day",
+  "tripsBooked": "Trips Booked",
+  "nextDeparture": "Next Departure",
+  "ridingSince": "Riding Since",
+  "status": "Status",
+  "levelVeteran": "Veteran",
+  "levelRegular": "Regular",
+  "levelNew": "New",
+  "na": "N/A",
+  "nextJourney": "Next Journey",
+  "travelers": { "one": "{n} Traveler", "other": "{n} Travelers" },
+  "viewDetails": "View Details",
+  "seeAll": "See all",
+  "quickActions": "Quick Actions",
+  "buildTrip": "Build a Trip",
+  "featured": "Featured",
+  "exploreEgypt": "Explore Egypt",
+  "explore": "Explore"
+}

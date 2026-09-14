@@ -1,0 +1,23 @@
+{
+  "tal3aHeroHtml": "باكدجات <span class=\"text-gold\">طلعة</span>",
+  "tal3aDescHtml": "بتطلع بدري وترجع بالليل. يوم واحد وتجربة واحدة: عيّنة من اللي بنعمله. تابع <a href=\"/trips/upcoming\">الرحلات الجاية</a> عشان تحجز رحلة بميعادها.",
+  "rehlaHeroHtml": "باكدجات <span class=\"text-gold\">رحلة</span>",
+  "rehlaDescHtml": "أيام كلها حركة: كامبات، شطوط وطريق صحراوي طويل. نظرة على اللي بنعمله؛ احجز رحلة بميعادها من <a href=\"/trips/upcoming\">الرحلات الجاية</a>.",
+  "pumpHeroHtml": "علّي <span class=\"text-gold\">الأدرينالين</span>",
+  "pumpDescHtml": "الأماكن اللي بناخد فيها الجروبات. نظرة على اللي بنعمله؛ احجز رحلة بميعادها من <a href=\"/trips/upcoming\">الرحلات الجاية</a>.",
+  "upcomingHeroHtml": "الرحلات <span class=\"text-gold\">الجاية</span>",
+  "upcomingDesc": "اللي جاي في الكالندر. احجز مكانك قبل ما يكمل.",
+  "soldOut": "كامل العدد",
+  "spotsLeft": { "zero": "مفيش أماكن", "one": "فاضل مكان واحد", "two": "فاضل مكانين", "few": "فاضل {n} أماكن", "many": "فاضل {n} مكان", "other": "فاضل {n} مكان" },
+  "dateTba": "الميعاد هيتحدد قريب",
+  "perPerson": "للفرد",
+  "viewTrip": "شوف الرحلة",
+  "viewBook": "شوف واحجز",
+  "noUpcoming": "لسه مفيش رحلات جاية اتعلن عنها. ارجع تاني قريب.",
+  "galleryHeroHtml": "<span class=\"text-gold\">الجاليري</span>",
+  "galleryDesc": "كل رحلة عملناها، بالصور. دوس على مكان عشان تشوف صوره بس.",
+  "filterAria": "فلتر حسب المكان",
+  "all": "الكل",
+  "noPhotosLocation": "لسه مفيش صور من المكان ده.",
+  "noPhotos": "لسه مفيش صور في الجاليري."
+}
