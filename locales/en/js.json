@@ -308,6 +308,8 @@
     "replacePhoto": "Replace photo",
     "previewAlt": "ID photo preview",
     "removePhoto": "Remove photo",
+    "useLast": "Use my last trip's details",
+    "usedLast": "Filled in from your last trip. Check everything is still correct.",
     "emgName": "Emergency contact — name",
     "emgNamePlaceholder": "Parent / guardian / friend",
     "emgPhone": "Emergency contact — phone",

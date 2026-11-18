@@ -497,3 +497,38 @@
         flex-direction: column;
     }
 }
+
+/* "Use my last trip's details" on the lead traveller card */
+.td-reuse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2xs);
+    margin-inline-start: auto;
+    padding: var(--s-2xs) var(--s-sm);
+    border: 1px solid color-mix(in srgb, var(--crimson) 40%, transparent);
+    border-radius: var(--r-full);
+    background-color: color-mix(in srgb, var(--crimson) 8%, transparent);
+    color: var(--crimson);
+    font-family: var(--font-display);
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.td-reuse-btn:hover {
+    background-color: color-mix(in srgb, var(--crimson) 16%, transparent);
+    transform: none;
+}
+
+.td-reuse-note {
+    margin: calc(-1 * var(--s-xs)) 0 var(--s-md);
+    font-size: var(--type-body-sm);
+    color: var(--ink-dim);
+}
+
+@media (max-width: 560px) {
+    .traveller-card__head { flex-wrap: wrap; }
+    .td-reuse-btn { margin-inline-start: 0; width: 100%; justify-content: center; }
+}

@@ -79,13 +79,9 @@ async function uploadPhoto(i, file) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || tt('uploadFailed'));
 
-        $('idPhoto_' + i).value = data.data.url;
-        const preview = $('idPhotoPreview_' + i);
-        preview.querySelector('img').src = data.data.url;
-        preview.hidden = false;
+        showPhoto(i, data.data.url);
         status.textContent = '';
         status.className = 'td-upload__status';
-        if (btn) btn.querySelector('span').textContent = tt('replacePhoto');
         setErr('idPhoto_error_' + i, '');
     } catch (err) {
         status.textContent = err.message;
@@ -105,8 +101,35 @@ function clearPhoto(i) {
     if (btn) btn.querySelector('span').textContent = tt('choosePhoto');
 }
 
+function showPhoto(i, url) {
+    $('idPhoto_' + i).value = url;
+    const preview = $('idPhotoPreview_' + i);
+    preview.querySelector('img').src = url;
+    preview.hidden = false;
+    const btn = document.querySelector('.td-upload__btn[data-i="' + i + '"]');
+    if (btn) btn.querySelector('span').textContent = tt('replacePhoto');
+}
+
+// Fill the lead traveller from the user's previous booking (TD.lastTraveller, set server-side).
+function useLastTraveller() {
+    const p = TD.lastTraveller;
+    if (!p) return;
+    const set = (id, v) => { if ($(id)) $(id).value = v || ''; };
+    set('name_0', p.name);
+    set('phone_0', p.phone);
+    if (p.gender) set('gender_0', p.gender);
+    set('idNumber_0', p.idNumber);
+    set('emgName_0', p.emergencyName);
+    set('emgPhone_0', p.emergencyPhone);
+    set('disease_0', p.knownDisease);
+    if (p.idPhoto) showPhoto(0, p.idPhoto);
+    validateTraveller(0);
+    if ($('reuse-last-note')) $('reuse-last-note').hidden = false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const N = TD.travelers;
+    $('reuse-last-btn')?.addEventListener('click', useLastTraveller);
 
     const deposit = Math.round((TD.totalPrice || 0) * (TD.depositPercent || 0) / 100);
     if ($('depositAmt')) $('depositAmt').textContent = TD.totalPrice ? '· ' + money(deposit) : '';

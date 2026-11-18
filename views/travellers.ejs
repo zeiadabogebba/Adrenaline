@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
-    <link rel="stylesheet" href="/css/travellers.css?v=20261002a">
+    <link rel="stylesheet" href="/css/travellers.css?v=20261119a">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="<%= i18nScript %>"></script>
 </head>
@@ -105,7 +105,11 @@
                             <header class="traveller-card__head">
                                 <span class="traveller-card__num"><%= i + 1 %></span>
                                 <h3><% if (i === 0) { %><%- t('js.traveller.leadHtml') %><% } else { %><%= t('js.traveller.numbered', { n: i + 1 }) %><% } %></h3>
+                                <% if (i === 0 && lastTraveller) { %>
+                                <button type="button" class="td-reuse-btn" id="reuse-last-btn"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> <span><%= t('js.traveller.useLast') %></span></button>
+                                <% } %>
                             </header>
+                            <% if (i === 0 && lastTraveller) { %><p class="td-reuse-note" id="reuse-last-note" hidden><%= t('js.traveller.usedLast') %></p><% } %>
                             <div class="td-grid">
                                 <div class="td-field">
                                     <label for="name_<%= i %>"><%= t('js.traveller.fullName') %> <span class="req">*</span></label>
@@ -249,12 +253,13 @@
             travelers: <%= booking.travelers %>,
             totalPrice: <%= booking.totalPrice || 0 %>,
             depositPercent: <%= booking.tripId && booking.tripId.depositEnabled !== false ? booking.tripId.depositPercent : 0 %>,
-            backUrl: '<%= booking.tripId ? "/trips/" + booking.tripId._id : (booking.packageId ? "/packages/" + booking.packageId._id : "/custom-trip") %>'
+            backUrl: '<%= booking.tripId ? "/trips/" + booking.tripId._id : (booking.packageId ? "/packages/" + booking.packageId._id : "/custom-trip") %>',
+            lastTraveller: <%- JSON.stringify(lastTraveller || null).replace(/</g, '\\u003c') %>
         };
         const BACK_URL = window.TD.backUrl;
     </script>
     <script src="/js/global.js"></script>
-    <script src="/js/travellers.js"></script>
+    <script src="/js/travellers.js?v=20261119a"></script>
 </body>
 
 </html>

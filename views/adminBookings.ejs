@@ -58,6 +58,10 @@
                 </div>
             </header>
 
+            <% const scopedTrip = filters.trip && filters.trip !== 'upcoming' ? exportTrips.find(t => String(t._id) === filters.trip) : null; %>
+            <% if (filters.trip === 'upcoming' || scopedTrip) { %>
+            <p style="margin:0 0 0.75rem;color:var(--color-text-muted);font-size:0.9rem;"><i class="fas fa-filter"></i> Stats for: <strong><%= scopedTrip ? scopedTrip.title + (scopedTrip.date ? ' · ' + scopedTrip.date : '') : 'All Upcoming Trips' %></strong></p>
+            <% } %>
             <section class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>

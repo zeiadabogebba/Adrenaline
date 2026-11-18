@@ -261,8 +261,22 @@ const getTravellersPage = async (req, res, next) => {
       return next(new AppError('Booking not found.', 404));
     }
 
+    // Lead-traveller details from this user's most recent other booking, for the "use last trip" button.
+    const previous = await Booking.findOne({
+      userId: req.user._id,
+      _id: { $ne: booking._id },
+      'travellerDetails.0.name': { $gt: '' },
+      'travellerDetails.0.idPhoto': { $gt: '' },
+    }).sort({ updatedAt: -1 }).select('travellerDetails').lean();
+    const p = previous && Array.isArray(previous.travellerDetails) && previous.travellerDetails[0];
+    const lastTraveller = p && p.name && p.idPhoto ? {
+      name: p.name || '', phone: p.phone || '', gender: p.gender || '', idNumber: p.idNumber || '',
+      idPhoto: p.idPhoto || '', emergencyName: p.emergencyName || '', emergencyPhone: p.emergencyPhone || '',
+      knownDisease: p.knownDisease || '',
+    } : null;
+
     const paymentMethods = tripPaymentMethods(booking.tripId);
-    res.render('travellers', { user: req.user, booking: localizeBooking(booking, req.lang), paymentMethods });
+    res.render('travellers', { user: req.user, booking: localizeBooking(booking, req.lang), paymentMethods, lastTraveller });
   } catch (err) {
     next(err);
   }
@@ -376,11 +390,14 @@ const getAdminBookingsPage = async (req, res, next) => {
       filter.paymentStatus = paymentStatus;
     }
 
+    // The trip filter also scopes the stat cards; status and search filters don't.
+    const tripScope = {};
     if (tripQ === 'upcoming') {
-      filter.tripId = { $in: upcomingTrips.map(t => t._id) };
+      tripScope.tripId = { $in: upcomingTrips.map(t => t._id) };
     } else if (tripQ && mongoose.isValidObjectId(tripQ)) {
-      filter.tripId = tripQ;
+      tripScope.tripId = new mongoose.Types.ObjectId(tripQ);
     }
+    Object.assign(filter, tripScope);
 
     if (q) {
       const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
@@ -401,16 +418,16 @@ const getAdminBookingsPage = async (req, res, next) => {
         .sort('-createdAt')
         .skip((page - 1) * ADMIN_BOOKINGS_PER_PAGE)
         .limit(ADMIN_BOOKINGS_PER_PAGE),
-      Booking.countDocuments({ status: { $ne: 'draft' } }),
-      Booking.countDocuments({ status: { $ne: 'cancelled' }, paymentStatus: 'fully paid' }),
-      Booking.countDocuments({ status: 'cancelled' }),
+      Booking.countDocuments({ ...tripScope, status: { $ne: 'draft' } }),
+      Booking.countDocuments({ ...tripScope, status: { $ne: 'cancelled' }, paymentStatus: 'fully paid' }),
+      Booking.countDocuments({ ...tripScope, status: 'cancelled' }),
       Booking.aggregate([
-        { $match: { paymentStatus: { $in: ['half paid', 'verifying payment 2', 'fully paid'] }, status: { $ne: 'cancelled' } } },
+        { $match: { ...tripScope, paymentStatus: { $in: ['half paid', 'verifying payment 2', 'fully paid'] }, status: { $ne: 'cancelled' } } },
         { $group: { _id: null, total: { $sum: '$totalPrice' } } },
       ]),
       // Seats held by live bookings: one booking can cover several travellers.
       Booking.aggregate([
-        { $match: { status: { $nin: ['draft', 'cancelled'] } } },
+        { $match: { ...tripScope, status: { $nin: ['draft', 'cancelled'] } } },
         { $group: { _id: null, total: { $sum: '$travelers' } } },
       ]),
     ]);
