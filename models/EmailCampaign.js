@@ -8,6 +8,7 @@ const emailCampaignSchema = new mongoose.Schema(
     tripId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', default: null },
     subject:     { type: String, required: [true, 'Subject is required'], trim: true, maxlength: 150 },
     previewText: { type: String, default: '', trim: true, maxlength: 200 },
+    kicker:      { type: String, default: '', trim: true, maxlength: 30 },
     headline:    { type: String, default: '', trim: true, maxlength: 150 },
     message:     { type: String, default: '', maxlength: 5000 },
     details: [

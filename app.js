@@ -47,6 +47,12 @@ app.use('/api', i18n.translateJsonMessages);
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { status: 'fail', message: 'Too many requests.' } }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+// Email clients load the logo images and fonts from another origin.
+app.use(['/images/email', '/fonts'], (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(i18n);
 app.use('/i18n', i18nRoutes);

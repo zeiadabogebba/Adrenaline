@@ -22,7 +22,7 @@
 
     // ── Form <-> fields ────────────────────────────────────────────────
     const inputs = {
-        subject: $('fSubject'), previewText: $('fPreview'), headline: $('fHeadline'), message: $('fMessage'),
+        subject: $('fSubject'), previewText: $('fPreview'), kicker: $('fKicker'), headline: $('fHeadline'), message: $('fMessage'),
         imageUrl: $('fImage'), ctaText: $('fCtaText'), ctaUrl: $('fCtaUrl'),
     };
 

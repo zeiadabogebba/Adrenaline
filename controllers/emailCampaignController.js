@@ -15,6 +15,7 @@ function pickFields(body = {}) {
   const f = {
     subject: str(body.subject, 150),
     previewText: str(body.previewText, 200),
+    kicker: str(body.kicker, 30),
     headline: str(body.headline, 150),
     message: String(body.message == null ? '' : body.message).slice(0, 5000),
     details: (Array.isArray(body.details) ? body.details : []).slice(0, 8)
