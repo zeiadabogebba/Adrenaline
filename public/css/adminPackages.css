@@ -897,3 +897,12 @@ fieldset legend {
     font-size: 0.8rem;
     white-space: nowrap;
 }
+
+/* Trip card: "Announce by email" (links to Email Campaigns) */
+.trip-announce-btn {
+    margin-bottom: 8px;
+    text-decoration: none;
+    border-color: var(--gold-primary);
+    color: var(--gold-primary);
+}
+.trip-announce-btn:hover { background: var(--gold-primary); color: #fff; }

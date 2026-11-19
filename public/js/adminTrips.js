@@ -72,6 +72,9 @@ function createTripCard(trip) {
                 ${esc((trip.description || '').substring(0, 85))}${(trip.description || '').length > 85 ? '…' : ''}
             </p>
             <p style="font-size:0.78rem;color:var(--color-text-muted);margin-bottom:16px;"><i class="fas fa-users"></i> ${seats}</p>
+            ${trip.kind === 'upcoming' && trip.status === 'active'
+                ? `<a class="btn-ghost trip-kind-toggle trip-announce-btn" href="/admin/emails?trip=${encodeURIComponent(trip.id)}" title="Draft an email announcing this trip to subscribers"><i class="fas fa-bullhorn"></i> Announce by email</a>`
+                : ''}
             ${trip.kind === 'upcoming'
                 ? `<button class="btn-ghost trip-kind-toggle" onclick="toggleTripKind('${trip.id}','past')" title="Move this trip to Past Trips - its photos will appear in the Gallery"><i class="fas fa-images"></i> Mark as Past Trip</button>`
                 : `<button class="btn-ghost trip-kind-toggle" onclick="toggleTripKind('${trip.id}','upcoming')" title="Move this trip back to Upcoming Trips"><i class="fas fa-rocket"></i> Move to Upcoming</button>`}

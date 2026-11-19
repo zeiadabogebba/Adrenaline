@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Email Campaigns | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20261002b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminUsers.css?v=20260915a">
+    <link rel="stylesheet" href="/css/adminEmails.css?v=20261119a">
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li class="active"><a href="/admin/emails"><i class="fas fa-envelope-open-text"></i> Email Campaigns</a></li>
+                <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+                <li class="sidebar-site-link"><a href="/"><i class="fas fa-arrow-left"></i> Back to Site</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Email Campaigns</h1>
+                <p>Write trip announcements and send them to subscribed users</p>
+            </div>
+            <button type="button" class="btn-primary" id="newEmailBtn"><i class="fas fa-pen"></i> New email</button>
+        </header>
+
+        <div class="stats-grid em-stats">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                <div class="stat-info"><h3>Subscribers</h3><div class="stat-value" id="statSubscribers">…</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-gauge"></i></div>
+                <div class="stat-info"><h3>Daily send limit</h3><div class="stat-value" id="statLimit">…</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-paper-plane"></i></div>
+                <div class="stat-info"><h3>Emails sent</h3><div class="stat-value" id="statSent">…</div></div>
+            </div>
+        </div>
+
+        <p class="em-banner" id="emBanner" hidden></p>
+
+        <section class="em-workspace" id="composer" hidden>
+            <form class="em-form" id="emailForm" novalidate>
+                <div class="em-form__head">
+                    <h2 id="composerTitle">New email</h2>
+                    <span class="em-badge em-badge--draft" id="composerState">Not saved</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="tripPicker">Announce a trip <span class="em-hint">fills everything in from the trip</span></label>
+                    <select id="tripPicker" class="select-modern"><option value="">— Write from scratch —</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="fSubject">Subject line</label>
+                    <input id="fSubject" maxlength="150" required>
+                </div>
+                <div class="form-group">
+                    <label for="fPreview">Preview text <span class="em-hint">shown next to the subject in the inbox</span></label>
+                    <input id="fPreview" maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="fHeadline">Headline</label>
+                    <input id="fHeadline" maxlength="150">
+                </div>
+                <div class="form-group">
+                    <label for="fMessage">Message <span class="em-hint">leave a blank line between paragraphs</span></label>
+                    <textarea id="fMessage" rows="6" maxlength="5000" dir="auto"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Trip details</label>
+                    <div id="detailRows" class="em-details"></div>
+                    <button type="button" class="btn-ghost em-small" id="addDetailBtn"><i class="fas fa-plus"></i> Add a row</button>
+                </div>
+                <div class="form-group">
+                    <label for="fImage">Image link <span class="em-hint">https://…</span></label>
+                    <input id="fImage" maxlength="600" inputmode="url">
+                </div>
+                <div class="em-two">
+                    <div class="form-group">
+                        <label for="fCtaText">Button text</label>
+                        <input id="fCtaText" maxlength="40">
+                    </div>
+                    <div class="form-group">
+                        <label for="fCtaUrl">Button link</label>
+                        <input id="fCtaUrl" maxlength="600" inputmode="url">
+                    </div>
+                </div>
+
+                <div class="em-actions">
+                    <button type="submit" class="btn-ghost" id="saveBtn"><i class="fas fa-floppy-disk"></i> Save draft</button>
+                    <button type="button" class="btn-ghost" id="closeComposerBtn">Close</button>
+                </div>
+
+                <div class="em-step">
+                    <h3><span>1</span> Send a test</h3>
+                    <p class="em-hint">Check how it looks in Gmail, Outlook and iPhone mail before it goes to everyone.</p>
+                    <div class="em-inline">
+                        <input id="testEmails" placeholder="you@gmail.com, friend@outlook.com" aria-label="Test addresses">
+                        <button type="button" class="btn-ghost" id="testBtn"><i class="fas fa-vial"></i> Send test</button>
+                    </div>
+                    <p class="em-note" id="testNote"></p>
+                </div>
+                <div class="em-step">
+                    <h3><span>2</span> Send to all subscribers</h3>
+                    <p class="em-hint">Goes to everyone on the trip email list. This can't be undone.</p>
+                    <button type="button" class="btn-primary" id="sendAllBtn"><i class="fas fa-paper-plane"></i> Send to all subscribers</button>
+                </div>
+            </form>
+
+            <div class="em-preview">
+                <div class="em-preview__bar"><span>Preview</span><span class="em-hint" id="previewSubject"></span></div>
+                <iframe id="previewFrame" title="Email preview" sandbox=""></iframe>
+            </div>
+        </section>
+
+        <section class="em-list-card">
+            <h2>Your emails</h2>
+            <div class="table-container">
+                <table class="data-table em-table">
+                    <thead><tr><th>Subject</th><th>Status</th><th>Date</th><th>Results</th><th></th></tr></thead>
+                    <tbody id="emailList"></tbody>
+                </table>
+                <div class="empty-state" id="emptyList" hidden>
+                    <i class="fas fa-envelope-open"></i>
+                    <p>No emails yet. Pick a trip above, or use "Announce" on a trip card in Trip Management.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="sendModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="sendModalTitle">
+    <div class="modal-container em-confirm">
+        <div class="modal-header">
+            <h3 id="sendModalTitle">Send to all subscribers?</h3>
+            <button class="modal-close" type="button" data-close>&times;</button>
+        </div>
+        <div class="modal-body">
+            <p><strong id="confirmSubject"></strong></p>
+            <p>This goes to <strong id="confirmCount">…</strong> subscribers now and can't be undone.</p>
+            <p class="em-warn" id="confirmNoTest" hidden><i class="fas fa-triangle-exclamation"></i> You haven't sent a test of this version yet.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" type="button" data-close>Cancel</button>
+            <button class="btn-primary" type="button" id="confirmSendBtn"><i class="fas fa-paper-plane"></i> Send now</button>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-container em-confirm">
+        <div class="modal-header">
+            <h3 id="deleteModalTitle">Delete this draft?</h3>
+            <button class="modal-close" type="button" data-close>&times;</button>
+        </div>
+        <div class="modal-body"><p id="deleteSubject"></p></div>
+        <div class="modal-footer">
+            <button class="btn-ghost" type="button" data-close>Cancel</button>
+            <button class="btn-primary em-danger" type="button" id="confirmDeleteBtn">Delete draft</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.SERVER_USER = <%- JSON.stringify(user) %>;
+    window.EMAIL_PAGE = { tripId: <%- JSON.stringify(tripId) %> };
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+<script src="/js/adminEmails.js?v=20261119a"></script>
+</body>
+</html>

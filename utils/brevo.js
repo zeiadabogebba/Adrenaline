@@ -23,6 +23,7 @@ async function brevo(method, path, body) {
   if (!res.ok) {
     const err = new Error(`Brevo ${method} ${path.split('?')[0]} -> ${res.status}: ${text.slice(0, 200)}`);
     err.status = res.status;
+    err.body = text;
     throw err;
   }
   return text ? JSON.parse(text) : {};
@@ -197,7 +198,94 @@ async function getStatus() {
   return status;
 }
 
+// ── Campaigns ──────────────────────────────────────────────────────────
+const SENDER = { name: 'Adrenaline', email: process.env.BREVO_SENDER_EMAIL || 'trips@news.adrenaline98.com' };
+const REPLY_TO = process.env.BREVO_REPLY_TO || '98adrenaline@gmail.com';
+
+function campaignBody({ name, subject, previewText, htmlContent }) {
+  return {
+    name: String(name || subject).slice(0, 120),
+    subject,
+    previewText: previewText || undefined,
+    sender: SENDER,
+    replyTo: REPLY_TO,
+    htmlContent,
+  };
+}
+
+async function createCampaign(c) {
+  const listId = await getListId();
+  const r = await brevo('POST', '/emailCampaigns', { ...campaignBody(c), recipients: { listIds: [listId] } });
+  return r.id;
+}
+
+async function updateCampaign(id, c) {
+  await brevo('PUT', `/emailCampaigns/${id}`, campaignBody(c));
+}
+
+// Brevo only sends tests to contacts that exist and sit on some list. Missing
+// test addresses go on a separate "Test recipients" list (never the subscriber
+// list, so they don't get real campaigns) and the test is retried once.
+const TEST_LIST_NAME = 'Test recipients';
+let cachedTestListId = null;
+async function getTestListId() {
+  if (cachedTestListId) return cachedTestListId;
+  const { lists = [] } = await brevo('GET', '/contacts/lists?limit=50&offset=0');
+  let list = lists.find((l) => l.name === TEST_LIST_NAME);
+  if (!list) {
+    const { folders = [] } = await brevo('GET', '/contacts/folders?limit=10&offset=0');
+    list = await brevo('POST', '/contacts/lists', { name: TEST_LIST_NAME, folderId: folders[0].id });
+  }
+  cachedTestListId = list.id;
+  return cachedTestListId;
+}
+
+async function sendCampaignTest(id, emails) {
+  try {
+    await brevo('POST', `/emailCampaigns/${id}/sendTest`, { emailTo: emails });
+  } catch (err) {
+    let missing = [];
+    try {
+      const b = JSON.parse(err.body || '{}');
+      missing = [...(b.unexistingEmails || []), ...(b.withoutListEmails || [])];
+    } catch (_) { /* not JSON */ }
+    if (err.status !== 400 || !missing.length) throw err;
+    const testListId = await getTestListId();
+    for (const email of new Set(missing.map((e) => String(e).toLowerCase()))) {
+      await brevo('POST', '/contacts', { email, listIds: [testListId], updateEnabled: true });
+    }
+    await brevo('POST', `/emailCampaigns/${id}/sendTest`, { emailTo: emails });
+  }
+}
+
+async function sendCampaignNow(id) {
+  await brevo('POST', `/emailCampaigns/${id}/sendNow`);
+}
+
+async function deleteCampaign(id) {
+  try { await brevo('DELETE', `/emailCampaigns/${id}`); } catch (err) { if (err.status !== 404) throw err; }
+}
+
+async function getCampaign(id) {
+  const c = await brevo('GET', `/emailCampaigns/${id}?statistics=globalStats`);
+  const g = (c.statistics && c.statistics.globalStats) || {};
+  return {
+    status: c.status,
+    sentDate: c.sentDate || null,
+    stats: {
+      delivered: g.delivered || 0, opened: g.uniqueViews || 0, clicked: g.uniqueClicks || 0,
+      unsubscribed: g.unsubscriptions || 0, bounced: (g.hardBounces || 0) + (g.softBounces || 0),
+    },
+  };
+}
+
+async function getListSize() {
+  const list = await brevo('GET', `/contacts/lists/${await getListId()}`);
+  return list.uniqueSubscribers ?? list.totalSubscribers ?? 0;
+}
+
 module.exports = {
   isEnabled, isEligible, getListId, syncUserInBackground, removeInBackground,
   applyBrevoUnsubscribe, fullSync, getStatus, brevo,
+  createCampaign, updateCampaign, sendCampaignTest, sendCampaignNow, deleteCampaign, getCampaign, getListSize,
 };

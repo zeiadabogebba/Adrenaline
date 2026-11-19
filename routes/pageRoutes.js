@@ -34,5 +34,6 @@ router.get('/admin/trip-requests', protect, authorize('Admin'), pageController.g
 router.get('/admin/contact',  protect, authorize('Admin'), pageController.getAdminContactPage);
 router.get('/admin/users',    protect, authorize('Admin'), pageController.getAdminUsersPage);
 router.get('/admin/reports',  protect, authorize('Admin'), pageController.getAdminReportsPage);
+router.get('/admin/emails',   protect, authorize('Admin'), pageController.getAdminEmailsPage);
 
 module.exports = router;

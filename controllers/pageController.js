@@ -508,6 +508,11 @@ const getAdminUsersPage = async (req, res, next) => {
   }
 };
 
+const getAdminEmailsPage = (req, res) => {
+  const tripId = mongoose.Types.ObjectId.isValid(req.query.trip) ? String(req.query.trip) : '';
+  res.render('adminEmails', { user: req.user, tripId });
+};
+
 const getAdminReportsPage = async (req, res, next) => {
   try {
     const [allUsers, allBookings, revenueResult, allReviews, openTickets] = await Promise.all([
@@ -620,6 +625,7 @@ module.exports = {
   getWriteReviewPage,
   getCustomTripPage,
   getAdminDashboard,
+  getAdminEmailsPage,
   getAdminBookingsPage,
   getAdminPackagesPage,
   getAdminTripsPage,
