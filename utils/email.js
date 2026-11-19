@@ -111,20 +111,50 @@ function otpEmailText({ name, otp, expiresMinutes, lang = 'en' }) {
   return `${t('greeting', { name: firstNameOf(name, lang) })}\n\n${t('textCode', { otp })}\n\n${t('expiry', { minutes: expiresMinutes })}\n\n${t('tagline')}\n${t('brand')}`;
 }
 
+// Brevo transactional API (authenticated news.adrenaline98.com domain) first;
+// Gmail SMTP stays as the fallback so a Brevo outage or daily-limit hit never
+// blocks sign-up or login.
+async function sendViaBrevo({ to, subject, html, text }) {
+  if (!process.env.BREVO_API_KEY) return false;
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': process.env.BREVO_API_KEY, accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      sender: { name: 'Adrenaline', email: process.env.BREVO_OTP_SENDER || 'trips@news.adrenaline98.com' },
+      replyTo: { email: process.env.BREVO_REPLY_TO || '98adrenaline@gmail.com' },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+      tags: ['otp'],
+    }),
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`Brevo ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return true;
+}
+
 // `lang` is the language the visitor was using when the code was requested.
 async function sendOtpEmail({ to, name, otp, expiresMinutes = 10, lang = 'en' }) {
+  const message = {
+    to,
+    subject: translate(lang, 'email.subject', { otp }),
+    html: otpEmailHtml({ name, otp, expiresMinutes, lang }),
+    text: otpEmailText({ name, otp, expiresMinutes, lang }),
+  };
+
+  try {
+    if (await sendViaBrevo(message)) return true;
+  } catch (err) {
+    console.error('[email] Brevo OTP send failed, falling back to Gmail:', err.message);
+  }
+
   const t = getTransporter();
   if (!t) {
     console.warn('[email] EMAIL_USER/EMAIL_PASS not configured - skipping OTP email send.');
     return false;
   }
-  await t.sendMail({
-    from: `"Adrenaline" <${process.env.EMAIL_USER}>`,
-    to,
-    subject: translate(lang, 'email.subject', { otp }),
-    html: otpEmailHtml({ name, otp, expiresMinutes, lang }),
-    text: otpEmailText({ name, otp, expiresMinutes, lang }),
-  });
+  await t.sendMail({ from: `"Adrenaline" <${process.env.EMAIL_USER}>`, ...message });
   return true;
 }
 

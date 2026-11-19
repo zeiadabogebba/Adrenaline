@@ -77,6 +77,7 @@ function buildCampaignHtml(f = {}) {
         </tr>` : '<tr><td style="padding:12px;"></td></tr>'}
         <tr>
           <td style="background:#fafafa;border-top:1px solid #e4e4e7;padding:20px 28px;font-size:12px;line-height:1.6;color:#71717a;">
+            <strong style="color:#3f3f46;">Using Gmail?</strong> Drag this email to your <strong style="color:#3f3f46;">Primary</strong> tab so you never miss a new trip.<br><br>
             You're receiving this because you have an account on <a href="${SITE_URL}" style="color:#71717a;">adrenaline98.com</a> and chose to hear about new trips.
             Questions? Just reply to this email.<br>
             <a href="{{ unsubscribe }}" style="color:#dc2626;">Unsubscribe</a> &middot;
