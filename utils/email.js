@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const { translate, RTL_LANGS } = require('./i18n');
 const { emailShell, C, F } = require('./emailTemplate');
+const templates = require('./emailTemplateStore');
 
 let transporter = null;
 
@@ -24,8 +25,10 @@ function firstNameOf(name, lang) {
   return (name || '').trim().split(' ')[0] || translate(lang, 'email.there');
 }
 
-function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en' }) {
+// tpl: wording from emailTemplateStore (admin-editable); all of it is escaped.
+function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en', tpl = templates.otpDefaults(lang) }) {
   const t = (key, vars) => translate(lang, `email.${key}`, vars);
+  const w = (key, vars = {}) => templates.fill(escapeHtml(tpl[key] || ''), vars).replace(/\n/g, '<br>');
   const rtl = RTL_LANGS.has(lang);
   const textFont = rtl ? F.arabic : F.body;
   const headFont = rtl ? F.arabic : F.display;
@@ -37,9 +40,9 @@ function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en' }) {
   const body = `
     <tr>
       <td class="px" style="padding:30px 28px 8px;">
-        <p style="margin:0 0 10px;font-family:${headFont};font-size:14px;font-weight:800;letter-spacing:${rtl ? '0' : '.14em'};text-transform:uppercase;color:${C.red};">${escapeHtml(t('title'))}</p>
-        <h1 class="h1" style="margin:0 0 14px;font-family:${headFont};font-size:44px;line-height:1;font-weight:900;text-transform:uppercase;color:${C.ink};">${t('greeting', { name: firstName })}</h1>
-        <p style="margin:0;font-family:${textFont};font-size:16px;line-height:1.65;color:${C.body};">${t('intro')}</p>
+        <p style="margin:0 0 10px;font-family:${headFont};font-size:14px;font-weight:800;letter-spacing:${rtl ? '0' : '.14em'};text-transform:uppercase;color:${C.red};">${w('title')}</p>
+        <h1 class="h1" style="margin:0 0 14px;font-family:${headFont};font-size:44px;line-height:1;font-weight:900;text-transform:uppercase;color:${C.ink};">${w('greeting', { name: firstName })}</h1>
+        <p style="margin:0;font-family:${textFont};font-size:16px;line-height:1.65;color:${C.body};">${w('intro')}</p>
       </td>
     </tr>
     <tr>
@@ -49,19 +52,20 @@ function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en' }) {
     </tr>
     <tr>
       <td class="px" style="padding:0 28px 30px;">
-        <p style="margin:0;padding:12px 14px;background:${C.raised};border:1px solid ${C.line};border-radius:4px;font-family:${textFont};font-size:13px;line-height:1.6;color:${C.muted};">${t('expiry', { minutes: expiresMinutes })}</p>
+        <p style="margin:0;padding:12px 14px;background:${C.raised};border:1px solid ${C.line};border-radius:4px;font-family:${textFont};font-size:13px;line-height:1.6;color:${C.muted};">${w('expiry', { minutes: expiresMinutes })}</p>
       </td>
     </tr>`;
 
   return emailShell({
-    lang, title: t('title'), preheader: t('textCode', { otp }), kicker: rtl ? '' : 'Verification', bodyHtml: body,
+    lang, title: tpl.title, preheader: t('textCode', { otp }), kicker: tpl.kicker, bodyHtml: body,
     tagline: rtl ? t('taglineHtml') : '',
   });
 }
 
-function otpEmailText({ name, otp, expiresMinutes, lang = 'en' }) {
+function otpEmailText({ name, otp, expiresMinutes, lang = 'en', tpl = templates.otpDefaults(lang) }) {
   const t = (key, vars) => translate(lang, `email.${key}`, vars);
-  return `${t('greeting', { name: firstNameOf(name, lang) })}\n\n${t('textCode', { otp })}\n\n${t('expiry', { minutes: expiresMinutes })}\n\n${t('tagline')}\n${t('brand')}`;
+  const w = (key, vars) => templates.fill(tpl[key], vars);
+  return `${w('greeting', { name: firstNameOf(name, lang) })}\n\n${t('textCode', { otp })}\n\n${w('expiry', { minutes: expiresMinutes })}\n\n${t('tagline')}\n${t('brand')}`;
 }
 
 // Brevo transactional API from its own subdomain (account.adrenaline98.com,
@@ -89,12 +93,17 @@ async function sendViaBrevo({ to, subject, html, text }) {
 }
 
 // `lang` is the language the visitor was using when the code was requested.
-async function sendOtpEmail({ to, name, otp, expiresMinutes = 10, lang = 'en' }) {
+// `tpl` overrides the saved wording (used by the admin "send me a test").
+async function sendOtpEmail({ to, name, otp, expiresMinutes = 10, lang = 'en', tpl }) {
+  let wording = tpl;
+  if (!wording) {
+    try { wording = await templates.getOtp(lang); } catch (_) { wording = templates.otpDefaults(lang); }
+  }
   const message = {
     to,
-    subject: translate(lang, 'email.subject', { otp }),
-    html: otpEmailHtml({ name, otp, expiresMinutes, lang }),
-    text: otpEmailText({ name, otp, expiresMinutes, lang }),
+    subject: templates.fill(wording.subject, { otp }),
+    html: otpEmailHtml({ name, otp, expiresMinutes, lang, tpl: wording }),
+    text: otpEmailText({ name, otp, expiresMinutes, lang, tpl: wording }),
   };
 
   try {
@@ -117,4 +126,4 @@ function generateOtp() {
   return String(crypto.randomInt(0, 1000000)).padStart(6, '0');
 }
 
-module.exports = { sendOtpEmail, generateOtp };
+module.exports = { sendOtpEmail, generateOtp, otpEmailHtml };

@@ -2,6 +2,8 @@
 // Table layout + inline styles so it renders the same in Gmail, Outlook and
 // Apple Mail. Matches the site: near-black, crimson, Barlow Condensed caps.
 // Clients that can't load the web fonts fall back to Arial Narrow / Arial.
+const { TRIP_DEFAULTS, fill } = require('./emailTemplateStore');
+
 const SITE_URL = (process.env.SITE_URL || 'https://adrenaline98.com').replace(/\/+$/, '');
 
 const C = {
@@ -142,7 +144,7 @@ const ctaButton = (text, url) => `
  * Trip / marketing campaign.
  * fields: { subject, previewText, kicker, headline, message, details:[{label,value}], imageUrl, ctaText, ctaUrl }
  */
-function buildCampaignHtml(f = {}) {
+function buildCampaignHtml(f = {}, tpl = TRIP_DEFAULTS) {
   const img = emailImage(f.imageUrl);
   const cta = safeUrl(f.ctaUrl);
   const details = (Array.isArray(f.details) ? f.details : [])
@@ -152,19 +154,17 @@ function buildCampaignHtml(f = {}) {
     ${img ? `<tr><td style="padding:0;"><a href="${esc(cta || SITE_URL)}"><img src="${esc(img)}" width="600" alt="${esc(f.headline)}" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></a></td></tr>` : ''}
     <tr>
       <td class="px" style="padding:30px 28px 6px;">
-        <p style="margin:0 0 10px;font-family:${F.display};font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:${C.red};">Hey {{ contact.FIRSTNAME | default : "there" }} &#9889;</p>
+        ${tpl.greeting ? `<p dir="auto" style="margin:0 0 10px;font-family:${F.display};font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:${C.red};">${fill(esc(tpl.greeting), { name: '{{ contact.FIRSTNAME | default : "there" }}' })}</p>` : ''}
         <h1 class="h1" dir="auto" style="margin:0 0 18px;font-family:${F.display};font-size:52px;line-height:.95;font-weight:900;text-transform:uppercase;letter-spacing:-.005em;color:${C.ink};">${esc(f.headline)}</h1>
         ${paragraphs(f.message)}
       </td>
     </tr>
     ${detailGrid(details)}
     ${cta && f.ctaText ? `<tr><td align="center" class="px" style="padding:22px 28px 10px;">${ctaButton(f.ctaText, cta)}</td></tr>
-    <tr><td align="center" class="px" style="padding:12px 28px 30px;font-family:${F.display};font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${C.muted};">Spots go fast. Don't sleep on it.</td></tr>` : '<tr><td style="padding:14px;"></td></tr>'}`;
+    <tr><td align="center" class="px" style="padding:12px 28px 30px;font-family:${F.display};font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${C.muted};">${esc(tpl.urgency)}</td></tr>` : '<tr><td style="padding:14px;"></td></tr>'}`;
 
   const footer = `
-    <p style="margin:0 0 10px;font-family:${F.body};font-size:12px;line-height:1.6;color:${C.muted};">
-      <strong style="color:${C.body};">Using Gmail?</strong> Drag this email to your <strong style="color:${C.body};">Primary</strong> tab so you never miss a new trip.
-    </p>
+    ${tpl.gmailTip ? `<p dir="auto" style="margin:0 0 10px;font-family:${F.body};font-size:12px;line-height:1.6;color:${C.muted};">${esc(tpl.gmailTip).replace(/\n/g, '<br>')}</p>` : ''}
     <p style="margin:0;font-family:${F.body};font-size:12px;line-height:1.6;color:${C.faint};">
       You're getting this because you have an Adrenaline account and chose to hear about new trips. Questions? Just reply.<br>
       <a href="{{ unsubscribe }}" style="color:${C.redHot};">Unsubscribe</a> &middot; <a href="${SITE_URL}/profile" style="color:${C.muted};">Email preferences</a>
@@ -175,8 +175,12 @@ function buildCampaignHtml(f = {}) {
   });
 }
 
+// Admin previews: show a real first name where Brevo will insert one.
+const BREVO_FIRSTNAME = '{{ contact.FIRSTNAME | default : "there" }}';
+const previewName = (html, name) => String(html).split(BREVO_FIRSTNAME).join(esc(String(name || '').trim().split(/\s+/)[0] || 'there'));
+
 // Default draft for announcing a trip.
-function fieldsFromTrip(trip) {
+function fieldsFromTrip(trip, tpl = TRIP_DEFAULTS) {
   const id = String(trip._id || trip.id);
   const details = [
     { label: 'Date', value: trip.date && trip.date !== '0000' ? trip.date : '' },
@@ -186,19 +190,21 @@ function fieldsFromTrip(trip) {
     { label: 'Spots left', value: trip.spotsLeft != null && trip.spotsLeft > 0 ? String(trip.spotsLeft) : '' },
   ].filter((d) => d.value);
   const when = details.find((d) => d.label === 'Date');
+  const vars = { title: trip.title || '', date: when ? when.value : '' };
+  // Fill {title}/{date}; tidy a separator left dangling when there's no date.
+  const line = (text) => fill(text, vars).replace(/\s*[·|•-]\s*$/, '').replace(/\s+/g, ' ').trim();
   return {
     tripId: id,
-    subject: `New trip: ${trip.title}${when ? ` · ${when.value}` : ''}`,
-    previewText: `${trip.title} just dropped. Spots are limited, grab yours.`,
-    kicker: 'New trip drop',
+    subject: line(tpl.subject).slice(0, 150),
+    previewText: line(tpl.previewText).slice(0, 200),
+    kicker: tpl.kicker,
     headline: trip.title,
-    message: [trip.description, 'Bookings are open now. Spots are limited, so lock yours in before they\'re gone.']
-      .filter(Boolean).join('\n\n'),
+    message: [trip.description, fill(tpl.closing, vars)].filter((p) => p && String(p).trim()).join('\n\n'),
     details,
     imageUrl: trip.image || '',
-    ctaText: 'Book your spot',
+    ctaText: tpl.ctaText,
     ctaUrl: `${SITE_URL}/trips/${id}`,
   };
 }
 
-module.exports = { buildCampaignHtml, fieldsFromTrip, emailShell, chip, safeUrl, esc, SITE_URL, C, F };
+module.exports = { buildCampaignHtml, fieldsFromTrip, previewName, emailShell, chip, safeUrl, esc, SITE_URL, C, F };

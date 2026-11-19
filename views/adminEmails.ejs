@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminUsers.css?v=20260915a">
-    <link rel="stylesheet" href="/css/adminEmails.css?v=20261119a">
+    <link rel="stylesheet" href="/css/adminEmails.css?v=20261119c">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -156,6 +156,59 @@
             </div>
         </section>
 
+        <section class="em-list-card em-templates">
+            <h2>Templates</h2>
+            <p class="em-hint em-templates__intro">The wording every email starts from. Edit it once here and it's used from then on.</p>
+            <div class="em-tpl-grid">
+                <article class="em-tpl-card">
+                    <div class="em-tpl-card__icon"><i class="fas fa-rocket"></i></div>
+                    <div class="em-tpl-card__body">
+                        <h3>Trip announcement <span class="em-badge" data-tpl-state="trip">Default</span></h3>
+                        <p class="em-muted">Sent to subscribers when you announce a trip. Sets the starting subject, tag, closing line and button, plus the greeting and footer of every trip email.</p>
+                    </div>
+                    <div class="em-tpl-card__actions">
+                        <button type="button" class="btn-ghost em-small" data-tpl-edit="trip"><i class="fas fa-pen"></i> Edit</button>
+                        <button type="button" class="btn-ghost em-small" data-tpl-use="trip">Use it</button>
+                    </div>
+                </article>
+                <article class="em-tpl-card">
+                    <div class="em-tpl-card__icon"><i class="fas fa-key"></i></div>
+                    <div class="em-tpl-card__body">
+                        <h3>Login code <span class="em-badge" data-tpl-state="otp">Default</span></h3>
+                        <p class="em-muted">Sent automatically when someone signs up or verifies their email, in English or Arabic depending on the site language they use.</p>
+                    </div>
+                    <div class="em-tpl-card__actions">
+                        <button type="button" class="btn-ghost em-small" data-tpl-edit="otp"><i class="fas fa-pen"></i> Edit</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="em-workspace" id="tplEditor" hidden>
+            <form class="em-form" id="tplForm" novalidate>
+                <div class="em-form__head">
+                    <h2 id="tplTitle">Edit template</h2>
+                    <span class="em-badge em-badge--draft" id="tplStateBadge">Saved</span>
+                </div>
+                <div class="em-lang" id="tplLangs" role="tablist" aria-label="Language" hidden>
+                    <button type="button" role="tab" data-lang="en" aria-selected="true">English</button>
+                    <button type="button" role="tab" data-lang="ar" aria-selected="false">العربية</button>
+                </div>
+                <div id="tplFields" class="em-tpl-fields"></div>
+                <div class="em-actions">
+                    <button type="submit" class="btn-primary" id="tplSaveBtn"><i class="fas fa-floppy-disk"></i> Save template</button>
+                    <button type="button" class="btn-ghost" id="tplTestBtn" hidden><i class="fas fa-vial"></i> Send me a test</button>
+                    <button type="button" class="btn-ghost" id="tplResetBtn">Reset to default</button>
+                    <button type="button" class="btn-ghost" id="tplCloseBtn">Close</button>
+                </div>
+                <p class="em-note" id="tplNote"></p>
+            </form>
+            <div class="em-preview">
+                <div class="em-preview__bar"><span>Preview</span><span class="em-hint" id="tplPreviewSubject"></span></div>
+                <iframe id="tplPreviewFrame" title="Template preview" sandbox=""></iframe>
+            </div>
+        </section>
+
         <section class="em-list-card">
             <h2>Your emails</h2>
             <div class="table-container">
@@ -210,6 +263,7 @@
 </script>
 <script src="/js/global.js"></script>
 <script src="/js/admin-theme.js"></script>
-<script src="/js/adminEmails.js?v=20261119b"></script>
+<script src="/js/adminEmails.js?v=20261119c"></script>
+<script src="/js/adminEmailTemplates.js?v=20261119c"></script>
 </body>
 </html>

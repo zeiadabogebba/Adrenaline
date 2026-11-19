@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const bookingController = require('../controllers/bookingController');
 const emails = require('../controllers/emailCampaignController');
+const emailTemplates = require('../controllers/emailTemplateController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/stats',    protect, authorize('Admin'), adminController.getStats);
@@ -12,6 +13,12 @@ router.get('/users', protect, authorize('Admin'), adminController.getAdminUsers)
 
 router.get('/brevo/status', protect, authorize('Admin'), adminController.getBrevoStatus);
 router.post('/brevo/sync',  protect, authorize('Admin'), adminController.runBrevoSync);
+
+router.get('/email-templates',                protect, authorize('Admin'), emailTemplates.list);
+router.post('/email-templates/otp/test',      protect, authorize('Admin'), emailTemplates.testOtp);
+router.post('/email-templates/:key/preview',  protect, authorize('Admin'), emailTemplates.preview);
+router.put('/email-templates/:key',          protect, authorize('Admin'), emailTemplates.update);
+router.delete('/email-templates/:key',       protect, authorize('Admin'), emailTemplates.reset);
 
 router.get('/emails',               protect, authorize('Admin'), emails.listCampaigns);
 router.post('/emails',              protect, authorize('Admin'), emails.createDraft);

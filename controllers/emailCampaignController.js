@@ -3,7 +3,8 @@ const EmailCampaign = require('../models/EmailCampaign');
 const Trip = require('../models/Trip');
 const AppError = require('../utils/AppError');
 const brevo = require('../utils/brevo');
-const { buildCampaignHtml, fieldsFromTrip, safeUrl } = require('../utils/emailTemplate');
+const templates = require('../utils/emailTemplateStore');
+const { buildCampaignHtml, fieldsFromTrip, safeUrl, previewName } = require('../utils/emailTemplate');
 
 const DAILY_LIMIT = Number(process.env.BREVO_DAILY_LIMIT || 300); // Brevo free plan
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,7 +40,7 @@ const requireBrevo = () => {
 
 // Create or refresh the Brevo campaign so it matches the saved fields exactly.
 async function pushToBrevo(doc) {
-  const payload = { name: doc.subject, subject: doc.subject, previewText: doc.previewText, htmlContent: buildCampaignHtml(doc) };
+  const payload = { name: doc.subject, subject: doc.subject, previewText: doc.previewText, htmlContent: buildCampaignHtml(doc, await templates.getTrip()) };
   if (doc.brevoId) {
     await brevo.updateCampaign(doc.brevoId, payload);
   } else {
@@ -88,17 +89,17 @@ const tripDefaults = async (req, res, next) => {
     if (!isId(req.params.tripId)) return next(new AppError('Trip not found.', 404));
     const trip = await Trip.findById(req.params.tripId).lean();
     if (!trip) return next(new AppError('Trip not found.', 404));
-    res.status(200).json({ status: 'success', data: fieldsFromTrip(trip) });
+    res.status(200).json({ status: 'success', data: fieldsFromTrip(trip, await templates.getTrip()) });
   } catch (err) {
     next(err);
   }
 };
 
 // POST /api/admin/emails/preview
-const preview = (req, res, next) => {
+const preview = async (req, res, next) => {
   try {
     const f = pickFields({ subject: '(no subject)', ...req.body, subject: req.body.subject || '(no subject)' });
-    res.status(200).json({ status: 'success', data: { html: buildCampaignHtml(f) } });
+    res.status(200).json({ status: 'success', data: { html: previewName(buildCampaignHtml(f, await templates.getTrip()), req.user.name) } });
   } catch (err) {
     next(err);
   }
