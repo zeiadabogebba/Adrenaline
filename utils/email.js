@@ -49,7 +49,7 @@ function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en' }) {
     </tr>
     <tr>
       <td class="px" style="padding:0 28px 30px;">
-        <p style="margin:0;padding:12px 14px;background:${C.raised};border-${rtl ? 'right' : 'left'}:3px solid ${C.line};border-radius:4px;font-family:${textFont};font-size:13px;line-height:1.6;color:${C.muted};">${t('expiry', { minutes: expiresMinutes })}</p>
+        <p style="margin:0;padding:12px 14px;background:${C.raised};border:1px solid ${C.line};border-radius:4px;font-family:${textFont};font-size:13px;line-height:1.6;color:${C.muted};">${t('expiry', { minutes: expiresMinutes })}</p>
       </td>
     </tr>`;
 

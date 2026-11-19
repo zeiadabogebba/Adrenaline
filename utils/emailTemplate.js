@@ -116,7 +116,7 @@ function detailGrid(details) {
   const cell = (d) => {
     const hot = /price|cost|سعر/i.test(d.label);
     return `<td class="cell" width="50%" style="width:50%;padding:6px;vertical-align:top;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.raised};border:1px solid ${C.line};border-left:3px solid ${hot ? C.red : C.line};border-radius:4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.raised};border:1px solid ${C.line};border-radius:4px;">
         <tr><td style="padding:12px 14px;">
           <div style="font-family:${F.display};font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:${C.muted};">${esc(d.label)}</div>
           <div dir="auto" style="margin-top:4px;font-family:${F.display};font-size:24px;line-height:1.1;font-weight:900;text-transform:uppercase;color:${hot ? C.redHot : C.ink};">${esc(d.value)}</div>
