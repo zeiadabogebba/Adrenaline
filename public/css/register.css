@@ -468,3 +468,8 @@
     margin-top: 3px;
     accent-color: var(--crimson);
 }
+
+.terms-checkbox-row--optional {
+    margin-top: var(--s-xs);
+    color: var(--ink-dim);
+}

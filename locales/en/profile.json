@@ -14,6 +14,8 @@
   "dob": "Date of Birth",
   "nationality": "Nationality",
   "selectNationality": "Select nationality",
+  "tripEmails": "Email me about new trips",
+  "tripEmailsHint": "Announcements when we add new trips. Unsubscribe any time.",
   "securityTitle": "Security & Verification",
   "currentPassword": "Current Password",
   "currentPlaceholder": "Enter your current password",

@@ -18,7 +18,8 @@ const protect = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const currentUser = await User.findById(decoded.id).select('+password');
+        // No '+password': req.user is serialised into pages (window.SERVER_USER), so the hash must not be loaded.
+        const currentUser = await User.findById(decoded.id);
         if (!currentUser) {
             return next(new AppError('The user belonging to this token no longer exists.', 401));
         }

@@ -242,3 +242,26 @@
         flex: 1 1 auto;
     }
 }
+
+/* Trip-announcement email preference (Personal tab) */
+.email-pref {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border, rgba(127,127,127,0.25));
+}
+.email-pref__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+.email-pref__row input {
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    accent-color: var(--crimson);
+}
+.email-pref__row span { display: flex; flex-direction: column; gap: 0.2rem; }
+.email-pref__row small { color: var(--color-text-muted, inherit); opacity: 0.85; }
+.email-pref__status { display: block; min-height: 1.2em; margin-top: 0.5rem; color: var(--color-text-muted, inherit); }

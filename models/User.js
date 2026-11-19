@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema(
     deactivatedAt: { type: Date },
     joinDate:    { type: Date, default: Date.now },
     passwordChangedAt: { type: Date },
+    // Trip-announcement emails. Existing accounts (field missing) count as opted in.
+    marketingOptIn:          { type: Boolean, default: true },
+    marketingOptInUpdatedAt: { type: Date },
   },
   { timestamps: true }
 );

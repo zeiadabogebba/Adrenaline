@@ -70,6 +70,8 @@ const register = async (req, res, next) => {
       image: initialsAvatarUrl(name),
       role: 'Tourist',
       emailVerified: false,
+      marketingOptIn: req.body.marketingOptIn !== false,
+      marketingOptInUpdatedAt: new Date(),
     });
 
     await issueOtp(newUser, req.lang);
@@ -249,6 +251,8 @@ const googleAuth = async (req, res, next) => {
       dob,
       phone,
       nationality,
+      marketingOptIn: req.body.marketingOptIn !== false,
+      marketingOptInUpdatedAt: new Date(),
     });
 
     sendTokenResponse(user, 201, res);

@@ -14,6 +14,8 @@
   "dob": "تاريخ الميلاد",
   "nationality": "الجنسية",
   "selectNationality": "اختار الجنسية",
+  "tripEmails": "ابعتولي إيميل بالرحلات الجديدة",
+  "tripEmailsHint": "هنبعتلك لما نضيف رحلات جديدة. تقدر توقفها في أي وقت.",
   "securityTitle": "الأمان والتحقق",
   "currentPassword": "كلمة السر الحالية",
   "currentPlaceholder": "اكتب كلمة السر الحالية",

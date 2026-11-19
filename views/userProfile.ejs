@@ -10,7 +10,7 @@
 
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/userProfile.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/userProfile.css?v=20261119a">
     <script src="<%= i18nScript %>"></script>
 </head>
 
@@ -141,6 +141,17 @@
                                 <small class="error-msg"></small>
                             </label>
                         </form>
+
+                        <div class="email-pref">
+                            <label class="email-pref__row">
+                                <input type="checkbox" id="marketingOptInToggle"<%= user.marketingOptIn !== false ? ' checked' : '' %>>
+                                <span>
+                                    <strong><%= t('profile.tripEmails') %></strong>
+                                    <small><%= t('profile.tripEmailsHint') %></small>
+                                </span>
+                            </label>
+                            <small class="email-pref__status" id="marketingOptInStatus" aria-live="polite"></small>
+                        </div>
                     </section>
 
                     <section class="glass-card workspace-card tab-panel hidden" id="tab-security">
@@ -263,6 +274,33 @@
                 alert(err.message || window.t('js.profile.saveFailed'));
             }
         });
+
+        (function () {
+            const toggle = document.getElementById('marketingOptInToggle');
+            const status = document.getElementById('marketingOptInStatus');
+            if (!toggle) return;
+            toggle.addEventListener('change', async () => {
+                const wanted = toggle.checked;
+                toggle.disabled = true;
+                status.textContent = '';
+                try {
+                    const res = await fetch('/api/users/email-preferences', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ marketingOptIn: wanted })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message);
+                    status.textContent = window.t(wanted ? 'js.profile.tripEmailsOn' : 'js.profile.tripEmailsOff');
+                } catch (err) {
+                    toggle.checked = !wanted;
+                    status.textContent = err.message || window.t('js.profile.saveFailed');
+                } finally {
+                    toggle.disabled = false;
+                }
+            });
+        })();
 
         document.getElementById('deleteAccountBtn').addEventListener('click', () => {
             document.getElementById('deleteModal').classList.remove('hidden');

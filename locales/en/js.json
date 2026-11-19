@@ -229,6 +229,8 @@
   },
   "profile": {
     "saveFailed": "Failed to save changes.",
+    "tripEmailsOn": "Saved. You'll get emails about new trips.",
+    "tripEmailsOff": "Saved. You won't get trip emails.",
     "deleteFailed": "Failed to delete account.",
     "chooseImage": "Please choose an image file.",
     "photoTooBig": "Photo must be smaller than 2 MB.",

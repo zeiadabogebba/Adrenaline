@@ -25,6 +25,22 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+const updateEmailPreferences = async (req, res, next) => {
+  try {
+    if (typeof req.body.marketingOptIn !== 'boolean') {
+      return next(new AppError('Please choose whether to receive trip emails.', 400));
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { marketingOptIn: req.body.marketingOptIn, marketingOptInUpdatedAt: new Date() },
+      { new: true }
+    );
+    res.status(200).json({ status: 'success', data: { marketingOptIn: updatedUser.marketingOptIn } });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const uploadAvatar = async (req, res, next) => {
   try {
     if (!req.file) return next(new AppError('Please upload an image file.', 400));
@@ -166,6 +182,7 @@ const adminUpdateUserProfile = async (req, res, next) => {
 module.exports = {
   getProfile,
   updateProfile,
+  updateEmailPreferences,
   uploadAvatar,
   removeAvatar,
   deleteAccount,

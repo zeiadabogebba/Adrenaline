@@ -66,6 +66,11 @@ function validateConfirmPassword() {
 
 let onTermsAgreed = null;
 
+function wantsTripEmails() {
+  const cb = document.getElementById('marketingOptInCheckbox');
+  return cb ? cb.checked : true;
+}
+
 function openTermsModal(onAgree, opts) {
   onTermsAgreed = onAgree;
   const requireDetails = !!(opts && opts.requireDetails);
@@ -74,6 +79,8 @@ function openTermsModal(onAgree, opts) {
   const continueBtn = document.getElementById('termsContinueBtn');
   const detailsBlock = document.getElementById('googleDetailsFields');
   if (checkbox) checkbox.checked = false;
+  const marketing = document.getElementById('marketingOptInCheckbox');
+  if (marketing) marketing.checked = true;
   if (continueBtn) continueBtn.disabled = true;
   if (detailsBlock) detailsBlock.hidden = !requireDetails;
   if (overlay) {
@@ -148,7 +155,7 @@ async function submitGoogleCredential(credential, agreedToTerms) {
   const errDiv = document.getElementById('google-auth-error');
   if (errDiv) errDiv.style.display = 'none';
   try {
-    const body = { credential, agreedToTerms: !!agreedToTerms };
+    const body = { credential, agreedToTerms: !!agreedToTerms, marketingOptIn: wantsTripEmails() };
     if (agreedToTerms) {
       const countryCode = document.getElementById('g_country_code')?.value || '';
       const phoneNum = document.getElementById('g_phone')?.value || '';
@@ -268,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ name: `${fd.firstname} ${fd.lastname}`, email: fd.email, password: fd.password, phone: fd.phone, nationality: fd.nationality, dob: fd.dob }),
+          body: JSON.stringify({ name: `${fd.firstname} ${fd.lastname}`, email: fd.email, password: fd.password, phone: fd.phone, nationality: fd.nationality, dob: fd.dob, marketingOptIn: wantsTripEmails() }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || window.t('js.auth.registrationFailed'));

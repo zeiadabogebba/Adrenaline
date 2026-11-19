@@ -7,7 +7,7 @@
     <title><%= t('titles.register') %></title>
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
-    <link rel="stylesheet" href="/css/register.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/register.css?v=20261119a">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <% if (googleClientId) { %><script src="https://accounts.google.com/gsi/client?hl=<%= lang %>" async defer></script><% } %>
     <script src="<%= i18nScript %>"></script>
@@ -211,6 +211,10 @@
                     <input type="checkbox" id="termsAgreeCheckbox">
                     <span><%= t('auth.termsAgree') %></span>
                 </label>
+                <label class="terms-checkbox-row terms-checkbox-row--optional">
+                    <input type="checkbox" id="marketingOptInCheckbox" checked>
+                    <span><%= t('auth.marketingOptIn') %></span>
+                </label>
             </div>
 
             <div class="modal-actions">
@@ -256,6 +260,6 @@
         window.GOOGLE_CLIENT_ID = <%- JSON.stringify(googleClientId || '') %>;
     </script>
     <script src="/js/global.js"></script>
-    <script src="/js/register.js?v=20260908s"></script>
+    <script src="/js/register.js?v=20261119a"></script>
 </body>
 </html>
