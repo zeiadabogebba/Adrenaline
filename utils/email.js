@@ -35,7 +35,7 @@ function otpEmailHtml({ name, otp, expiresMinutes, lang = 'en', tpl = templates.
   const firstName = escapeHtml(firstNameOf(name, lang));
   // Each digit in its own tile, like a scoreboard. Digits stay LTR in Arabic.
   const digits = String(otp).split('').map((d) =>
-    `<td style="padding:0 3px;"><div style="width:44px;height:58px;line-height:58px;text-align:center;background:${C.raised};border:1px solid ${C.line};border-bottom:3px solid ${C.red};border-radius:4px;font-family:${F.display};font-size:34px;font-weight:900;color:${C.ink};">${escapeHtml(d)}</div></td>`).join('');
+    `<td style="padding:0 3px;"><div style="width:44px;height:58px;line-height:58px;text-align:center;background:${C.raised};border:1px solid ${C.line};border-bottom:3px solid ${C.red};border-radius:4px 4px 0 0;font-family:${F.display};font-size:34px;font-weight:900;color:${C.ink};">${escapeHtml(d)}</div></td>`).join('');
 
   const body = `
     <tr>
