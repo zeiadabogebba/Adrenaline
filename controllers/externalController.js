@@ -28,4 +28,23 @@ const getCurrencyConversion = async (req, res) => {
   }
 };
 
-module.exports = { getCurrencyConversion };
+const brevo = require('../utils/brevo');
+
+// Brevo marketing webhook (unsubscribe / spam / hard bounce). The payload is
+// not trusted: each email is re-checked against Brevo's API before the user's
+// setting is changed, so a forged call can't opt anyone out.
+const brevoWebhook = (req, res) => {
+  res.status(200).json({ status: 'success' });
+  if (!brevo.isEnabled()) return;
+  const events = (Array.isArray(req.body) ? req.body : [req.body]).slice(0, 50);
+  const emails = [...new Set(events
+    .map((e) => (e && typeof e.email === 'string' ? e.email.trim().toLowerCase() : ''))
+    .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)))];
+  emails.forEach((email) => {
+    brevo.applyBrevoUnsubscribe(email)
+      .then((changed) => { if (changed) console.log('[brevo] webhook: opted a user out'); })
+      .catch((err) => console.error('[brevo] webhook check failed:', err.message));
+  });
+};
+
+module.exports = { getCurrencyConversion, brevoWebhook };

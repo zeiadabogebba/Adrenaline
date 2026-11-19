@@ -434,3 +434,40 @@ body {
     .stat-info h3 { font-size: var(--type-label-sm); margin-bottom: 2px; }
     .stat-number { font-size: 1.25rem; }
 }
+
+/* Brevo trip-email panel */
+.brevo-panel { margin-bottom: var(--space-xl); }
+.brevo-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: 12px;
+    margin-bottom: var(--space-md);
+}
+.brevo-panel__head h2 { margin: 0; padding: 0; border: 0; }
+.brevo-panel__sub {
+    font-family: inherit;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-left: 6px;
+}
+.brevo-panel__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    column-gap: var(--space-xl);
+}
+.brevo-panel__stats li:last-child { border-bottom: 1px solid var(--color-border-light); }
+.brevo-panel .btn-action { padding: 10px 16px; }
+.brevo-panel .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+.brevo-panel .btn-action:disabled:hover { background: transparent; color: var(--gold-primary); }
+.brevo-panel__note {
+    margin: var(--space-md) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+}
+.brevo-panel__note.is-error { color: var(--color-danger); }
+.brevo-panel__note.is-ok { color: var(--color-success); }

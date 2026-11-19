@@ -8,7 +8,7 @@
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/adminDashboard.css?v=20260915b">
+    <link rel="stylesheet" href="/css/adminDashboard.css?v=20261119a">
 </head>
 <body>
     <div class="dashboard-shell">
@@ -91,6 +91,22 @@
                 </div>
             </section>
 
+            <section class="card brevo-panel" id="brevo-panel" aria-live="polite">
+                <div class="brevo-panel__head">
+                    <h2><i class="fas fa-envelope-open-text" aria-hidden="true"></i> Trip email list <span class="brevo-panel__sub">Brevo</span></h2>
+                    <button type="button" class="btn-action" id="brevo-sync-btn" disabled>
+                        <i class="fas fa-rotate" aria-hidden="true"></i> Sync now
+                    </button>
+                </div>
+                <ul class="data-list brevo-panel__stats">
+                    <li><span>Subscribed on site</span> <strong id="brevo-opted-in">…</strong></li>
+                    <li><span>In Brevo list</span> <strong id="brevo-list-count">…</strong></li>
+                    <li><span>Unsubscribed</span> <strong id="brevo-opted-out">…</strong></li>
+                    <li><span>Waiting for email verification</span> <strong id="brevo-unverified">…</strong></li>
+                </ul>
+                <p class="brevo-panel__note" id="brevo-note">Loading…</p>
+            </section>
+
             <div class="dashboard-row">
                 <section class="card popular-packages">
                     <h2>Active Packages</h2>
@@ -140,6 +156,6 @@
     </script>
     <script src="/js/global.js"></script>
     <script src="/js/admin-theme.js"></script>
-    <script src="/js/adminDashboard.js"></script>
+    <script src="/js/adminDashboard.js?v=20261119a"></script>
 </body>
 </html>

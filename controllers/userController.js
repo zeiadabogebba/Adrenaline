@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
+const brevo = require('../utils/brevo');
 const { cloudinary, cloudinaryFolder } = require('../config/cloudinary');
 
 const getProfile = async (req, res, next) => {
@@ -19,6 +20,7 @@ const updateProfile = async (req, res, next) => {
       { name, phone, nationality, dob },
       { new: true, runValidators: true }
     );
+    if (name !== undefined && updatedUser) brevo.syncUserInBackground(updatedUser);
     res.status(200).json({ status: 'success', data: { user: updatedUser } });
   } catch (err) {
     next(err);
@@ -35,6 +37,7 @@ const updateEmailPreferences = async (req, res, next) => {
       { marketingOptIn: req.body.marketingOptIn, marketingOptInUpdatedAt: new Date() },
       { new: true }
     );
+    brevo.syncUserInBackground(updatedUser, { explicitOptIn: req.body.marketingOptIn === true });
     res.status(200).json({ status: 'success', data: { marketingOptIn: updatedUser.marketingOptIn } });
   } catch (err) {
     next(err);
@@ -127,6 +130,7 @@ const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return next(new AppError('User not found.', 404));
+    brevo.removeInBackground(user.email);
 
     res.status(204).json({ status: 'success', data: null });
   } catch (err) {

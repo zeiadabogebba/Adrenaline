@@ -9,6 +9,9 @@ router.get('/activity', protect, authorize('Admin'), adminController.getRecentAc
 
 router.get('/users', protect, authorize('Admin'), adminController.getAdminUsers);
 
+router.get('/brevo/status', protect, authorize('Admin'), adminController.getBrevoStatus);
+router.post('/brevo/sync',  protect, authorize('Admin'), adminController.runBrevoSync);
+
 router.get('/bookings',          protect, authorize('Admin'), bookingController.getAllBookings);
 router.get('/bookings/export',   protect, authorize('Admin'), bookingController.exportTripBookingsCsv);
 router.patch('/bookings/:id/status', protect, authorize('Admin'), bookingController.updateBookingStatus);

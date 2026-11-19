@@ -4,6 +4,7 @@ const Booking = require('../models/Booking');
 const Review = require('../models/review');
 const Contact = require('../models/contact');
 const AppError = require('../utils/AppError');
+const brevo = require('../utils/brevo');
 
 const getStats = async (req, res, next) => {
   try {
@@ -84,4 +85,28 @@ const getAdminUsers = async (req, res, next) => {
   }
 };
 
-module.exports = { getStats, getRecentActivity, getAdminUsers };
+const getBrevoStatus = async (req, res, next) => {
+  try {
+    res.status(200).json({ status: 'success', data: await brevo.getStatus() });
+  } catch (err) {
+    next(err);
+  }
+};
+
+let brevoSyncRunning = false;
+const runBrevoSync = async (req, res, next) => {
+  if (!brevo.isEnabled()) return next(new AppError('Brevo is not connected: BREVO_API_KEY is missing on the server.', 503));
+  if (brevoSyncRunning) return next(new AppError('A sync is already running. Try again in a minute.', 409));
+  brevoSyncRunning = true;
+  try {
+    const result = await brevo.fullSync();
+    res.status(200).json({ status: 'success', data: result });
+  } catch (err) {
+    console.error('[brevo] full sync failed:', err.message);
+    next(new AppError('Sync with Brevo failed. Please try again later.', 502));
+  } finally {
+    brevoSyncRunning = false;
+  }
+};
+
+module.exports = { getStats, getRecentActivity, getAdminUsers, getBrevoStatus, runBrevoSync };

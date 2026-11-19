@@ -4,6 +4,7 @@ const User = require('../models/User');
 const AppError = require('../utils/AppError');
 const { sendOtpEmail, generateOtp } = require('../utils/email');
 const { initialsAvatarUrl, isGooglePhoto, hostedGooglePhoto } = require('../utils/avatar');
+const brevo = require('../utils/brevo');
 
 const OTP_TTL_MINUTES = 10;
 
@@ -110,6 +111,7 @@ const verifyOtp = async (req, res, next) => {
     user.otpCode = undefined;
     user.otpExpires = undefined;
     await user.save({ validateBeforeSave: false });
+    brevo.syncUserInBackground(user, { explicitOptIn: true });
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
@@ -254,6 +256,7 @@ const googleAuth = async (req, res, next) => {
       marketingOptIn: req.body.marketingOptIn !== false,
       marketingOptInUpdatedAt: new Date(),
     });
+    brevo.syncUserInBackground(user, { explicitOptIn: true });
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
