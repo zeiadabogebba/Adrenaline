@@ -111,7 +111,8 @@ function otpEmailText({ name, otp, expiresMinutes, lang = 'en' }) {
   return `${t('greeting', { name: firstNameOf(name, lang) })}\n\n${t('textCode', { otp })}\n\n${t('expiry', { minutes: expiresMinutes })}\n\n${t('tagline')}\n${t('brand')}`;
 }
 
-// Brevo transactional API (authenticated news.adrenaline98.com domain) first;
+// Brevo transactional API from its own subdomain (account.adrenaline98.com,
+// separate from marketing on news.) first;
 // Gmail SMTP stays as the fallback so a Brevo outage or daily-limit hit never
 // blocks sign-up or login.
 async function sendViaBrevo({ to, subject, html, text }) {
@@ -120,7 +121,7 @@ async function sendViaBrevo({ to, subject, html, text }) {
     method: 'POST',
     headers: { 'api-key': process.env.BREVO_API_KEY, accept: 'application/json', 'content-type': 'application/json' },
     body: JSON.stringify({
-      sender: { name: 'Adrenaline', email: process.env.BREVO_OTP_SENDER || 'trips@news.adrenaline98.com' },
+      sender: { name: 'Adrenaline', email: process.env.BREVO_OTP_SENDER || 'verify@account.adrenaline98.com' },
       replyTo: { email: process.env.BREVO_REPLY_TO || '98adrenaline@gmail.com' },
       to: [{ email: to }],
       subject,
