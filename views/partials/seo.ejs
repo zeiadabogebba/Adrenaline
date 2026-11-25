@@ -1,0 +1,17 @@
+<%
+  const seoUrl = siteUrl + canonicalPath;
+  const seoImg = !seoImage ? siteUrl + '/images/og-image.jpg' : (/^https?:\/\//.test(seoImage) ? seoImage : siteUrl + seoImage);
+%>
+    <meta name="description" content="<%= seoDesc %>">
+    <link rel="canonical" href="<%= seoUrl %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Adrenaline">
+    <meta property="og:title" content="<%= seoTitle %>">
+    <meta property="og:description" content="<%= seoDesc %>">
+    <meta property="og:url" content="<%= seoUrl %>">
+    <meta property="og:image" content="<%= seoImg %>">
+    <meta property="og:locale" content="<%= lang === 'ar' ? 'ar_EG' : 'en_US' %>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= seoTitle %>">
+    <meta name="twitter:description" content="<%= seoDesc %>">
+    <meta name="twitter:image" content="<%= seoImg %>">

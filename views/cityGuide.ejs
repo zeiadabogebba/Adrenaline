@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0A0A0B">
     <title><%= t('titles.cityGuide', { city: guide.name }) %></title>
+    <%- include('partials/seo', { seoTitle: t('titles.cityGuide', { city: guide.name }), seoDesc: t('seo.cityGuide', { city: guide.name }), seoImage: null }) %>
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
     <% if (user && guide.pages[0]) { %><link rel="preload" as="image" href="<%= guide.pages[0].src %>"<% if (guide.pages[0].thumb) { %> imagesrcset="<%= guide.pages[0].thumb %> 600w, <%= guide.pages[0].src %> 1667w" imagesizes="(max-width: 699px) 100vw, 640px"<% } %>><% } %>
 

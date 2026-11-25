@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<%= t('index.metaDescription') %>">
     <meta name="theme-color" content="#0A0A0B">
     <title><%= t('index.title') %></title>
+    <%- include('partials/seo', { seoTitle: t('index.title'), seoDesc: t('index.metaDescription'), seoImage: null }) %>
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="/css/public.css?v=20261002b">

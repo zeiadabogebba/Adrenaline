@@ -54,6 +54,7 @@ app.use(['/images/email', '/fonts'], (req, res, next) => {
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(require('./routes/seoRoutes'));
 app.use(i18n);
 app.use('/i18n', i18nRoutes);
 
