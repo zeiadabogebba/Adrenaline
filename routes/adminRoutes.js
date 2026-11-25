@@ -5,6 +5,7 @@ const bookingController = require('../controllers/bookingController');
 const emails = require('../controllers/emailCampaignController');
 const emailTemplates = require('../controllers/emailTemplateController');
 const googleSheets = require('../controllers/googleSheetsController');
+const photoBook = require('../controllers/photoBookController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/stats',    protect, authorize('Admin'), adminController.getStats);
@@ -38,6 +39,7 @@ router.patch('/bookings/:id/status', protect, authorize('Admin'), bookingControl
 router.get('/google-sheets/status',          protect, authorize('Admin'), googleSheets.status);
 router.post('/google-sheets/sync',           protect, authorize('Admin'), googleSheets.syncAll);
 router.post('/google-sheets/trip/:tripId',   protect, authorize('Admin'), googleSheets.syncTrip);
+router.patch('/photo-books/:tripId',         protect, authorize('Admin'), photoBook.updateTripSetting);
 router.delete('/google-sheets',              protect, authorize('Admin'), googleSheets.disconnect);
 
 module.exports = router;

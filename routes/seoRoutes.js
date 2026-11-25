@@ -15,7 +15,7 @@ router.use((req, res, next) => {
 });
 
 // Signed-in, booking and admin pages are never useful in search results.
-const PRIVATE_PATHS = ['/admin', '/api/', '/dashboard', '/profile', '/my-bookings', '/booking/', '/reviews/write', '/custom-trip', '/avatars/'];
+const PRIVATE_PATHS = ['/admin', '/api/', '/dashboard', '/profile', '/my-bookings', '/booking/', '/reviews/write', '/custom-trip', '/photo-book', '/avatars/'];
 
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(

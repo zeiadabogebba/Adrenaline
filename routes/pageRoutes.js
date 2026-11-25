@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pageController = require('../controllers/pageController');
 const googleSheets = require('../controllers/googleSheetsController');
+const photoBook = require('../controllers/photoBookController');
 const { protect, optionalAuth, authorize } = require('../middleware/auth');
 
 router.get('/',               optionalAuth, pageController.getLandingPage);
@@ -27,6 +28,8 @@ router.get('/booking/summary',    protect, pageController.getBookingSummaryPage)
 router.get('/booking/travellers', protect, pageController.getTravellersPage);
 router.get('/booking/:id',        protect, pageController.getBookingDetailsPage);
 router.get('/reviews/write',      protect, pageController.getWriteReviewPage);
+router.get('/photo-book',         protect, photoBook.getPhotoBooksPage);
+router.get('/photo-book/:tripId', protect, photoBook.getPhotoBookPage);
 router.get('/custom-trip',        protect, pageController.getCustomTripPage);
 
 router.get('/admin',          protect, authorize('Admin'), pageController.getAdminDashboard);
@@ -35,6 +38,7 @@ router.get('/admin/google-sheets/connect',  protect, authorize('Admin'), googleS
 router.get('/admin/google-sheets/callback', protect, authorize('Admin'), googleSheets.callback);
 router.get('/admin/packages', protect, authorize('Admin'), pageController.getAdminPackagesPage);
 router.get('/admin/trips',    protect, authorize('Admin'), pageController.getAdminTripsPage);
+router.get('/admin/photo-books', protect, authorize('Admin'), photoBook.getAdminPhotoBooksPage);
 router.get('/admin/trip-requests', protect, authorize('Admin'), pageController.getAdminTripRequestsPage);
 router.get('/admin/contact',  protect, authorize('Admin'), pageController.getAdminContactPage);
 router.get('/admin/users',    protect, authorize('Admin'), pageController.getAdminUsersPage);

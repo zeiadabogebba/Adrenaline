@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= t('titles.photoBook') %></title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20261002b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/photoBook.css?v=20261125a">
+    <script src="<%= i18nScript %>"></script>
+</head>
+<body>
+    <div class="dashboard-shell">
+
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <a href="/" class="wordmark" style="font-size:1.25rem" aria-label="<%= t('nav.homeAria') %>"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
+                        <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                        <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
+                        <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
+                        <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                        <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
+                        <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
+                        <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
+                        <li class="active"><a href="/photo-book"><i class="fas fa-book-open"></i> <%= t('nav.photoBook') %></a></li>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupAccount') %></span>
+                    <ul>
+                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
+                        <li><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
+                        <% if (user && user.role === 'Admin') { %><li><a href="/admin"><i class="fas fa-user-shield"></i> <%= t('nav.adminPanel') %></a></li><% } %>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupSupport') %></span>
+                    <ul>
+                        <li><a href="/faq"><i class="fas fa-question-circle"></i> <%= t('nav.faq') %></a></li>
+                        <li><a href="/contact"><i class="fas fa-envelope"></i> <%= t('nav.contact') %></a></li>
+                        <li><a href="/reviews/write"><i class="fas fa-star"></i> <%= t('nav.writeReview') %></a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle-btn"><i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span></button>
+                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dash-topbar" id="dash-topbar">
+                <div class="topbar-left">
+                    <div class="greeting-stack">
+                        <span class="greeting-label"><%= mode === 'book' ? (trip.date || '') : t('nav.groupTrips') %></span>
+                        <h1 class="greeting-name"><%= mode === 'book' ? trip.title : t('nav.photoBook') %></h1>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="account-chip" style="display:flex;align-items:center;gap:10px;">
+                        <div class="account-chip__avatar">
+                            <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                        </div>
+                        <div>
+                            <span class="account-chip__label"><%= t('nav.signedInAs') %></span>
+                            <strong class="account-chip__name"><%= user.name %></strong>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dash-scroll-area pb-area">
+                <% if (mode === 'list') { %>
+                <section class="pb-intro">
+                    <h2 class="pb-intro__title"><%- t('photoBook.heading') %></h2>
+                    <p class="pb-intro__text"><%= t('photoBook.intro') %></p>
+                </section>
+
+                <% if (!books.length) { %>
+                <div class="pb-empty">
+                    <i class="fas fa-book-open" aria-hidden="true"></i>
+                    <h3><%= t('photoBook.emptyTitle') %></h3>
+                    <p><%= t('photoBook.emptyText') %></p>
+                </div>
+                <% } else { %>
+                <div class="pb-shelf">
+                    <% books.forEach(b => { %>
+                    <a class="pb-shelf__item" href="/photo-book/<%= b.trip._id %>">
+                        <span class="pb-shelf__cover">
+                            <% if (b.trip.image) { %><span class="pb-shelf__photo" style="background-image:url('<%= b.trip.image %>')"></span><% } %>
+                            <span class="pb-shelf__shade"></span>
+                            <span class="wordmark pb-shelf__mark"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></span>
+                            <span class="pb-shelf__title"><%= b.trip.title %></span>
+                            <% if (b.trip.date) { %><span class="pb-shelf__date"><%= b.trip.date %></span><% } %>
+                        </span>
+                        <span class="pb-shelf__meta">
+                            <span class="pb-badge <%= b.open ? 'pb-badge--open' : '' %>"><%= b.open ? t('photoBook.open') : t('photoBook.closed') %></span>
+                            <span class="pb-shelf__count"><%= tp('photoBook.pages', b.pages) %></span>
+                        </span>
+                        <span class="pb-shelf__cta"><%= t('photoBook.openBook') %> <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <% }) %>
+                </div>
+                <% } %>
+                <% } else { %>
+                <a class="pb-back" href="/photo-book"><i class="fas fa-arrow-left" aria-hidden="true"></i> <%= t('photoBook.back') %></a>
+
+                <div class="pb-stage" id="pbStage">
+                    <div class="pb-viewport">
+                        <div class="pb-book" id="pbBook" aria-live="polite"></div>
+                    </div>
+                    <div class="pb-controls">
+                        <button type="button" class="pb-nav" id="pbPrev" aria-label="<%= t('photoBook.prev') %>"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <span class="pb-counter" id="pbCounter"></span>
+                        <button type="button" class="pb-nav" id="pbNext" aria-label="<%= t('photoBook.next') %>"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <% if (!book.open) { %><p class="pb-note"><i class="fas fa-lock" aria-hidden="true"></i> <%= t('photoBook.closedNote') %></p><% } %>
+                </div>
+                <div class="pb-toast" id="pbToast" role="status" hidden></div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.SERVER_USER = <%- JSON.stringify(user) %>;
+        <% if (mode === 'book') { %>
+        window.PHOTO_BOOK = <%- JSON.stringify({
+            tripId: book.tripId,
+            tripTitle: trip.title,
+            tripDate: trip.date || '',
+            location: trip.location || '',
+            owner: user.name,
+            open: book.open,
+            maxPages: book.maxPages,
+            pages: book.pages,
+            dir: dir,
+            i18n: tRaw('photoBook'),
+        }).replace(/</g, '\\u003c') %>;
+        <% } %>
+    </script>
+    <script src="/js/global.js"></script>
+    <% if (mode === 'book') { %><script src="/js/photoBook.js?v=20261125a"></script><% } %>
+</body>
+</html>

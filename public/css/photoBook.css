@@ -1,0 +1,748 @@
+/* Electronic photo book: the shelf of books and the flip-page book itself.
+   Book pages are always black in the brand theme, whatever the site theme is. */
+
+.pb-area {
+    --pb-ink: #F5F5F4;
+    --pb-dim: #A8A29E;
+    --pb-paper: #0A0A0B;
+    --pb-paper-2: #141416;
+    --pb-line: rgba(255, 255, 255, 0.12);
+    --pb-red: var(--crimson, #DC2626);
+}
+
+/* ── Shelf ─────────────────────────────────────────────── */
+
+.pb-intro {
+    margin: 0 0 var(--s-xl);
+}
+
+.pb-intro__title {
+    margin: 0 0 var(--s-2xs);
+    font-family: var(--font-display);
+    font-size: var(--type-h2);
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.pb-intro__text {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--ink-dim);
+}
+
+.pb-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-xs);
+    padding: var(--s-3xl) var(--s-lg);
+    text-align: center;
+    border: 1px dashed var(--hairline-strong);
+    border-radius: var(--r-md);
+    color: var(--ink-dim);
+}
+
+.pb-empty i {
+    font-size: 2rem;
+    color: var(--crimson);
+}
+
+.pb-empty h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--type-h4, 1.4rem);
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.pb-empty p {
+    margin: 0;
+    max-width: 44ch;
+}
+
+.pb-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--s-lg);
+}
+
+.pb-shelf__item {
+    display: grid;
+    gap: var(--s-xs);
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.pb-shelf__cover {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    aspect-ratio: 3 / 4;
+    padding: var(--s-md);
+    overflow: hidden;
+    background: var(--pb-paper);
+    border-radius: 4px 10px 10px 4px;
+    box-shadow:
+        inset 6px 0 0 rgba(255, 255, 255, 0.06),
+        inset 8px 0 0 rgba(0, 0, 0, 0.5),
+        0 14px 30px -12px rgba(0, 0, 0, 0.55);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s;
+}
+
+.pb-shelf__item:hover .pb-shelf__cover,
+.pb-shelf__item:focus-visible .pb-shelf__cover {
+    transform: translateY(-4px) rotate(-1deg);
+    box-shadow:
+        inset 6px 0 0 rgba(255, 255, 255, 0.06),
+        inset 8px 0 0 rgba(0, 0, 0, 0.5),
+        0 22px 40px -14px rgba(220, 38, 38, 0.45);
+}
+
+.pb-shelf__photo {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.55;
+    filter: grayscale(0.35);
+}
+
+.pb-shelf__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 10, 11, 0.2) 0%, rgba(10, 10, 11, 0.92) 78%);
+}
+
+.pb-shelf__mark {
+    position: absolute;
+    top: var(--s-md);
+    inset-inline-start: var(--s-md);
+    font-size: 0.85rem;
+    color: #FFFFFF;
+}
+
+.pb-shelf__title,
+.pb-shelf__date {
+    position: relative;
+    color: #FFFFFF;
+}
+
+.pb-shelf__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1.05;
+    text-transform: uppercase;
+}
+
+.pb-shelf__date {
+    font-size: 0.8rem;
+    color: #D6D3D1;
+}
+
+.pb-shelf__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-xs);
+    font-size: 0.82rem;
+    color: var(--ink-dim);
+}
+
+.pb-badge {
+    padding: 3px 9px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.pb-badge--open {
+    border-color: var(--crimson);
+    color: var(--crimson);
+}
+
+.pb-shelf__cta {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--crimson);
+}
+
+/* ── Book ──────────────────────────────────────────────── */
+
+.pb-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--s-md);
+    color: var(--ink-dim);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pb-back:hover {
+    color: var(--crimson);
+}
+
+[dir="rtl"] .pb-back .fa-arrow-left {
+    transform: scaleX(-1);
+}
+
+.pb-stage {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-md);
+    padding-bottom: var(--s-xl);
+}
+
+.pb-viewport {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    padding: 12px 0 28px;
+}
+
+.pb-book {
+    position: relative;
+    width: min(900px, 100%);
+    aspect-ratio: 3 / 2;
+    perspective: 2400px;
+    transition: transform 0.7s cubic-bezier(0.645, 0.045, 0.355, 1);
+    direction: ltr; /* the flip mechanics are physical; RTL is handled by mirroring below */
+}
+
+.pb-book.is-single {
+    width: min(460px, 100%);
+    aspect-ratio: 3 / 4;
+}
+
+/* Closed on the cover or on the back: centre the single visible page. */
+.pb-book:not(.is-single).at-start { transform: translateX(-25%); }
+.pb-book:not(.is-single).at-end   { transform: translateX(25%); }
+
+.pb-leaf {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), visibility 0s;
+}
+
+.pb-book.is-single .pb-leaf {
+    left: 0;
+    width: 100%;
+}
+
+.pb-leaf.is-flipped {
+    transform: rotateY(-180deg);
+}
+
+.pb-book.is-single .pb-leaf.is-flipped {
+    visibility: hidden;
+    transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), visibility 0s linear 0.8s;
+}
+
+.pb-face {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--pb-paper);
+    color: var(--pb-ink);
+    border-radius: 0 6px 6px 0;
+    box-shadow: inset 14px 0 18px -14px rgba(0, 0, 0, 0.9), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+}
+
+.pb-face--back {
+    transform: rotateY(180deg);
+    border-radius: 6px 0 0 6px;
+    box-shadow: inset -14px 0 18px -14px rgba(0, 0, 0, 0.9), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+}
+
+.pb-book.is-single .pb-face {
+    border-radius: 6px;
+}
+
+/* Page content */
+
+.pb-page {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(16px, 4%, 30px);
+    font-family: var(--font-body);
+}
+
+.pb-page::before {
+    /* thin red frame */
+    content: "";
+    position: absolute;
+    inset: clamp(8px, 2%, 14px);
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    pointer-events: none;
+}
+
+.pb-page__head,
+.pb-page__foot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pb-dim);
+}
+
+.pb-page__foot {
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.pb-pulse {
+    flex: 1;
+    height: 14px;
+    margin: 0 10px;
+}
+
+.pb-pulse path {
+    fill: none;
+    stroke: var(--pb-red);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+}
+
+/* Cover */
+
+.pb-cover {
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    background:
+        radial-gradient(120% 70% at 50% 110%, rgba(220, 38, 38, 0.28), transparent 60%),
+        var(--pb-paper);
+}
+
+.pb-cover .wordmark {
+    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    color: #FFFFFF;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.pb-cover .wordmark__mark {
+    width: 2.4em;
+    height: 2.4em;
+}
+
+.pb-cover__slogan {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(0.7rem, 1.6vw, 0.9rem);
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--pb-red);
+}
+
+.pb-cover__slogan b {
+    color: #FFFFFF;
+    font-weight: inherit;
+}
+
+.pb-cover__rule {
+    width: 48px;
+    height: 2px;
+    background: var(--pb-red);
+    margin: 6px 0;
+}
+
+.pb-cover__label {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pb-dim);
+}
+
+.pb-cover__owner {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #FFFFFF;
+}
+
+.pb-cover__trip {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--pb-dim);
+}
+
+/* Memory page */
+
+.pb-memory__dest {
+    position: relative;
+    margin: 12px 0 10px;
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 3.2vw, 1.8rem);
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.pb-memory__dest i {
+    font-size: 0.6em;
+    color: var(--pb-red);
+    vertical-align: middle;
+    margin-inline-end: 6px;
+}
+
+.pb-memory__photo {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #000 center / cover no-repeat;
+    border: 6px solid #FFFFFF;
+    box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.8);
+}
+
+.pb-memory__caption {
+    position: relative;
+    margin: 12px 0 0;
+    font-size: clamp(0.85rem, 1.8vw, 1rem);
+    font-style: italic;
+    line-height: 1.45;
+    color: #E7E5E4;
+    overflow-wrap: anywhere;
+}
+
+.pb-memory__caption::before {
+    content: "\201C";
+    color: var(--pb-red);
+    font-weight: 800;
+    margin-inline-end: 2px;
+}
+
+.pb-remove {
+    position: absolute;
+    top: 8px;
+    inset-inline-end: 8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    background: rgba(10, 10, 11, 0.85);
+    border: 1px solid var(--pb-line);
+    border-radius: var(--r-full);
+    color: var(--pb-dim);
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.pb-remove:hover,
+.pb-remove.is-armed {
+    border-color: var(--pb-red);
+    color: #FFFFFF;
+    background: var(--pb-red);
+}
+
+/* Form page */
+
+.pb-form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 10px;
+}
+
+.pb-input,
+.pb-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    background: var(--pb-paper-2);
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    border-radius: 4px;
+    color: #FFFFFF;
+    font: inherit;
+}
+
+.pb-input {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.pb-textarea {
+    resize: none;
+    min-height: 64px;
+    font-style: italic;
+}
+
+.pb-input::placeholder,
+.pb-textarea::placeholder {
+    color: #78716C;
+}
+
+.pb-input:focus,
+.pb-textarea:focus {
+    outline: none;
+    border-style: solid;
+    border-color: var(--pb-red);
+}
+
+.pb-drop {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 90px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 6px;
+    background: var(--pb-paper-2) center / cover no-repeat;
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    border-radius: 4px;
+    color: var(--pb-dim);
+    text-align: center;
+    cursor: pointer;
+}
+
+.pb-drop:hover,
+.pb-drop:focus-within {
+    border-color: var(--pb-red);
+    color: #FFFFFF;
+}
+
+.pb-drop i {
+    font-size: 1.6rem;
+    color: var(--pb-red);
+}
+
+.pb-drop small {
+    font-size: 0.7rem;
+}
+
+.pb-drop input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.pb-drop.has-photo {
+    border: 6px solid #FFFFFF;
+}
+
+.pb-drop.has-photo > span,
+.pb-drop.has-photo > i,
+.pb-drop.has-photo > small {
+    visibility: hidden;
+}
+
+.pb-drop__change {
+    position: absolute;
+    bottom: 8px;
+    inset-inline-end: 8px;
+    padding: 4px 9px;
+    background: rgba(10, 10, 11, 0.85);
+    border-radius: var(--r-full);
+    font-size: 0.72rem;
+    color: #FFFFFF;
+    visibility: hidden;
+}
+
+.pb-drop.has-photo .pb-drop__change {
+    visibility: visible;
+}
+
+.pb-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--pb-red);
+    border: 0;
+    border-radius: 4px;
+    color: #FFFFFF;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.pb-save:hover {
+    background: #B91C1C;
+}
+
+.pb-save[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.pb-error {
+    margin: 0;
+    min-height: 1em;
+    font-size: 0.78rem;
+    color: #FCA5A5;
+}
+
+/* Message pages (full / closed with no pages / back cover) */
+
+.pb-message {
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.pb-message h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pb-message p {
+    margin: 0;
+    max-width: 30ch;
+    color: var(--pb-dim);
+}
+
+.pb-message .wordmark__mark {
+    width: 3.2rem;
+    height: 3.2rem;
+}
+
+.pb-blank {
+    justify-content: center;
+    align-items: center;
+    opacity: 0.25;
+}
+
+.pb-blank .wordmark__mark {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Controls */
+
+.pb-controls {
+    direction: ltr; /* matches the book's physical page-turn direction */
+    display: flex;
+    align-items: center;
+    gap: var(--s-md);
+}
+
+.pb-nav {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    background: var(--surface-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-full);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, transform 0.15s;
+}
+
+.pb-nav:hover:not([disabled]) {
+    border-color: var(--crimson);
+    color: var(--crimson);
+}
+
+.pb-nav:active:not([disabled]) {
+    transform: scale(0.94);
+}
+
+.pb-nav[disabled] {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.pb-counter {
+    min-width: 120px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+}
+
+.pb-note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+}
+
+.pb-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #0A0A0B;
+    border: 1px solid var(--crimson);
+    border-radius: var(--r-md);
+    color: #FFFFFF;
+    transform: translateX(-50%);
+    box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+}
+
+.pb-toast[hidden] {
+    display: none;
+}
+
+.pb-toast button {
+    padding: 6px 10px;
+    background: var(--crimson);
+    border: 0;
+    border-radius: 4px;
+    color: #FFFFFF;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pb-leaf,
+    .pb-book,
+    .pb-shelf__cover {
+        transition-duration: 0.01ms !important;
+    }
+}
