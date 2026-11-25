@@ -137,8 +137,10 @@ const getAdminPhotoBooksPage = async (req, res, next) => {
       PhotoBookTrip.find({ tripId: { $in: ids } }).lean(),
       Booking.aggregate([
         { $match: { tripId: { $in: ids }, status: LIVE_BOOKING } },
-        { $group: { _id: '$tripId', users: { $addToSet: '$userId' } } },
-        { $project: { n: { $size: '$users' } } },
+        // seats matches Booking Management (one booking can cover several people);
+        // accounts is who can actually open the book, since it belongs to the person who booked.
+        { $group: { _id: '$tripId', seats: { $sum: '$travelers' }, users: { $addToSet: '$userId' } } },
+        { $project: { seats: 1, n: { $size: '$users' } } },
       ]),
       PhotoBookPage.aggregate([
         { $match: { tripId: { $in: ids } } },
@@ -161,7 +163,8 @@ const getAdminPhotoBooksPage = async (req, res, next) => {
         hidden: t.status === 'inactive',
         enabled: Boolean(s[id] && s[id].enabled),
         submissionsOpen: Boolean(s[id] && s[id].submissionsOpen),
-        travellers: tr[id] ? tr[id].n : 0,
+        travellers: tr[id] ? tr[id].seats : 0,
+        accounts: tr[id] ? tr[id].n : 0,
         pages: pg[id] ? pg[id].pages : 0,
         contributors: pg[id] ? pg[id].users : 0,
       };

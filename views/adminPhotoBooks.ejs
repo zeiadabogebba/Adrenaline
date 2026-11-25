@@ -85,7 +85,7 @@
                 <div class="pbx-thumb" <% if (r.image) { %>style="background-image:url('<%= r.image %>')"<% } %>></div>
                 <div class="pbx-info">
                     <h3><%= r.title %><% if (r.hidden) { %> <span class="pbx-tag">Hidden on site</span><% } %></h3>
-                    <p><%= r.date || 'No date' %> &middot; <%= r.travellers %> traveller<%= r.travellers === 1 ? '' : 's' %> booked &middot; <span class="pbx-pages"><%= r.pages %> page<%= r.pages === 1 ? '' : 's' %> from <%= r.contributors %> traveller<%= r.contributors === 1 ? '' : 's' %></span></p>
+                    <p><%= r.date || 'No date' %> &middot; <%= r.travellers %> traveller<%= r.travellers === 1 ? '' : 's' %> booked &middot; <span title="Each booking's photo book belongs to the account that made it"><%= r.accounts %> booking account<%= r.accounts === 1 ? '' : 's' %> can open it</span> &middot; <span class="pbx-pages"><%= r.pages %> page<%= r.pages === 1 ? '' : 's' %> from <%= r.contributors %> traveller<%= r.contributors === 1 ? '' : 's' %></span></p>
                 </div>
                 <div class="pbx-switches">
                     <label class="pbx-switch">
