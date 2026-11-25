@@ -239,8 +239,8 @@ const googleAuth = async (req, res, next) => {
       return next(new AppError('Please provide your date of birth, phone number and nationality to finish creating your account.', 400));
     }
     const age = (Date.now() - new Date(dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    if (Number.isNaN(age) || age < 18) {
-      return next(new AppError('You must be at least 18 years old to create an account.', 400));
+    if (Number.isNaN(age) || age < 16) {
+      return next(new AppError('You must be at least 16 years old to create an account.', 400));
     }
 
     user = await User.create({

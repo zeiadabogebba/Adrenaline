@@ -127,7 +127,7 @@ function piValidateDob() {
     const val = document.getElementById('dob')?.value || '';
     if (!val) { piClear('dob'); return true; }
     const age = (Date.now() - new Date(val)) / (1000 * 60 * 60 * 24 * 365.25);
-    if (age < 18)  { piErr('dob', window.t('js.auth.age18')); return false; }
+    if (age < 16)  { piErr('dob', window.t('js.auth.minAge')); return false; }
     if (age > 100) { piErr('dob', window.t('js.auth.age100'));       return false; }
     piClear('dob'); return true;
 }

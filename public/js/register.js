@@ -22,7 +22,7 @@ function validateDob() {
   const val = document.getElementById('dob')?.value || '';
   if (!val) { showError('dob_error', window.t('js.auth.dobRequired')); return false; }
   const age = (Date.now() - new Date(val)) / (1000 * 60 * 60 * 24 * 365.25);
-  if (age < 18)  { showError('dob_error', window.t('js.auth.age18')); return false; }
+  if (age < 16)  { showError('dob_error', window.t('js.auth.minAge')); return false; }
   if (age > 100) { showError('dob_error', window.t('js.auth.age100')); return false; }
   clearError('dob_error'); return true;
 }
@@ -107,7 +107,7 @@ function validateGoogleDetails() {
   if (!dob) { showError('g_dob_error', window.t('js.auth.dobRequired')); ok = false; }
   else {
     const age = (Date.now() - new Date(dob)) / (1000 * 60 * 60 * 24 * 365.25);
-    if (age < 18) { showError('g_dob_error', window.t('js.auth.age18')); ok = false; }
+    if (age < 16) { showError('g_dob_error', window.t('js.auth.minAge')); ok = false; }
     else if (age > 100) { showError('g_dob_error', window.t('js.auth.age100')); ok = false; }
     else clearError('g_dob_error');
   }

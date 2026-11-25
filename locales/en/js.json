@@ -64,7 +64,7 @@
     "lastMin": "Last name must be at least 2 characters",
     "lastLetters": "Last name must contain letters only",
     "dobRequired": "Date of birth is required",
-    "age18": "You must be at least 18 years old",
+    "minAge": "You must be at least 16 years old",
     "age100": "Age cannot exceed 100 years",
     "nationalityRequired": "Please select your nationality",
     "phoneMin": "Phone number must be at least 7 digits",

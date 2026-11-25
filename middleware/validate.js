@@ -23,7 +23,7 @@ const validateRegister = [
     .isISO8601().withMessage('Please provide a valid date of birth')
     .custom((value) => {
       const age = (Date.now() - new Date(value).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-      if (age < 18) throw new Error('You must be at least 18 years old');
+      if (age < 16) throw new Error('You must be at least 16 years old');
       return true;
     }),
   handleValidationErrors,
