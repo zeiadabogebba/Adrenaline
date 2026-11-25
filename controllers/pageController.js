@@ -11,6 +11,7 @@ const TripRequest = require('../models/TripRequest');
 const { tripPaymentMethods } = require('../utils/paymentMethods');
 const AppError = require('../utils/AppError');
 const { effectiveStatus } = require('../utils/bookingStatus');
+const googleSheets = require('../utils/googleSheets');
 const { depositPercentOf, depositAmount } = require('../utils/deposit');
 const { localizePackage, localizeTrip, localizeDateText, place } = require('../utils/i18n');
 
@@ -446,12 +447,17 @@ const getAdminBookingsPage = async (req, res, next) => {
       seats: seats.length > 0 ? seats[0].total : 0,
     };
 
+    const sheetsStatus = await googleSheets.getStatus().catch(() => ({ configured: googleSheets.isConfigured(), connected: false }));
+    const sheetsResult = ['connected', 'cancelled', 'error', 'noscope'].includes(req.query.sheets) ? req.query.sheets : '';
+
     res.render('adminBookings', {
       user: req.user,
       bookings,
       stats,
       upcomingTrips,
       exportTrips,
+      sheetsStatus,
+      sheetsResult,
       filters: { status: statusQ, trip: tripQ, q },
       pagination: { page, totalPages, perPage: ADMIN_BOOKINGS_PER_PAGE, matching },
     });
@@ -566,6 +572,8 @@ const getAdminReportsPage = async (req, res, next) => {
 const getContactPage = (req, res) => res.render('contact', { user: req.user || null });
 const getAboutPage   = (req, res) => res.render('about',   { user: req.user || null });
 const getFaqPage     = (req, res) => res.render('faq',     { user: req.user || null });
+const getPrivacyPage = (req, res) => res.render('legal',   { user: req.user || null, page: 'privacy' });
+const getTermsPage   = (req, res) => res.render('legal',   { user: req.user || null, page: 'terms' });
 const getUpcomingTrips = async (req, res, next) => {
   try {
     const trips = await Trip.find({ kind: 'upcoming', status: 'active' }).sort('createdAt');
@@ -636,5 +644,7 @@ module.exports = {
   getContactPage,
   getAboutPage,
   getFaqPage,
+  getPrivacyPage,
+  getTermsPage,
   getCityGuidePage,
 };

@@ -5,6 +5,7 @@ const { tripPaymentMethods } = require('../utils/paymentMethods');
 const AppError = require('../utils/AppError');
 const { BOOKING_STATUSES } = require('../utils/bookingStatus');
 const { DEFAULT_DEPOSIT_PERCENT } = require('../utils/deposit');
+const googleSheets = require('../utils/googleSheets');
 
 const spotsLeftError = (spotsLeft) =>
   new AppError(`Sorry — only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left. Please adjust your booking.`, 400);
@@ -279,6 +280,7 @@ const confirmBooking = async (req, res, next) => {
       await Booking.updateOne({ _id: draft._id, status: 'confirmed' }, { status: 'draft' });
       return next(spotsLeftError(hold.spotsLeft));
     }
+    googleSheets.queueTripSync(draft.tripId);
 
     const populated = await Booking.findById(draft._id)
       .populate('packageId', 'name type city image')
@@ -352,6 +354,7 @@ const cancelBooking = async (req, res, next) => {
     if (previous.status === 'confirmed') {
       await releaseSeats(previous.tripId, previous.travelers);
     }
+    googleSheets.queueTripSync(previous.tripId);
 
     const cancelled = await Booking.findById(booking._id);
     res.status(200).json({ status: 'success', data: { booking: cancelled } });
@@ -475,6 +478,8 @@ const updateBookingStatus = async (req, res, next) => {
         }
       }
     }
+
+    googleSheets.queueTripSync(booking.tripId);
 
     const populated = await Booking.findById(booking._id)
       .populate('userId', 'name email')

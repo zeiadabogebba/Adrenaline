@@ -55,10 +55,19 @@
                     <p>Manage all customer bookings and reservations</p>
                 </div>
                 <div class="top-bar-right">
-                    <button class="btn-primary" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Export Booking Management to CSV</button>
+                    <button class="btn-primary" id="exportCsvBtn"><i class="fas fa-table"></i> Trip Rosters</button>
                 </div>
             </header>
 
+            <% if (sheetsResult) { %>
+            <% const sheetsMsg = {
+                connected: ['fa-check-circle', 'Google Sheets connected. Sheets for upcoming trips are being created in the background.'],
+                cancelled: ['fa-info-circle', 'Google Sheets connection was cancelled.'],
+                noscope:   ['fa-exclamation-triangle', 'Google Sheets was not connected: please tick the Google Drive permission box on the Google screen and try again.'],
+                error:     ['fa-exclamation-triangle', 'Could not connect Google Sheets. Please try again.'],
+            }[sheetsResult]; %>
+            <p id="sheets-flash" style="margin:0 0 0.75rem;padding:0.65rem 0.9rem;border:1px solid var(--hairline-strong);border-radius:8px;font-size:0.9rem;"><i class="fas <%= sheetsMsg[0] %>"></i> <%= sheetsMsg[1] %></p>
+            <% } %>
             <% const scopedTrip = filters.trip && filters.trip !== 'upcoming' ? exportTrips.find(t => String(t._id) === filters.trip) : null; %>
             <% if (filters.trip === 'upcoming' || scopedTrip) { %>
             <p style="margin:0 0 0.75rem;color:var(--color-text-muted);font-size:0.9rem;"><i class="fas fa-filter"></i> Stats for: <strong><%= scopedTrip ? scopedTrip.title + (scopedTrip.date ? ' · ' + scopedTrip.date : '') : 'All Upcoming Trips' %></strong></p>
@@ -217,10 +226,26 @@
     <div class="modal-overlay" id="exportCsvModal">
         <div class="modal-container" style="max-width:480px;">
             <div class="modal-header">
-                <h3>Export Bookings to CSV</h3>
+                <h3>Trip Rosters</h3>
                 <button class="modal-close" onclick="closeModal('exportCsvModal')">&times;</button>
             </div>
             <div class="modal-body">
+                <div id="sheets-panel" style="padding:0.75rem 0.9rem;border:1px solid var(--hairline-strong);border-radius:8px;margin-bottom:1.25rem;font-size:0.85rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;font-weight:700;margin-bottom:0.35rem;"><i class="fas fa-table" style="color:#1E8E3E;"></i> Google Sheets</div>
+                    <% if (!sheetsStatus.configured) { %>
+                    <p style="margin:0;color:var(--color-text-muted);">Not set up on the server yet (GOOGLE_CLIENT_SECRET is missing). Use the CSV download below meanwhile.</p>
+                    <% } else if (!sheetsStatus.connected) { %>
+                    <p style="margin:0 0 0.6rem;color:var(--color-text-muted);">Connect the adrenaline98@gmail.com Google account once. Each trip then gets its own Google Sheet that updates itself whenever a booking is added or cancelled.</p>
+                    <a class="btn-primary" href="/admin/google-sheets/connect" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;"><i class="fab fa-google"></i> Connect Google Sheets</a>
+                    <% } else { %>
+                    <p style="margin:0;color:var(--color-text-muted);">Connected as <strong><%= sheetsStatus.email || 'Google account' %></strong><% if (sheetsStatus.lastSync) { %> · last synced <span id="sheets-last-sync" data-at="<%= new Date(sheetsStatus.lastSync).toISOString() %>"></span><% } %>.</p>
+                    <% if (sheetsStatus.lastError) { %><p style="margin:0.35rem 0 0;color:var(--crimson);"><i class="fas fa-exclamation-triangle"></i> <%= sheetsStatus.lastError %><% if (sheetsStatus.lastError.includes('reconnect')) { %> <a href="/admin/google-sheets/connect">Reconnect</a><% } %></p><% } %>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.6rem;flex-wrap:wrap;">
+                        <button class="btn-ghost" id="sheetsSyncAllBtn" type="button"><i class="fas fa-sync-alt"></i> Sync all trips now</button>
+                        <button class="btn-ghost" id="sheetsDisconnectBtn" type="button"><i class="fas fa-unlink"></i> Disconnect</button>
+                    </div>
+                    <% } %>
+                </div>
                 <% if (exportTrips.length) { %>
                 <label for="export-trip-select" style="font-size:0.85rem;color:var(--color-text-muted);display:block;margin-bottom:0.5rem;">Trip (newest added first)</label>
                 <select id="export-trip-select" class="select-modern" style="width:100%;">
@@ -228,9 +253,14 @@
                     <option value="<%= trip._id %>"><%= trip.title %><%= trip.date ? ' · ' + trip.date : '' %> (added <%= new Date(trip.createdAt).toLocaleDateString('en-GB') %>)</option>
                     <% }) %>
                 </select>
-                <p style="font-size:0.8rem;color:var(--color-text-muted);margin:0.75rem 0 1.25rem;">Includes each traveller's name, phone number and booking ID. Cancelled bookings are left out.</p>
-                <div style="display:flex;justify-content:flex-end;">
-                    <button class="btn-primary" id="exportCsvDownloadBtn"><i class="fas fa-download"></i> Download CSV</button>
+                <p style="font-size:0.8rem;color:var(--color-text-muted);margin:0.75rem 0 1.25rem;">Includes each traveller's name, phone number and booking ID. Cancelled bookings are left out.<% if (sheetsStatus.connected) { %> The Google Sheet's <strong>Notes</strong> tab is yours: the website never changes it.<% } %></p>
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;flex-wrap:wrap;">
+                    <% if (sheetsStatus.connected) { %>
+                    <button class="btn-ghost" id="exportCsvDownloadBtn" type="button"><i class="fas fa-download"></i> Download CSV (backup)</button>
+                    <button class="btn-primary" id="sheetsOpenBtn" type="button"><i class="fas fa-external-link-alt"></i> Open Google Sheet</button>
+                    <% } else { %>
+                    <button class="btn-primary" id="exportCsvDownloadBtn" type="button"><i class="fas fa-download"></i> Download CSV</button>
+                    <% } %>
                 </div>
                 <% } else { %>
                 <p style="color:var(--color-text-muted);margin:0;">There are no trips to export yet.</p>
@@ -436,6 +466,76 @@
             window.location.href = '/api/admin/bookings/export?tripId=' + encodeURIComponent(tripId);
             closeModal('exportCsvModal');
         });
+
+        (function () {
+            const lastSync = document.getElementById('sheets-last-sync');
+            if (lastSync) lastSync.textContent = new Date(lastSync.dataset.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+
+            // Drop ?sheets=... so a refresh doesn't show the message again.
+            if (document.getElementById('sheets-flash')) {
+                const u = new URL(location.href);
+                u.searchParams.delete('sheets');
+                history.replaceState(null, '', u.pathname + u.search);
+            }
+
+            async function postJson(url, method) {
+                const res = await fetch(url, { method: method || 'POST', credentials: 'same-origin' });
+                const body = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(body.message || 'Something went wrong. Please try again.');
+                return body.data || {};
+            }
+            function busy(btn, label) {
+                const html = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + label;
+                return () => { btn.disabled = false; btn.innerHTML = html; };
+            }
+
+            const openBtn = document.getElementById('sheetsOpenBtn');
+            openBtn?.addEventListener('click', async () => {
+                const tripId = document.getElementById('export-trip-select').value;
+                if (!tripId) return;
+                // Open the tab now, while the click still counts as a user action, so popup blockers allow it.
+                const win = window.open('about:blank', '_blank');
+                const done = busy(openBtn, 'Updating sheet…');
+                try {
+                    const data = await postJson('/api/admin/google-sheets/trip/' + encodeURIComponent(tripId));
+                    if (win) { win.opener = null; win.location.href = data.url; } else { location.href = data.url; }
+                } catch (err) {
+                    if (win) win.close();
+                    alert(err.message);
+                } finally {
+                    done();
+                }
+            });
+
+            const syncBtn = document.getElementById('sheetsSyncAllBtn');
+            syncBtn?.addEventListener('click', async () => {
+                const done = busy(syncBtn, 'Syncing…');
+                try {
+                    const data = await postJson('/api/admin/google-sheets/sync');
+                    syncBtn.closest('#sheets-panel').querySelector('p').insertAdjacentHTML('afterend',
+                        '<p style="margin:0.35rem 0 0;"><i class="fas fa-check-circle"></i> ' + data.synced + ' trip sheet' + (data.synced === 1 ? '' : 's') + ' up to date' + (data.failed ? ', ' + data.failed + ' failed' : '') + '.</p>');
+                } catch (err) {
+                    alert(err.message);
+                } finally {
+                    done();
+                }
+            });
+
+            const discBtn = document.getElementById('sheetsDisconnectBtn');
+            discBtn?.addEventListener('click', async () => {
+                if (!confirm('Disconnect Google Sheets? Existing sheets stay in Google Drive but stop updating until you reconnect.')) return;
+                const done = busy(discBtn, 'Disconnecting…');
+                try {
+                    await postJson('/api/admin/google-sheets', 'DELETE');
+                    location.reload();
+                } catch (err) {
+                    alert(err.message);
+                    done();
+                }
+            });
+        })();
 
 </script>
     <script src="/js/global.js"></script>
