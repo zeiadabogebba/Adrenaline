@@ -4,7 +4,8 @@ const Trip = require('../models/Trip');
 const PhotoBookTrip = require('../models/PhotoBookTrip');
 const PhotoBookPage = require('../models/PhotoBookPage');
 const AppError = require('../utils/AppError');
-const { localizeTrip } = require('../utils/i18n');
+const { localizeTrip, translateRaw } = require('../utils/i18n');
+const User = require('../models/User');
 const { cloudinary } = require('../config/cloudinary');
 
 const MAX_PAGES = 40;
@@ -177,6 +178,74 @@ const getAdminPhotoBooksPage = async (req, res, next) => {
   }
 };
 
+// GET /admin/photo-books/:tripId: everyone who has added pages to this trip's photo book.
+const getAdminTripBooksPage = async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.tripId)) return next(new AppError('Trip not found.', 404));
+    const trip = await Trip.findById(req.params.tripId).select('title date kind image').lean();
+    if (!trip) return next(new AppError('Trip not found.', 404));
+    const [setting, groups] = await Promise.all([
+      PhotoBookTrip.findOne({ tripId: trip._id }).lean(),
+      PhotoBookPage.aggregate([
+        { $match: { tripId: trip._id } },
+        { $sort: { createdAt: 1 } },
+        { $group: { _id: '$userId', pages: { $sum: 1 }, last: { $max: '$createdAt' }, photos: { $push: '$photo' } } },
+        { $sort: { last: -1 } },
+      ]),
+    ]);
+    const users = await User.find({ _id: { $in: groups.map((g) => g._id) } }).select('name email image').lean();
+    const userBy = Object.fromEntries(users.map((u) => [String(u._id), u]));
+    const books = groups.map((g) => {
+      const u = userBy[String(g._id)] || {};
+      return { userId: String(g._id), name: u.name || 'Deleted account', email: u.email || '', image: u.image || '', pages: g.pages, last: g.last, photos: g.photos.slice(0, 4) };
+    });
+    res.render('adminPhotoBook', {
+      user: req.user,
+      mode: 'trip',
+      trip,
+      enabled: Boolean(setting && setting.enabled),
+      submissionsOpen: Boolean(setting && setting.submissionsOpen),
+      books,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /admin/photo-books/:tripId/:userId: one traveller's book, read-only.
+const getAdminUserBookPage = async (req, res, next) => {
+  try {
+    const { tripId, userId } = req.params;
+    if (!mongoose.isValidObjectId(tripId) || !mongoose.isValidObjectId(userId)) return next(new AppError('Photo book not found.', 404));
+    const [trip, owner, pages] = await Promise.all([
+      Trip.findById(tripId).select('title date location').lean(),
+      User.findById(userId).select('name email image').lean(),
+      PhotoBookPage.find({ tripId, userId }).sort('createdAt').lean(),
+    ]);
+    if (!trip || !pages.length) return next(new AppError('Photo book not found.', 404));
+    res.render('adminPhotoBook', {
+      user: req.user,
+      mode: 'book',
+      trip,
+      owner: owner || { name: 'Deleted account', email: '' },
+      book: {
+        tripId: String(trip._id),
+        tripTitle: trip.title,
+        tripDate: trip.date || '',
+        location: trip.location || '',
+        owner: (owner && owner.name) || 'Traveller',
+        open: false, // the admin view is read-only
+        maxPages: MAX_PAGES,
+        pages: pages.map(pageJson),
+        dir: 'ltr',
+        i18n: translateRaw('en', 'photoBook'),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // PATCH /api/admin/photo-books/:tripId  { enabled?, submissionsOpen? }
 const updateTripSetting = async (req, res, next) => {
   try {
@@ -205,5 +274,7 @@ module.exports = {
   addPage,
   deletePage,
   getAdminPhotoBooksPage,
+  getAdminTripBooksPage,
+  getAdminUserBookPage,
   updateTripSetting,
 };

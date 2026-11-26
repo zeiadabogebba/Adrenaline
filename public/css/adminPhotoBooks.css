@@ -182,3 +182,126 @@
 }
 
 .pbx-tag{display:inline-block;margin-inline-start:8px;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:600;letter-spacing:.02em;vertical-align:middle;color:var(--text-secondary,#A1A1AA);border:1px solid currentColor;opacity:.85}
+
+/* View books link, per-trip list of books, and the read-only viewer */
+
+.pbx-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--crimson);
+    text-decoration: none;
+}
+
+.pbx-view:hover { text-decoration: underline; }
+
+.pbx-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    text-decoration: none;
+}
+
+.pbx-back:hover { color: var(--crimson); }
+
+.pbx-books {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--s-md);
+    padding-inline: var(--space-2xl);
+    padding-top: var(--s-lg);
+    padding-bottom: var(--s-xl);
+}
+
+.pbx-book {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    background: var(--surface-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.pbx-book:hover {
+    border-color: var(--crimson);
+    transform: translateY(-2px);
+}
+
+.pbx-book__photos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    aspect-ratio: 4 / 1;
+    background: #0A0A0B;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pbx-book__photos span { background: #111 center / cover no-repeat; }
+
+.pbx-book__who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.pbx-book__avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    font-size: 1.6rem;
+    color: var(--crimson);
+}
+
+.pbx-book__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.pbx-book__name {
+    display: grid;
+    min-width: 0;
+}
+
+.pbx-book__name strong,
+.pbx-book__name small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pbx-book__name small {
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+}
+
+.pbx-book__meta {
+    font-size: 0.8rem;
+    color: var(--ink-dim);
+}
+
+.pbx-book__cta {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--crimson);
+}
+
+.pbx-viewer {
+    padding: var(--s-md) var(--space-2xl) var(--s-xl);
+}
+
+@media (max-width: 760px) {
+    .pbx-books,
+    .pbx-viewer { padding-inline: 16px; }
+}

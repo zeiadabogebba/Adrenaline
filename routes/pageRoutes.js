@@ -39,6 +39,8 @@ router.get('/admin/google-sheets/callback', protect, authorize('Admin'), googleS
 router.get('/admin/packages', protect, authorize('Admin'), pageController.getAdminPackagesPage);
 router.get('/admin/trips',    protect, authorize('Admin'), pageController.getAdminTripsPage);
 router.get('/admin/photo-books', protect, authorize('Admin'), photoBook.getAdminPhotoBooksPage);
+router.get('/admin/photo-books/:tripId', protect, authorize('Admin'), photoBook.getAdminTripBooksPage);
+router.get('/admin/photo-books/:tripId/:userId', protect, authorize('Admin'), photoBook.getAdminUserBookPage);
 router.get('/admin/trip-requests', protect, authorize('Admin'), pageController.getAdminTripRequestsPage);
 router.get('/admin/contact',  protect, authorize('Admin'), pageController.getAdminContactPage);
 router.get('/admin/users',    protect, authorize('Admin'), pageController.getAdminUsersPage);

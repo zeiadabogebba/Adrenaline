@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title><%= mode === 'book' ? owner.name + ' · ' : '' %><%= trip.title %> Photo Books | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20261002b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
+    <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
+    <% if (mode === 'book') { %><link rel="stylesheet" href="/css/photoBook.css?v=20261126a"><% } %>
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li class="active"><a href="/admin/photo-books"><i class="fas fa-book-open"></i> Photo Books</a></li>
+                <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li><a href="/admin/emails"><i class="fas fa-envelope-open-text"></i> Email Campaigns</a></li>
+                <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+                <li class="sidebar-site-link"><a href="/"><i class="fas fa-arrow-left"></i> Back to Site</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="top-bar-left">
+                <a class="pbx-back" href="<%= mode === 'book' ? '/admin/photo-books/' + trip._id : '/admin/photo-books' %>"><i class="fas fa-arrow-left" aria-hidden="true"></i> <%= mode === 'book' ? 'All books for this trip' : 'All photo books' %></a>
+                <% if (mode === 'trip') { %>
+                <h1><%= trip.title %></h1>
+                <p><%= trip.date || 'No date' %> &middot; Photo book <b><%= enabled ? 'On' : 'Off' %></b> &middot; New pages <b><%= submissionsOpen ? 'Open' : 'Closed' %></b> &middot; <%= books.length %> traveller<%= books.length === 1 ? '' : 's' %> added pages</p>
+                <% } else { %>
+                <h1><%= owner.name %>'s photo book</h1>
+                <p><%= trip.title %><%= trip.date ? ' · ' + trip.date : '' %><%= owner.email ? ' · ' + owner.email : '' %> &middot; <%= book.pages.length %> page<%= book.pages.length === 1 ? '' : 's' %> &middot; View only</p>
+                <% } %>
+            </div>
+        </header>
+
+        <% if (mode === 'trip') { %>
+            <% if (!books.length) { %>
+            <p class="pbx-empty">No one has added a page to this trip's photo book yet.</p>
+            <% } else { %>
+            <div class="pbx-books">
+                <% books.forEach(b => { %>
+                <a class="pbx-book" href="/admin/photo-books/<%= trip._id %>/<%= b.userId %>">
+                    <span class="pbx-book__photos">
+                        <% b.photos.forEach(ph => { %><span style="background-image:url('<%= ph.replace('/upload/', '/upload/c_fill,w_240,h_240,q_auto,f_auto/') %>')"></span><% }) %>
+                    </span>
+                    <span class="pbx-book__who">
+                        <span class="pbx-book__avatar"><% if (b.image) { %><img src="<%= b.image %>" alt=""><% } else { %><i class="fas fa-user-circle" aria-hidden="true"></i><% } %></span>
+                        <span class="pbx-book__name"><strong><%= b.name %></strong><% if (b.email) { %><small><%= b.email %></small><% } %></span>
+                    </span>
+                    <span class="pbx-book__meta"><%= b.pages %> page<%= b.pages === 1 ? '' : 's' %> &middot; last added <%= new Date(b.last).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+                    <span class="pbx-book__cta">Open book <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </a>
+                <% }) %>
+            </div>
+            <% } %>
+        <% } else { %>
+            <div class="pb-area pbx-viewer">
+                <div class="pb-stage" id="pbStage">
+                    <div class="pb-viewport">
+                        <div class="pb-book" id="pbBook" aria-live="polite"></div>
+                    </div>
+                    <div class="pb-controls">
+                        <button type="button" class="pb-nav" id="pbPrev" aria-label="Previous page"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <span class="pb-counter" id="pbCounter"></span>
+                        <button type="button" class="pb-nav" id="pbNext" aria-label="Next page"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="pb-toast" id="pbToast" role="status" hidden></div>
+            </div>
+        <% } %>
+    </main>
+</div>
+
+<script>
+    window.SERVER_USER = <%- JSON.stringify(user).replace(/</g, '\\u003c') %>;
+    <% if (mode === 'book') { %>window.PHOTO_BOOK = <%- JSON.stringify(book).replace(/</g, '\\u003c') %>;<% } %>
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+<% if (mode === 'book') { %><script src="/js/photoBook.js?v=20261125a"></script><% } %>
+</body>
+</html>

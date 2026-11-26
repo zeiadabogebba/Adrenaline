@@ -217,6 +217,11 @@
     perspective: 2400px;
     transition: transform 0.7s cubic-bezier(0.645, 0.045, 0.355, 1);
     direction: ltr; /* the flip mechanics are physical; RTL is handled by mirroring below */
+    /* The pages are always black, so text stays light in the site's light theme too. */
+    --ink: #FFFFFF;
+    --ink-dim: #A8A29E;
+    --ink-faint: #57534E;
+    color: #FFFFFF;
 }
 
 .pb-book.is-single {
@@ -402,6 +407,7 @@
 
 .pb-memory__dest {
     position: relative;
+    color: #FFFFFF;
     margin: 12px 0 10px;
     font-family: var(--font-display);
     font-size: clamp(1.2rem, 3.2vw, 1.8rem);
