@@ -43,7 +43,9 @@ body {
     flex-direction: column;
     padding: var(--space-xl) 0;
     z-index: 100;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto; /* reach every link on short screens */
+    overscroll-behavior: contain;
 }
 
 .sidebar-header {
