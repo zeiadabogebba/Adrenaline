@@ -7,7 +7,11 @@
     <meta name="theme-color" content="#0A0A0B">
     <title><%= t('titles.cityGuide', { city: guide.name }) %></title>
     <%- include('partials/seo', { seoTitle: t('titles.cityGuide', { city: guide.name }), seoDesc: t('seo.cityGuide', { city: guide.name }), seoImage: null }) %>
-    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/images/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="icon" href="/images/favicon-48.png?v=2" type="image/png" sizes="48x48">
+    <link rel="icon" href="/images/favicon-96.png?v=2" type="image/png" sizes="96x96">
+    <link rel="icon" href="/images/favicon-192.png?v=2" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=2">
     <% if (user && guide.pages[0]) { %><link rel="preload" as="image" href="<%= guide.pages[0].src %>"<% if (guide.pages[0].thumb) { %> imagesrcset="<%= guide.pages[0].thumb %> 600w, <%= guide.pages[0].src %> 1667w" imagesizes="(max-width: 699px) 100vw, 640px"<% } %>><% } %>
 
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
