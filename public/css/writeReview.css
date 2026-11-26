@@ -425,3 +425,71 @@
         font-size: 1.5rem;
     }
 }
+
+/* Step 1: the trips this traveller booked */
+.trip-pick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--s-sm);
+    margin-bottom: var(--s-lg);
+}
+
+.trip-pick {
+    position: relative;
+    display: grid;
+    grid-template-rows: 110px auto;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, background-color 0.2s;
+}
+
+.trip-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.trip-pick:hover:not(.is-reviewed) { border-color: var(--ink-dim); transform: translateY(-2px); }
+.trip-pick:has(:checked) { border-color: var(--crimson); background: color-mix(in srgb, var(--crimson) 9%, var(--surface)); }
+.trip-pick:has(:focus-visible) { outline: 2px solid var(--crimson); outline-offset: 2px; }
+
+.trip-pick:has(:checked)::after {
+    content: "\f00c";
+    position: absolute;
+    top: 8px;
+    inset-inline-end: 8px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.8rem;
+    color: #FFFFFF;
+    background: var(--crimson);
+}
+
+.trip-pick__photo { position: relative; background: var(--surface-raised) center / cover no-repeat; }
+
+/* No trip photo: the brand mark on a dark gradient. */
+.trip-pick__photo:not([style]) { background: radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.35), transparent 55%), linear-gradient(160deg, #1A1C20, #0A0A0B); }
+.trip-pick__photo:not([style])::after { content: "\f6fc"; position: absolute; inset: 0; display: grid; place-items: center; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 2rem; color: rgba(255, 255, 255, 0.28); }
+.trip-pick__body { display: grid; gap: 3px; padding: 10px 12px 12px; }
+.trip-pick__title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; text-transform: uppercase; line-height: 1.1; color: var(--ink); }
+.trip-pick__sub { font-size: 0.8rem; color: var(--ink-dim); }
+.trip-pick__done { font-size: 0.78rem; font-weight: 700; color: var(--color-success, #16A34A); }
+.trip-pick.is-reviewed { cursor: default; opacity: 0.55; }
+
+.review-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-sm);
+    padding: var(--s-xl) var(--s-lg);
+    margin-bottom: var(--s-lg);
+    text-align: center;
+    border: 1px dashed var(--hairline-strong);
+    border-radius: var(--r-md);
+    color: var(--ink-dim);
+}
+
+.review-empty i { font-size: 1.8rem; color: var(--crimson); }
+.review-empty p { margin: 0; max-width: 40ch; }

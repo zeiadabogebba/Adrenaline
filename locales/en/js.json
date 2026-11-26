@@ -359,10 +359,7 @@
   },
   "review": {
     "traveler": "Traveler",
-    "chooseA": "Choose a {type}",
     "package": "Package",
-    "errType": "Choose a package type.",
-    "errPackage": "Choose a specific package.",
     "errRating": "Choose a star rating.",
     "errText": "Write at least 10 characters.",
     "errTitle": "Please enter a review title.",
@@ -373,6 +370,7 @@
     "none": "You have not submitted any reviews yet.",
     "delete": "Delete",
     "deleteConfirm": "Delete this review?",
-    "previewAlt": "Preview"
+    "previewAlt": "Preview",
+    "errTrip": "Choose the trip you are reviewing."
   }
 }

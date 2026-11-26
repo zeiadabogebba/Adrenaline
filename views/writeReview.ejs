@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="/css/userDashboard.css?v=20260915i18n">
-    <link rel="stylesheet" href="/css/writeReview.css?v=20260915i18n">
+    <link rel="stylesheet" href="/css/writeReview.css?v=20261127c">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="<%= i18nScript %>"></script>
 </head>
@@ -111,40 +111,29 @@
                     <section class="review-panel reveal-up">
                         <div class="section-header">
                             <span class="step-label"><%= t('review.step1') %></span>
-                            <h2><%= t('review.selectPackage') %></h2>
+                            <h2><%= t('review.selectTrip') %></h2>
                         </div>
-                        <div class="review-options-grid">
-                            <label class="selection-tile">
-                                <input type="radio" name="packageType" value="day">
-                                <div class="tile-content">
-                                    <i class="fas fa-sun"></i>
-                                    <span><%= t('js.bookings.types.day') %></span>
-                                </div>
-                            </label>
-                            <label class="selection-tile">
-                                <input type="radio" name="packageType" value="week">
-                                <div class="tile-content">
-                                    <i class="fas fa-calendar-week"></i>
-                                    <span><%= t('js.bookings.types.week') %></span>
-                                </div>
-                            </label>
-                            <label class="selection-tile">
-                                <input type="radio" name="packageType" value="single">
-                                <div class="tile-content">
-                                    <i class="fas fa-location-dot"></i>
-                                    <span><%= t('js.bookings.types.single') %></span>
-                                </div>
-                            </label>
+                        <% if (!reviewables.length) { %>
+                        <div class="review-empty">
+                            <i class="fas fa-route" aria-hidden="true"></i>
+                            <p><%= t('review.noTrips') %></p>
+                            <a class="btn btn--primary" href="/trips/upcoming"><%= t('review.browseTrips') %></a>
                         </div>
-
-                        <div class="select-dropdown-container reveal-up">
-                            <label for="package-select"><%- t('review.specificHtml') %></label>
-                            <div class="premium-select-wrapper">
-                                <select id="package-select">
-                                    <option value=""><%= t('review.choosePlaceholder') %></option>
-                                </select>
-                            </div>
+                        <% } else { %>
+                        <div class="trip-pick-grid" role="radiogroup" aria-label="<%= t('review.selectTrip') %>">
+                            <% reviewables.forEach(r => { %>
+                            <label class="trip-pick<%= r.reviewed ? ' is-reviewed' : '' %>">
+                                <input type="radio" name="reviewTarget" value="<%= r.id %>" data-kind="<%= r.kind %>" <%= r.reviewed ? 'disabled' : '' %>>
+                                <span class="trip-pick__photo" <% if (r.image) { %>style="background-image:url('<%= r.image %>')"<% } %>></span>
+                                <span class="trip-pick__body">
+                                    <span class="trip-pick__title" dir="auto"><%= r.title %></span>
+                                    <% if (r.sub) { %><span class="trip-pick__sub" dir="auto"><%= r.sub %></span><% } %>
+                                    <% if (r.reviewed) { %><span class="trip-pick__done"><i class="fas fa-check" aria-hidden="true"></i> <%= t('review.alreadyReviewed') %></span><% } %>
+                                </span>
+                            </label>
+                            <% }) %>
                         </div>
+                        <% } %>
 
                         <div class="text-review-area">
                             <label for="review-title"><%= t('review.reviewTitle') %></label>
@@ -216,16 +205,12 @@
     </div>
 
     <script>
-        const SERVER_DATA = {
-            user: <%- JSON.stringify(user) %>,
-            packages: <%- JSON.stringify(packages) %>
-        };
-        window.SERVER_USER = SERVER_DATA.user;
-        window.SERVER_PACKAGES = SERVER_DATA.packages;
+        window.SERVER_USER = <%- JSON.stringify(user).replace(/</g, '\\u003c') %>;
+        window.SERVER_REVIEWABLES = <%- JSON.stringify(reviewables).replace(/</g, '\\u003c') %>;
 
 </script>
     <script src="/js/global.js"></script>
-    <script src="/js/writeReview.js"></script>
+    <script src="/js/writeReview.js?v=20261127a"></script>
 </body>
 
 </html>

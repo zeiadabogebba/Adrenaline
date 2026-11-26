@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     displayUserName();
-    setupPackageSelection();
     setupStarRating();
     setupPhotoUpload();
     setupFormSubmission();
@@ -26,61 +25,9 @@ function displayUserName() {
     }
 }
 
-function setupPackageSelection() {
-    const radioButtons = document.querySelectorAll('input[name="packageType"]');
-    const packageLabel = document.getElementById('package-label');
-    const packageSelect = document.getElementById('package-select');
-
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function () {
-            const selectedType = this.value;
-            const typeLabel = getPackageTypeLabel(selectedType);
-            const packages = getPackagesByType(selectedType);
-
-            if (packageLabel) packageLabel.textContent = typeLabel.toLowerCase();
-            if (!packageSelect) return;
-
-            packageSelect.innerHTML = `<option value="">${window.t('js.review.chooseA', { type: typeLabel.toLowerCase() })}</option>`;
-
-            packages.forEach(pkg => {
-                const option = document.createElement('option');
-                option.value = pkg._id || pkg.id;
-                option.textContent = pkg.name + (pkg.city ? ' (' + pkg.city + ')' : '');
-                packageSelect.appendChild(option);
-            });
-        });
-    });
-}
-
-function getPackageCatalog() {
-    return window.SERVER_PACKAGES || [];
-}
-
-function getPackagesByType(type) {
-    return getPackageCatalog().filter(pkg => getPackageType(pkg) === type);
-}
-
-function getPackageType(pkg) {
-    const raw = [
-        pkg?.type,
-        pkg?.category,
-        pkg?._category,
-        pkg?.packageType
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    if (raw.includes('week')) return 'week';
-    if (raw.includes('single') || raw.includes('location')) return 'single';
-    return 'day';
-}
-
-function getPackageTypeLabel(type) {
-    const labels = {
-        day: window.t('js.bookings.types.day'),
-        week: window.t('js.bookings.types.week'),
-        single: window.t('js.bookings.types.single')
-    };
-
-    return labels[type] || window.t('js.review.package');
+// The trips (and packages) this traveller booked, from the page.
+function getReviewables() {
+    return window.SERVER_REVIEWABLES || [];
 }
 
 function setupStarRating() {
@@ -192,20 +139,14 @@ function setupFormSubmission() {
     if (submitBtn) {
         submitBtn.addEventListener('click', async function () {
             showFeedback('');
-            const selectedType = document.querySelector('input[name="packageType"]:checked');
-            const packageType = selectedType ? selectedType.value : null;
-
-            const packageSelect = document.getElementById('package-select');
-            const selectedPackageId = packageSelect?.value || '';
-            const selectedPackage = getPackageCatalog().find(pkg => (pkg._id || pkg.id) === selectedPackageId || pkg.id === selectedPackageId);
+            const picked = document.querySelector('input[name="reviewTarget"]:checked');
 
             const filledStars = document.querySelectorAll('.stars-glamour i.fas');
             const rating = filledStars.length;
 
             const reviewText = document.getElementById('review-text').value.trim();
 
-            if (!packageType) { showFeedback(window.t('js.review.errType')); return; }
-            if (!selectedPackage) { showFeedback(window.t('js.review.errPackage')); return; }
+            if (!picked) { showFeedback(window.t('js.review.errTrip')); return; }
             if (rating === 0) { showFeedback(window.t('js.review.errRating')); return; }
             if (reviewText.length < 10) { showFeedback(window.t('js.review.errText')); return; }
 
@@ -221,7 +162,7 @@ function setupFormSubmission() {
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({
-                        packageId:   selectedPackage._id || selectedPackage.id,
+                        [picked.dataset.kind === 'package' ? 'packageId' : 'tripId']: picked.value,
                         rating,
                         title:       reviewTitle,
                         text:        reviewText,
@@ -275,11 +216,11 @@ function renderMyReviews(reviews) {
     list.innerHTML = reviews.map(r => `
         <div class="review-item" id="my-review-${r._id}">
             <div class="review-header">
-                <strong>${localPackageName(r.packageId) || window.t('js.review.package')}</strong>
+                <strong>${escapeHtml(reviewName(r) || window.t('js.review.package'))}</strong>
                 <span style="color:#F1C40F;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
                 <span class="review-date">${r.date ? r.date.slice(0, 10) : ''}</span>
             </div>
-            <p class="review-text">"${r.title}": ${r.text}</p>
+            <p class="review-text">"${escapeHtml(r.title)}": ${escapeHtml(r.text)}</p>
             <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
                 <button class="btn btn--sm" style="color:#dc3545" onclick="deleteMyReview('${r._id}')">${window.t('js.review.delete')}</button>
             </div>
@@ -287,11 +228,17 @@ function renderMyReviews(reviews) {
     `).join('');
 }
 
-// The review API returns English package names; prefer the localized copy the page already has.
-function localPackageName(pkg) {
-    if (!pkg) return '';
-    const local = getPackageCatalog().find(p => p._id === (pkg._id || pkg));
-    return (local && local.name) || pkg.name || '';
+// The review API returns English names; prefer the localized copy the page already has.
+function reviewName(r) {
+    const target = r.tripId || r.packageId;
+    if (!target) return '';
+    const id = target._id || target;
+    const local = getReviewables().find(x => x.id === id);
+    return (local && local.title) || target.title || target.name || '';
+}
+
+function escapeHtml(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 async function deleteMyReview(id) {

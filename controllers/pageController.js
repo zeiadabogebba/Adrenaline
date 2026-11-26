@@ -303,10 +303,28 @@ const getBookingDetailsPage = async (req, res, next) => {
   }
 };
 
+// Travellers review what they booked: each trip (and package) from their live bookings,
+// newest first, with the ones they already reviewed marked.
 const getWriteReviewPage = async (req, res, next) => {
   try {
-    const packages = await Package.find({ status: 'active' }).select('name type city ar');
-    res.render('writeReview', { user: req.user, packages: localizePackages(packages, req.lang) });
+    const live = { userId: req.user._id, status: { $nin: ['draft', 'cancelled'] } };
+    const [tripIds, packageIds, mine] = await Promise.all([
+      Booking.distinct('tripId', { ...live, tripId: { $ne: null } }),
+      Booking.distinct('packageId', { ...live, packageId: { $ne: null } }),
+      Review.find({ userId: req.user._id }).select('tripId packageId').lean(),
+    ]);
+    const [trips, packages] = await Promise.all([
+      Trip.find({ _id: { $in: tripIds } }).select('title date location image kind createdAt ar'),
+      Package.find({ _id: { $in: packageIds } }).select('name type city image createdAt ar'),
+    ]);
+    const reviewed = new Set(mine.map((r) => String(r.tripId || r.packageId)));
+    const reviewables = [
+      ...localizeTrips(trips, req.lang).map((t) => ({ kind: 'trip', id: String(t._id), title: t.title, sub: [t.date, t.location].filter(Boolean).join(' · '), image: t.image || '', past: t.kind === 'past', at: t.createdAt })),
+      ...localizePackages(packages, req.lang).map((p) => ({ kind: 'package', id: String(p._id), title: p.name, sub: p.city || '', image: p.image || '', past: true, at: p.createdAt })),
+    ]
+      .map((x) => ({ ...x, reviewed: reviewed.has(x.id) }))
+      .sort((a, b) => Number(a.reviewed) - Number(b.reviewed) || new Date(b.at) - new Date(a.at));
+    res.render('writeReview', { user: req.user, reviewables });
   } catch (err) {
     next(err);
   }

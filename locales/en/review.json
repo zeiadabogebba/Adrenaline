@@ -3,11 +3,8 @@
   "title": "Share Your Review",
   "introLabel": "Traveler Voice",
   "introTitle": "Keep the experience honest, useful, and beautifully specific.",
-  "introDesc": "Select the package category you experienced, choose the exact package, then leave a focused review for future travelers.",
+  "introDesc": "Pick a trip you booked, then leave a focused review for future travellers.",
   "step1": "Step 1",
-  "selectPackage": "Select Package",
-  "specificHtml": "Specific <span id=\"package-label\">package</span>",
-  "choosePlaceholder": "Choose a package type first",
   "reviewTitle": "Review Title *",
   "titlePlaceholder": "e.g. Unforgettable Experience",
   "step2": "Step 2",
@@ -24,5 +21,9 @@
   "loadingReviews": "Loading your reviews…",
   "submittedTitle": "Review Submitted",
   "submittedDesc": "Your feedback has been added to your dashboard.",
-  "returnDashboard": "Return to Dashboard"
+  "returnDashboard": "Return to Dashboard",
+  "selectTrip": "Choose your trip",
+  "noTrips": "Once you book a trip, it shows up here for you to review.",
+  "browseTrips": "Browse upcoming trips",
+  "alreadyReviewed": "Reviewed"
 }

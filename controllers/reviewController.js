@@ -1,19 +1,31 @@
+const mongoose = require('mongoose');
 const Review = require('../models/review');
 const Package = require('../models/Package');
+const Trip = require('../models/Trip');
+const Booking = require('../models/Booking');
 const AppError = require('../utils/AppError');
 
+const LIVE_BOOKING = { $nin: ['draft', 'cancelled'] };
+const isId = (v) => mongoose.isValidObjectId(v);
+
+// Travellers review a trip (or package) they booked, once each.
 const createReview = async (req, res, next) => {
   try {
-    const { packageId, rating, title, text, photosCount } = req.body;
+    const { tripId, packageId, rating, title, text, photosCount } = req.body;
+    const target = tripId ? { tripId } : { packageId };
+    const key = tripId ? 'tripId' : 'packageId';
+    if (!isId(target[key])) return next(new AppError('Choose the trip you are reviewing.', 400));
 
-    const pkg = await Package.findById(packageId);
-    if (!pkg) return next(new AppError('Package not found.', 404));
+    const booked = await Booking.exists({ userId: req.user._id, status: LIVE_BOOKING, [key]: target[key] });
+    if (!booked) return next(new AppError('You can only review a trip you booked.', 403));
+    const exists = tripId ? await Trip.exists({ _id: tripId }) : await Package.exists({ _id: packageId });
+    if (!exists) return next(new AppError('Trip not found.', 404));
 
-    const existing = await Review.findOne({ packageId, userId: req.user._id });
-    if (existing) return next(new AppError('You have already reviewed this package.', 400));
+    const existing = await Review.findOne({ ...target, userId: req.user._id });
+    if (existing) return next(new AppError('You have already reviewed this trip.', 400));
 
     const review = await Review.create({
-      packageId,
+      ...target,
       userId: req.user._id,
       email: req.user.email,
       rating,
@@ -24,6 +36,7 @@ const createReview = async (req, res, next) => {
 
     res.status(201).json({ status: 'success', data: { review } });
   } catch (err) {
+    if (err.code === 11000) return next(new AppError('You have already reviewed this trip.', 400));
     next(err);
   }
 };
@@ -49,6 +62,7 @@ const getAllReviews = async (req, res, next) => {
     const reviews = await Review.find()
       .populate('userId', 'name email image')
       .populate('packageId', 'name type')
+      .populate('tripId', 'title date')
       .sort('-date');
 
     res.status(200).json({
@@ -65,6 +79,7 @@ const getMyReviews = async (req, res, next) => {
   try {
     const reviews = await Review.find({ userId: req.user._id })
       .populate('packageId', 'name type')
+      .populate('tripId', 'title date')
       .sort('-date');
     res.status(200).json({ status: 'success', data: { reviews } });
   } catch (err) {
@@ -95,8 +110,8 @@ const deleteReview = async (req, res, next) => {
 const uploadReviewPhotos = async (req, res, next) => {
   try {
     const photos = req.files ? req.files.map(f => f.path) : [];
-    const review = await Review.findByIdAndUpdate(
-      req.params.id,
+    const review = await Review.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
       { photos, photosCount: photos.length },
       { new: true }
     );

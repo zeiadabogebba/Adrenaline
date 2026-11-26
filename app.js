@@ -81,6 +81,8 @@ app.use(errorHandler);
 connectDatabase()
   .then(() => {
     console.log('Connected to MongoDB successfully');
+    require('./models/review').updateIndexes()
+      .catch((err) => console.error('[reviews] index update failed:', err.message));
     require('./controllers/treasureHuntController').seedPresets()
       .catch((err) => console.error('[treasure-hunt] preset setup failed:', err.message));
     const PORT = process.env.PORT || 3000;

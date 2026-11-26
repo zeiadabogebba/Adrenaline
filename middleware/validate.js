@@ -42,7 +42,10 @@ const validatePackage = [
 ];
 
 const validateReview = [
-  body('packageId').notEmpty().withMessage('Package ID is required'),
+  body('tripId').custom((tripId, { req }) => {
+    if (!tripId && !req.body.packageId) throw new Error('Choose the trip you are reviewing.');
+    return true;
+  }),
   body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
   body('title').trim().notEmpty().withMessage('Review title is required'),
   body('text').trim().isLength({ min: 10 }).withMessage('Review must be at least 10 characters'),
