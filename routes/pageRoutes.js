@@ -3,6 +3,7 @@ const router = express.Router();
 const pageController = require('../controllers/pageController');
 const googleSheets = require('../controllers/googleSheetsController');
 const photoBook = require('../controllers/photoBookController');
+const hunt = require('../controllers/treasureHuntController');
 const { protect, optionalAuth, authorize } = require('../middleware/auth');
 
 router.get('/',               optionalAuth, pageController.getLandingPage);
@@ -30,6 +31,8 @@ router.get('/booking/:id',        protect, pageController.getBookingDetailsPage)
 router.get('/reviews/write',      protect, pageController.getWriteReviewPage);
 router.get('/photo-book',         protect, photoBook.getPhotoBooksPage);
 router.get('/photo-book/:tripId', protect, photoBook.getPhotoBookPage);
+router.get('/treasure-hunt',         protect, hunt.getHuntsPage);
+router.get('/treasure-hunt/:tripId', protect, hunt.getHuntPage);
 router.get('/custom-trip',        protect, pageController.getCustomTripPage);
 
 router.get('/admin',          protect, authorize('Admin'), pageController.getAdminDashboard);
@@ -41,6 +44,11 @@ router.get('/admin/trips',    protect, authorize('Admin'), pageController.getAdm
 router.get('/admin/photo-books', protect, authorize('Admin'), photoBook.getAdminPhotoBooksPage);
 router.get('/admin/photo-books/:tripId', protect, authorize('Admin'), photoBook.getAdminTripBooksPage);
 router.get('/admin/photo-books/:tripId/:userId', protect, authorize('Admin'), photoBook.getAdminUserBookPage);
+router.get('/admin/treasure-hunt', protect, authorize('Admin'), hunt.getAdminPage);
+router.get('/admin/treasure-hunt/presets/new', protect, authorize('Admin'), hunt.getPresetEditor);
+router.get('/admin/treasure-hunt/presets/:id', protect, authorize('Admin'), hunt.getPresetEditor);
+router.get('/admin/treasure-hunt/presets/:id/print', protect, authorize('Admin'), hunt.getPresetPrint);
+router.get('/admin/treasure-hunt/trips/:tripId', protect, authorize('Admin'), hunt.getTripResults);
 router.get('/admin/trip-requests', protect, authorize('Admin'), pageController.getAdminTripRequestsPage);
 router.get('/admin/contact',  protect, authorize('Admin'), pageController.getAdminContactPage);
 router.get('/admin/users',    protect, authorize('Admin'), pageController.getAdminUsersPage);

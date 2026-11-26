@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0B">
+    <title>Treasure Hunt | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="icon" href="/images/favicon-48.png?v=2" type="image/png" sizes="48x48">
+    <link rel="icon" href="/images/favicon-96.png?v=2" type="image/png" sizes="96x96">
+    <link rel="icon" href="/images/favicon-192.png?v=2" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=2">
+    <link rel="stylesheet" href="/css/global.css?v=20261002b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
+    <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261126c">
+</head>
+<body>
+<div class="dashboard-shell">
+
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2>Adrenaline Ops</h2>
+            <button id="admin-theme-toggle" class="admin-theme-btn" title="Switch to Light Mode">
+                <i id="theme-icon-sun" class="fas fa-sun" aria-hidden="true"></i>
+                <i id="theme-icon-moon" class="fas fa-moon" aria-hidden="true" style="display:none"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/admin"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="/admin/bookings"><i class="fas fa-calendar-check"></i> Booking Management</a></li>
+                <li><a href="/admin/packages"><i class="fas fa-boxes-packing"></i> Catalogue Management</a></li>
+                <li><a href="/admin/trips"><i class="fas fa-rocket"></i> Trip Management</a></li>
+                <li><a href="/admin/photo-books"><i class="fas fa-book-open"></i> Photo Books</a></li>
+                <li class="active"><a href="/admin/treasure-hunt"><i class="fas fa-map-location-dot"></i> Treasure Hunt</a></li>
+                <li><a href="/admin/trip-requests"><i class="fas fa-compass"></i> Trip Requests</a></li>
+                <li><a href="/admin/emails"><i class="fas fa-envelope-open-text"></i> Email Campaigns</a></li>
+                <li><a href="/admin/contact"><i class="fas fa-headset"></i> Support Tickets</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                <li><a href="/admin/reports"><i class="fas fa-file-invoice-dollar"></i> Reports &amp; Analytics</a></li>
+                <li class="sidebar-site-link"><a href="/"><i class="fas fa-arrow-left"></i> Back to Site</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="account-chip account-chip--sidebar">
+                <div class="account-chip__avatar">
+                    <% if (user.image) { %><img src="<%= user.image %>" alt="<%= user.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><% } else { %><i class="fas fa-user-circle" style="font-size:1.4rem;color:var(--crimson);"></i><% } %>
+                </div>
+                <div>
+                    <span class="account-chip__label">Signed in as</span>
+                    <strong class="account-chip__name"><%= user.name %></strong>
+                </div>
+            </div>
+            <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="top-bar-left">
+                <h1>Treasure Hunt</h1>
+                <p>Build hunt presets (routes, QR stops, riddles and hints), then give a trip a preset and switch it on for everyone booked on it.</p>
+            </div>
+        </header>
+
+        <nav class="thx-tabs" role="tablist">
+            <button type="button" role="tab" class="thx-tab is-active" data-tab="presets" aria-selected="true"><i class="fas fa-route"></i> Presets <span><%= presets.length %></span></button>
+            <button type="button" role="tab" class="thx-tab" data-tab="trips" aria-selected="false"><i class="fas fa-suitcase-rolling"></i> Trips <span><%= rows.length %></span></button>
+        </nav>
+
+        <section class="thx-pane" data-pane="presets">
+            <div class="thx-toolbar">
+                <a class="thx-btn thx-btn--primary" href="/admin/treasure-hunt/presets/new"><i class="fas fa-plus"></i> New preset</a>
+            </div>
+            <% if (!presets.length) { %>
+            <p class="pbx-empty">No presets yet. Start a new one to set up its routes and QR stops.</p>
+            <% } else { %>
+            <div class="thx-presets">
+                <% presets.forEach(p => { %>
+                <article class="thx-preset" data-preset="<%= p._id %>">
+                    <header>
+                        <h3><%= p.name %></h3>
+                        <p><%= p.city || 'No city' %> &middot; <%= p.qrCount %> QR codes &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
+                    </header>
+                    <ul class="thx-routes">
+                        <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><%= r.stops %> stops</small></li><% }) %>
+                    </ul>
+                    <p class="thx-usage">Used by <%= p.trips %> trip<%= p.trips === 1 ? '' : 's' %><% if (p.teams) { %> &middot; <%= p.teams %> team<%= p.teams === 1 ? '' : 's' %> played<% } %></p>
+                    <div class="thx-actions">
+                        <a class="thx-btn thx-btn--sm" href="/admin/treasure-hunt/presets/<%= p._id %>"><i class="fas fa-pen"></i> Edit</a>
+                        <a class="thx-btn thx-btn--sm" href="/admin/treasure-hunt/presets/<%= p._id %>/print" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print QR codes</a>
+                        <button type="button" class="thx-btn thx-btn--sm" data-duplicate="<%= p._id %>"><i class="fas fa-clone"></i> Duplicate</button>
+                        <% if (!p.trips && !p.teams) { %><button type="button" class="thx-btn thx-btn--sm thx-btn--danger" data-delete="<%= p._id %>"><i class="fas fa-trash"></i> Delete</button><% } %>
+                    </div>
+                </article>
+                <% }) %>
+            </div>
+            <% } %>
+        </section>
+
+        <section class="thx-pane" data-pane="trips" hidden>
+            <% if (!presets.length) { %><p class="thx-hint"><i class="fas fa-circle-info"></i> Create a preset first, then pick it for a trip here.</p><% } %>
+            <% [['upcoming', 'Upcoming trips'], ['past', 'Past trips']].forEach(([kind, label]) => { const group = rows.filter(r => r.kind === kind); if (!group.length) return; %>
+            <h2 class="pbx-group"><%= label %> <span><%= group.length %></span></h2>
+            <div class="pbx-list">
+                <% group.forEach(r => { %>
+                <article class="pbx-row thx-row <%= r.enabled ? 'is-on' : '' %>" data-trip="<%= r._id %>">
+                    <div class="pbx-thumb" <% if (r.image) { %>style="background-image:url('<%= r.image %>')"<% } %>></div>
+                    <div class="pbx-info">
+                        <h3><%= r.title %><% if (r.hidden) { %> <span class="pbx-tag">Hidden on site</span><% } %></h3>
+                        <p><%= r.date || 'No date' %> &middot; <span class="thx-teams"><%= r.teams %> team<%= r.teams === 1 ? '' : 's' %> started &middot; <%= r.finished %> finished</span></p>
+                        <div class="thx-pick">
+                            <label class="sr-only" for="preset-<%= r._id %>">Preset for <%= r.title %></label>
+                            <select id="preset-<%= r._id %>" data-field="presetId">
+                                <option value="">No treasure hunt</option>
+                                <% presets.forEach(p => { %><option value="<%= p._id %>" <%= r.presetId === p._id ? 'selected' : '' %>><%= p.name %></option><% }) %>
+                            </select>
+                            <% if (r.teams) { %><a class="pbx-view" href="/admin/treasure-hunt/trips/<%= r._id %>"><i class="fas fa-ranking-star"></i> Results</a><% } %>
+                        </div>
+                    </div>
+                    <div class="pbx-switches">
+                        <label class="pbx-switch">
+                            <input type="checkbox" data-field="enabled" <%= r.enabled ? 'checked' : '' %> <%= r.presetId ? '' : 'disabled' %>>
+                            <span class="pbx-switch__track" aria-hidden="true"></span>
+                            <span class="pbx-switch__label">Hunt <b class="pbx-state"><%= r.enabled ? 'On' : 'Off' %></b></span>
+                        </label>
+                        <label class="pbx-switch">
+                            <input type="checkbox" data-field="open" <%= r.open ? 'checked' : '' %> <%= r.enabled ? '' : 'disabled' %>>
+                            <span class="pbx-switch__track" aria-hidden="true"></span>
+                            <span class="pbx-switch__label">Clock <b class="pbx-state"><%= r.open ? 'Open' : 'Closed' %></b></span>
+                        </label>
+                    </div>
+                </article>
+                <% }) %>
+            </div>
+            <% }) %>
+        </section>
+        <div class="pbx-toast" id="thxToast" role="status" hidden></div>
+    </main>
+</div>
+
+<script>
+    window.SERVER_USER = <%- JSON.stringify(user).replace(/</g, '\\u003c') %>;
+    (function () {
+        const toast = document.getElementById('thxToast');
+        let timer = null;
+        function say(msg, bad) {
+            toast.textContent = msg;
+            toast.classList.toggle('is-bad', !!bad);
+            toast.hidden = false;
+            clearTimeout(timer);
+            timer = setTimeout(() => { toast.hidden = true; }, 4200);
+        }
+        async function call(method, url, body) {
+            const res = await fetch(url, { method, credentials: 'same-origin', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(json.message || 'Could not save. Please try again.');
+            return json;
+        }
+
+        // Tabs, remembered in the URL hash.
+        const tabs = document.querySelectorAll('.thx-tab');
+        function show(name) {
+            tabs.forEach(t => { const on = t.dataset.tab === name; t.classList.toggle('is-active', on); t.setAttribute('aria-selected', on); });
+            document.querySelectorAll('.thx-pane').forEach(p => { p.hidden = p.dataset.pane !== name; });
+        }
+        tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.tab); history.replaceState(null, '', '#' + t.dataset.tab); }));
+        if (location.hash === '#trips') show('trips');
+
+        // Presets
+        document.querySelectorAll('[data-duplicate]').forEach(b => b.addEventListener('click', async () => {
+            b.disabled = true;
+            try { const j = await call('POST', '/api/admin/treasure-hunt/presets/' + b.dataset.duplicate + '/duplicate'); location.href = '/admin/treasure-hunt/presets/' + j.data.id; }
+            catch (e) { say(e.message, true); b.disabled = false; }
+        }));
+        document.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', async () => {
+            if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.innerHTML = '<i class="fas fa-trash"></i> Tap again to delete'; setTimeout(() => { b.dataset.armed = ''; b.innerHTML = '<i class="fas fa-trash"></i> Delete'; }, 3500); return; }
+            b.disabled = true;
+            try { await call('DELETE', '/api/admin/treasure-hunt/presets/' + b.dataset.delete); b.closest('.thx-preset').remove(); say('Preset deleted.'); }
+            catch (e) { say(e.message, true); b.disabled = false; }
+        }));
+
+        // Trips: preset and the two switches.
+        function paint(row) {
+            const sel = row.querySelector('[data-field=presetId]');
+            const on = row.querySelector('[data-field=enabled]');
+            const open = row.querySelector('[data-field=open]');
+            on.disabled = !sel.value;
+            open.disabled = !on.checked;
+            row.classList.toggle('is-on', on.checked);
+            on.closest('.pbx-switch').querySelector('.pbx-state').textContent = on.checked ? 'On' : 'Off';
+            open.closest('.pbx-switch').querySelector('.pbx-state').textContent = open.checked ? 'Open' : 'Closed';
+        }
+        document.querySelectorAll('.thx-row').forEach(row => {
+            const sel = row.querySelector('[data-field=presetId]');
+            sel.dataset.was = sel.value;
+            row.querySelectorAll('[data-field]').forEach(input => input.addEventListener('change', async () => {
+                const field = input.dataset.field;
+                const value = field === 'presetId' ? input.value : input.checked;
+                const title = row.querySelector('h3').firstChild.textContent.trim();
+                row.querySelectorAll('[data-field]').forEach(i => i.disabled = true);
+                try {
+                    const j = await call('PATCH', '/api/admin/treasure-hunt/trips/' + row.dataset.trip, { [field]: value });
+                    sel.value = j.data.presetId; sel.dataset.was = j.data.presetId;
+                    row.querySelector('[data-field=enabled]').checked = j.data.enabled;
+                    row.querySelector('[data-field=open]').checked = j.data.open;
+                    say(field === 'presetId' ? `${title}: ${value ? 'preset saved' : 'treasure hunt removed'}.`
+                        : field === 'enabled' ? `${title}: hunt ${value ? 'on, travellers booked on it can see it' : 'off, hidden from travellers'}.`
+                        : `${title}: clock ${value ? 'open, teams can start and scan' : 'closed, no new starts or scans'}.`);
+                } catch (e) {
+                    if (field === 'presetId') sel.value = sel.dataset.was; else input.checked = !value;
+                    say(e.message, true);
+                } finally {
+                    sel.disabled = false;
+                    paint(row);
+                }
+            }));
+        });
+    })();
+</script>
+<script src="/js/global.js"></script>
+<script src="/js/admin-theme.js"></script>
+</body>
+</html>

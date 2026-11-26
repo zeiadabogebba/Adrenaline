@@ -6,6 +6,9 @@ const emails = require('../controllers/emailCampaignController');
 const emailTemplates = require('../controllers/emailTemplateController');
 const googleSheets = require('../controllers/googleSheetsController');
 const photoBook = require('../controllers/photoBookController');
+const hunt = require('../controllers/treasureHuntController');
+const { uploadHuntPhoto } = require('../middleware/upload');
+const AppError = require('../utils/AppError');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/stats',    protect, authorize('Admin'), adminController.getStats);
@@ -40,6 +43,23 @@ router.get('/google-sheets/status',          protect, authorize('Admin'), google
 router.post('/google-sheets/sync',           protect, authorize('Admin'), googleSheets.syncAll);
 router.post('/google-sheets/trip/:tripId',   protect, authorize('Admin'), googleSheets.syncTrip);
 router.patch('/photo-books/:tripId',         protect, authorize('Admin'), photoBook.updateTripSetting);
+
+// Treasure hunt
+const huntPhoto = (req, res, next) => uploadHuntPhoto(req, res, (err) => {
+  if (!err) return next();
+  if (err.code === 'LIMIT_FILE_SIZE') return next(new AppError('That photo is too large. Please choose one under 8 MB.', 400));
+  if (err instanceof AppError) return next(err);
+  console.error('[treasure-hunt] upload failed:', err.message);
+  next(new AppError('The photo could not be uploaded. Please try another one.', 400));
+});
+router.post('/treasure-hunt/presets',                    protect, authorize('Admin'), hunt.createPreset);
+router.put('/treasure-hunt/presets/:id',                 protect, authorize('Admin'), hunt.updatePreset);
+router.post('/treasure-hunt/presets/:id/duplicate',      protect, authorize('Admin'), hunt.duplicatePreset);
+router.delete('/treasure-hunt/presets/:id',              protect, authorize('Admin'), hunt.deletePreset);
+router.post('/treasure-hunt/photo',                      protect, authorize('Admin'), huntPhoto, hunt.uploadPhoto);
+router.patch('/treasure-hunt/trips/:tripId',             protect, authorize('Admin'), hunt.updateTripSetting);
+router.delete('/treasure-hunt/trips/:tripId/teams',      protect, authorize('Admin'), hunt.resetTeams);
+router.delete('/treasure-hunt/trips/:tripId/teams/:teamId', protect, authorize('Admin'), hunt.resetTeams);
 router.delete('/google-sheets',              protect, authorize('Admin'), googleSheets.disconnect);
 
 module.exports = router;

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= preset.name %> QR codes | Adrenaline</title>
+    <link rel="icon" href="/images/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/global.css?v=20261002b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { color-scheme: light; }
+        body { margin: 0; background: #E7E5E4; color: #0A0A0B; font-family: var(--font-body); }
+        .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 20px; background: #0A0A0B; color: #F5F5F4; }
+        .bar h1 { margin: 0; flex: 1; font-family: var(--font-display); font-size: 1.2rem; font-style: italic; text-transform: uppercase; color: #FFFFFF; }
+        .bar button, .bar label { display: inline-flex; gap: 8px; align-items: center; padding: 9px 14px; border: 0; background: #DC2626; color: #FFFFFF; font: inherit; font-weight: 700; cursor: pointer; }
+        .bar label { background: #26262B; }
+        .bar p { margin: 0; width: 100%; font-size: 0.8rem; color: #A8A29E; }
+        .sheets { display: grid; justify-content: center; gap: 24px; padding: 24px; }
+        /* One A4 page holds four A6 cards in a 2 x 2 grid, with dashed cut lines between them. */
+        .page { width: 210mm; height: 297mm; box-sizing: border-box; display: grid; grid-template-columns: 105mm 105mm; grid-template-rows: 148.5mm 148.5mm; background: #FFFFFF; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); break-after: page; page-break-after: always; }
+        .page:last-child { break-after: auto; page-break-after: auto; }
+        .sheet { position: relative; box-sizing: border-box; display: grid; grid-template-rows: auto 1fr; overflow: hidden; background: #FFFFFF; outline: 0.2mm dashed #A8A29E; outline-offset: -0.1mm; }
+        .sheet__top { position: relative; padding: 5mm 6mm 4mm; color: #FFFFFF; background: #0A0A0B; border-bottom: 2mm solid var(--route); }
+        .sheet__top::after { content: ""; position: absolute; inset: 0; opacity: 0.5; background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgba(255, 255, 255, 0.04) 7px 8px); }
+        .brand { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; }
+        .brand .wordmark { font-size: 0.8rem; color: #FFFFFF; }
+        .kicker { font-family: var(--font-display); font-weight: 800; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: #FCA5A5; }
+        .label { position: relative; z-index: 1; margin: 3mm 0 0; font-family: var(--font-display); font-size: 2.3rem; font-weight: 900; font-style: italic; line-height: 0.9; text-transform: uppercase; color: #FFFFFF; }
+        .route { position: relative; z-index: 1; margin: 1.5mm 0 0; font-size: 0.68rem; font-weight: 700; color: #E7E5E4; }
+        .sheet__mid { display: grid; place-items: center; align-content: center; gap: 2.5mm; padding: 4mm 6mm; }
+        .qr { width: 58mm; height: 58mm; padding: 2mm; border: 0.9mm solid #0A0A0B; }
+        .qr svg { display: block; width: 100%; height: 100%; }
+        .code { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; letter-spacing: 0.3em; }
+        .how { margin: 0; max-width: 88mm; text-align: center; font-size: 0.6rem; line-height: 1.45; color: #44403C; }
+        .how b { color: #0A0A0B; }
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: #FFFFFF; }
+            .bar { display: none; }
+            .sheets { display: block; padding: 0; }
+            .page { box-shadow: none; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bar">
+        <h1><%= preset.name %></h1>
+        <button type="button" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <p>A4 pages, four QR cards per page: cut along the dashed lines. Each QR opens adrenaline98.com/treasure-hunt with its stop's code, and teams can also type the code under it. Print two copies of every QR and stick them close together, as the organiser file suggests.</p>
+    </div>
+
+    <div class="sheets" id="sheets">
+    <%
+        const wordmark = '<span class="wordmark"><svg class="wordmark__mark" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="wordmark__ridge" d="M4 51 L25 7 L37 30 L45 18.5 L60 51"/><path class="wordmark__pulse" d="M9 40 H17.5 L20.5 33.5 L23.5 45 L27 21.5 L30.5 48.5 L33.5 37 L36.5 40 H55"/></svg><span class="wordmark__text"><em>A</em>DREN<em>A</em>LINE</span></span>';
+        const cards = [];
+        preset.routes.forEach((route, ri) => {
+            const prefix = route.label || ('R' + (ri + 1));
+            route.legs.forEach((leg, li) => cards.push({
+                color: route.color, kicker: 'Treasure hunt', label: prefix + '-' + (li + 1),
+                sub: route.name + ' · stop ' + (li + 1) + ' of ' + (route.legs.length + 1), code: leg.code,
+                how: 'Scan with your phone camera, or type the code on <b>adrenaline98.com/treasure-hunt</b>. Leave this QR here for the teams behind you.',
+            }));
+        });
+        cards.push({
+            color: '#F59E0B', kicker: 'The treasure', label: 'Finish', sub: 'Every route ends here', code: preset.finish.code,
+            how: "Scan to stop your team's clock. Leave this QR here for the teams behind you.",
+        });
+        const pages = [];
+        for (let i = 0; i < cards.length; i += 4) pages.push(cards.slice(i, i + 4));
+    %>
+    <% pages.forEach(page => { %>
+        <div class="page">
+        <% page.forEach(c => { %>
+            <section class="sheet" style="--route:<%= c.color %>">
+                <div class="sheet__top">
+                    <div class="brand"><%- wordmark %><span class="kicker"><%= c.kicker %></span></div>
+                    <p class="label"><%= c.label %></p>
+                    <p class="route" dir="auto"><%= c.sub %></p>
+                </div>
+                <div class="sheet__mid">
+                    <div class="qr" data-url="<%= scanBase + c.code %>"></div>
+                    <div class="code"><%= c.code %></div>
+                    <p class="how"><%- c.how %></p>
+                </div>
+            </section>
+        <% }) %>
+        </div>
+    <% }) %>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script>
+        document.querySelectorAll('.qr[data-url]').forEach((box) => {
+            if (typeof qrcode !== 'function') { box.textContent = 'QR library failed to load. Refresh the page.'; return; }
+            const q = qrcode(0, 'M');
+            q.addData(box.dataset.url);
+            q.make();
+            box.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        });
+    </script>
+</body>
+</html>

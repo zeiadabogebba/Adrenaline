@@ -19,6 +19,7 @@ const tripRoutes        = require('./routes/tripRoutes');
 const tripRequestRoutes = require('./routes/tripRequestRoutes');
 const bookingRoutes     = require('./routes/bookingRoutes');
 const photoBookRoutes   = require('./routes/photoBookRoutes');
+const treasureHuntRoutes = require('./routes/treasureHuntRoutes');
 const reviewRoutes      = require('./routes/reviewRoutes');
 const contactRoutes     = require('./routes/contactRoutes');
 const adminRoutes       = require('./routes/adminRoutes');
@@ -66,6 +67,7 @@ app.use('/api/trips',        tripRoutes);
 app.use('/api/trip-requests', tripRequestRoutes);
 app.use('/api/bookings',     bookingRoutes);
 app.use('/api/photo-book',   photoBookRoutes);
+app.use('/api/treasure-hunt', treasureHuntRoutes);
 app.use('/api/reviews',      reviewRoutes);
 app.use('/api/contact',      contactRoutes);
 app.use('/api/admin',        adminRoutes);
@@ -79,6 +81,8 @@ app.use(errorHandler);
 connectDatabase()
   .then(() => {
     console.log('Connected to MongoDB successfully');
+    require('./controllers/treasureHuntController').seedPresets()
+      .catch((err) => console.error('[treasure-hunt] preset setup failed:', err.message));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
   })
