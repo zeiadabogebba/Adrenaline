@@ -4,12 +4,12 @@
   const LOCKED = Boolean(window.HUNT_LOCKED);
   const COLORS = ['#DC2626', '#2563EB', '#16A34A', '#EAB308', '#9333EA', '#EA580C'];
 
-  const blankLeg = () => ({ place: '', city: '', placement: '', riddle: '', guide: '', extraHint: '', photo: '', photoPublicId: '', code: '' });
-  const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '' });
+  const blankLeg = () => ({ place: '', placement: '', riddle: '', guide: '', extraHint: '', photo: '', photoPublicId: '', code: '' });
+  const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, busName: `Bus ${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '' });
 
   let p = window.HUNT_PRESET || {
-    name: '', city: '', description: '', lifelines: 1,
-    finish: { place: '', city: '', placement: '', message: '', code: '' },
+    name: '', description: '', lifelines: 1,
+    finish: { place: '', placement: '', message: '', code: '' },
     routes: [blankRoute(0)],
   };
   let dirty = false;
@@ -68,7 +68,6 @@
         ${area(`${base}.guide`, 'Route guide', { hint: 'direction, distance, streets', maxlength: 600 })}
         ${area(`${base}.extraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 })}
         ${input(`${base}.place`, 'The answer: place', { hint: 'admin and volunteers only', maxlength: 120 })}
-        ${input(`${base}.city`, 'City', { maxlength: 60 })}
         ${input(`${base}.placement`, 'Where the QR is stuck', { wide: true, maxlength: 200 })}
         <div class="thx-photo">
           ${leg.photo ? `<img src="${esc(leg.photo.replace('/upload/', '/upload/c_fill,w_240,h_180,q_auto,f_auto/'))}" alt="Photo for stop ${li + 1}">` : '<span class="thx-photo__none"><i class="fas fa-image"></i></span>'}
@@ -88,6 +87,7 @@
       <header class="thx-route__head">
         <label class="thx-color" title="Route colour"><input type="color" data-path="${base}.color" value="${esc(route.color)}"></label>
         ${input(`${base}.name`, 'Route name', { maxlength: 80 })}
+        ${input(`${base}.busName`, 'Bus', { maxlength: 40, ph: 'e.g. Bus 1' })}
         ${input(`${base}.label`, 'QR prefix', { maxlength: 8, dir: 'ltr', ph: 'R1' })}
         ${LOCKED ? '' : `<button type="button" class="thx-icon thx-icon--danger" data-remove-route="${ri}" ${p.routes.length === 1 ? 'disabled' : ''} aria-label="Remove route"><i class="fas fa-trash"></i></button>`}
       </header>
@@ -111,7 +111,6 @@
         <h2 class="thx-card__title">Basics</h2>
         <div class="thx-grid">
           ${input('name', 'Preset name', { wide: true, maxlength: 100 })}
-          ${input('city', 'City', { maxlength: 60 })}
           ${input('lifelines', 'Lifelines per team', { type: 'number', min: 0, max: 10, dir: 'ltr' })}
           ${area('description', 'Notes for the organisers', { rows: 3, maxlength: 1000 })}
         </div>
@@ -124,7 +123,6 @@
       <section class="thx-card thx-card--finish">
         <div class="thx-grid">
           ${input('finish.place', 'Place', { maxlength: 120 })}
-          ${input('finish.city', 'City', { maxlength: 60 })}
           ${input('finish.placement', 'Where the QR is stuck', { wide: true, maxlength: 200 })}
           ${area('finish.message', 'Message when a team scans the finish', { rows: 2 })}
           ${codeBox('finish.code', 'Code under the finish QR')}

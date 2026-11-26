@@ -25,14 +25,15 @@ const totalLegs = (route) => route.legs.length + 1;
 function legAt(preset, route, i) {
   if (i < route.legs.length) {
     const l = route.legs[i];
-    return { index: i, isFinish: false, place: l.place, city: l.city, riddle: l.riddle, guide: l.guide, extraHint: l.extraHint, photo: l.photo, code: l.code };
+    return { index: i, isFinish: false, place: l.place, riddle: l.riddle, guide: l.guide, extraHint: l.extraHint, photo: l.photo, code: l.code };
   }
   const f = preset.finish;
-  return { index: i, isFinish: true, place: f.place, city: f.city, riddle: route.finishRiddle, guide: route.finishGuide, extraHint: route.finishExtraHint, photo: '', code: f.code };
+  return { index: i, isFinish: true, place: f.place, riddle: route.finishRiddle, guide: route.finishGuide, extraHint: route.finishExtraHint, photo: '', code: f.code };
 }
 
 const findRoute = (preset, routeId) => preset.routes.find((r) => String(r._id) === String(routeId));
-const routeJson = (r) => ({ _id: String(r._id), name: r.name, color: r.color, label: r.label, stops: totalLegs(r) });
+// Travellers pick their bus; a route without a bus name yet is shown by its own name.
+const routeJson = (r) => ({ _id: String(r._id), name: r.name, bus: r.busName || r.name, color: r.color, label: r.label, stops: totalLegs(r) });
 
 // ── Access ──
 async function huntForUser(userId, tripId) {
@@ -62,7 +63,7 @@ function teamState(team, preset, me) {
   const cleared = [];
   for (let i = 0; i < Math.min(team.progress, total); i++) {
     const l = legAt(preset, route, i);
-    cleared.push({ n: i + 1, place: l.place, city: l.city, split: team.splits[i] ?? null, hintUsed: used.includes(i), isFinish: l.isFinish });
+    cleared.push({ n: i + 1, place: l.place, split: team.splits[i] ?? null, hintUsed: used.includes(i), isFinish: l.isFinish });
   }
   let clue = null;
   if (!finished && team.progress < total) {
@@ -207,8 +208,8 @@ const getState = async (req, res, next) => {
 // Team IDs: 8 characters with no look-alike letters, shown as ABCD-EFGH.
 const newTeamCode = () => Array.from(crypto.randomBytes(8), (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
 
-// POST /api/treasure-hunt/:tripId/start: a new team. The server gives it an ID and the next route
-// in turn (first team route 1, second team route 2, ...), so teams spread across every route.
+// POST /api/treasure-hunt/:tripId/start { routeId }: a new team on the route of the bus it chose.
+// The server gives the team its ID.
 const startTeam = async (req, res, next) => {
   try {
     const { tripId } = req.params;
@@ -221,15 +222,14 @@ const startTeam = async (req, res, next) => {
     if (!setting.open) return json(res, 403, { status: 'fail', event: 'closed_start', message: 'The treasure hunt is closed right now.' });
     if (!preset.routes.length) return next(new AppError('This treasure hunt has no routes yet.', 400));
 
-    // Atomic counter, so two teams starting at the same moment still get different routes.
-    const counter = await HuntTrip.findOneAndUpdate({ tripId }, { $inc: { teamSeq: 1 } }, { new: true }).lean();
-    const seq = counter.teamSeq;
-    const route = preset.routes[(seq - 1) % preset.routes.length];
+    // Each bus is linked to one route in the preset; the team gets its bus's route.
+    const route = findRoute(preset, req.body.routeId);
+    if (!route) return json(res, 400, { status: 'fail', event: 'pick_bus', message: 'Choose the bus you came on.' });
 
     let team = null;
     for (let attempt = 0; attempt < 5 && !team; attempt++) {
       try {
-        team = await HuntTeam.create({ tripId, presetId: preset._id, routeId: route._id, code: newTeamCode(), seq, members: [req.user._id], startedAt: new Date() });
+        team = await HuntTeam.create({ tripId, presetId: preset._id, routeId: route._id, code: newTeamCode(), members: [req.user._id], startedAt: new Date() });
       } catch (err) {
         if (err.code !== 11000) throw err; // an ID clash: try another
       }
@@ -392,8 +392,8 @@ const getAdminPage = async (req, res, next) => {
     });
     rows.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'upcoming' ? -1 : 1));
     const presetRows = presets.map((p) => ({
-      _id: String(p._id), name: p.name, city: p.city, lifelines: p.lifelines,
-      routes: p.routes.map((r) => ({ name: r.name, color: r.color, stops: totalLegs(r) })),
+      _id: String(p._id), name: p.name, lifelines: p.lifelines,
+      routes: p.routes.map((r) => ({ name: r.name, bus: r.busName, color: r.color, stops: totalLegs(r) })),
       qrCount: p.routes.reduce((n, r) => n + r.legs.length, 0) + 1,
       trips: usage.trips[String(p._id)] || 0, teams: usage.teams[String(p._id)] || 0, updatedAt: p.updatedAt,
     }));
@@ -479,11 +479,10 @@ function presetFromBody(body) {
   const f = b.finish || {};
   const out = {
     name: str(b.name, 100),
-    city: str(b.city, 60),
     description: str(b.description, 1000),
     lifelines: Math.max(0, Math.min(10, parseInt(b.lifelines, 10) || 0)),
     finish: {
-      place: str(f.place, 120), city: str(f.city, 60),
+      place: str(f.place, 120),
       placement: str(f.placement, 200), message: str(f.message, 600), code: code(f.code),
     },
     routes: (Array.isArray(b.routes) ? b.routes : []).slice(0, 12).map((r) => ({
@@ -491,12 +490,13 @@ function presetFromBody(body) {
       name: str(r.name, 80) || 'Route',
       color: /^#[0-9a-fA-F]{6}$/.test(r.color || '') ? r.color : '#DC2626',
       label: str(r.label, 8),
+      busName: str(r.busName, 40),
       finishRiddle: str(r.finishRiddle, 600),
       finishGuide: str(r.finishGuide, 600),
       finishExtraHint: str(r.finishExtraHint, 400),
       legs: (Array.isArray(r.legs) ? r.legs : []).slice(0, 30).map((l) => ({
         ...(isId(l._id) ? { _id: l._id } : {}),
-        place: str(l.place, 120), city: str(l.city, 60),
+        place: str(l.place, 120),
         placement: str(l.placement, 200), riddle: str(l.riddle, 600), guide: str(l.guide, 600),
         extraHint: str(l.extraHint, 400), photo: str(l.photo, 500), photoPublicId: str(l.photoPublicId, 300),
         code: code(l.code),
@@ -509,7 +509,12 @@ function presetFromBody(body) {
 function presetProblems(p) {
   if (!p.name) return 'Give the preset a name.';
   if (!p.routes.length) return 'Add at least one route.';
+  const buses = new Set();
   for (const r of p.routes) {
+    if (!r.busName) return `Give ${r.name} the name of the bus it belongs to.`;
+    const bus = r.busName.toLowerCase();
+    if (buses.has(bus)) return `Two routes are linked to "${r.busName}". Each bus needs its own route.`;
+    buses.add(bus);
     if (!r.legs.length) return `${r.name} needs at least one stop before the finish.`;
     for (const [i, l] of r.legs.entries()) if (!l.riddle) return `${r.name}, stop ${i + 1} needs a riddle.`;
     if (!r.finishRiddle) return `${r.name} needs the riddle that leads to the finish.`;

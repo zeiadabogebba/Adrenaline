@@ -7,7 +7,6 @@ const mongoose = require('mongoose');
 
 const legSchema = new mongoose.Schema({
   place:     { type: String, trim: true, maxlength: 120, default: '' }, // admin/volunteers only (the answer)
-  city:      { type: String, trim: true, maxlength: 60, default: '' },
   placement: { type: String, trim: true, maxlength: 200, default: '' }, // where the QR is stuck (admin only)
   riddle:    { type: String, trim: true, maxlength: 600, default: '' },
   guide:     { type: String, trim: true, maxlength: 600, default: '' }, // directions, distance, streets
@@ -21,6 +20,7 @@ const routeSchema = new mongoose.Schema({
   name:  { type: String, trim: true, maxlength: 80, required: true },
   color: { type: String, trim: true, match: /^#[0-9a-fA-F]{6}$/, default: '#DC2626' },
   label: { type: String, trim: true, maxlength: 8, default: '' }, // printed prefix, e.g. R1
+  busName: { type: String, trim: true, maxlength: 40, default: '' }, // travellers pick their bus to get this route
   legs:  { type: [legSchema], default: [] },
   // The last leg (to the shared finish) has route-specific directions.
   finishRiddle:    { type: String, trim: true, maxlength: 600, default: '' },
@@ -31,12 +31,10 @@ const routeSchema = new mongoose.Schema({
 const huntPresetSchema = new mongoose.Schema(
   {
     name:        { type: String, trim: true, maxlength: 100, required: [true, 'Give the preset a name'] },
-    city:        { type: String, trim: true, maxlength: 60, default: '' },
     description: { type: String, trim: true, maxlength: 1000, default: '' },
     lifelines:   { type: Number, min: 0, max: 10, default: 1 },
     finish: {
       place:     { type: String, trim: true, maxlength: 120, default: '' },
-      city:      { type: String, trim: true, maxlength: 60, default: '' },
       placement: { type: String, trim: true, maxlength: 200, default: '' },
       message:   { type: String, trim: true, maxlength: 600, default: '' },
       code:      { type: String, required: true, uppercase: true, trim: true },

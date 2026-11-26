@@ -7,7 +7,6 @@ const huntTripSchema = new mongoose.Schema(
     presetId: { type: mongoose.Schema.Types.ObjectId, ref: 'HuntPreset', default: null },
     enabled:  { type: Boolean, default: false }, // travellers booked on the trip can see it
     open:     { type: Boolean, default: false }, // teams can start and claim checkpoints
-    teamSeq:  { type: Number, default: 0 }, // teams started so far; used to hand out routes in turn
   },
   { timestamps: true }
 );

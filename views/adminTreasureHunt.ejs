@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261126c">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261127a">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -82,10 +82,10 @@
                 <article class="thx-preset" data-preset="<%= p._id %>">
                     <header>
                         <h3><%= p.name %></h3>
-                        <p><%= p.city || 'No city' %> &middot; <%= p.qrCount %> QR codes &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
+                        <p><%= p.qrCount %> QR codes &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
                     </header>
                     <ul class="thx-routes">
-                        <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><%= r.stops %> stops</small></li><% }) %>
+                        <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><% if (r.bus) { %><i class="fas fa-bus"></i> <%= r.bus %><% } else { %><em class="thx-nobus">No bus yet</em><% } %> &middot; <%= r.stops %> stops</small></li><% }) %>
                     </ul>
                     <p class="thx-usage">Used by <%= p.trips %> trip<%= p.trips === 1 ? '' : 's' %><% if (p.teams) { %> &middot; <%= p.teams %> team<%= p.teams === 1 ? '' : 's' %> played<% } %></p>
                     <div class="thx-actions">

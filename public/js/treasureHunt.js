@@ -81,6 +81,7 @@
       case 'closed': return T('closedScan');
       case 'team_not_found': return T('teamNotFound');
       case 'closed_start': return T('closedTitle');
+      case 'pick_bus': return T('pickBus');
       case 'cant_leave': return T('cantLeave');
       case 'no_lifelines': return T('noLifelines');
       default: return (d && d.message) || T('failed');
@@ -130,7 +131,9 @@
     <section class="th-panel th-panel--new">
       <h3 class="th-panel__title"><i class="fas fa-flag" aria-hidden="true"></i> ${esc(T('newTitle'))}</h3>
       <p class="th-panel__text">${esc(T('newText'))}</p>
-      <ul class="th-route-strip" aria-hidden="true">${H.routes.map((r) => `<li style="--route:${esc(r.color)}"></li>`).join('')}</ul>
+      <fieldset class="th-buses"><legend>${esc(T('chooseBus'))}</legend>
+        ${H.routes.map((r) => `<label class="th-bus" style="--route:${esc(r.color)}"><input type="radio" name="bus" value="${esc(r._id)}" ${H.routes.length === 1 ? 'checked' : ''}><i class="fas fa-bus" aria-hidden="true"></i><span dir="auto">${esc(r.bus)}</span></label>`).join('')}
+      </fieldset>
       <p class="th-error" id="thStartErr" role="alert" hidden></p>
       <button type="button" class="th-btn th-btn--go" data-act="new-team"><i class="fas fa-stopwatch" aria-hidden="true"></i><span>${esc(T('startBtn'))}</span></button>
     </section>
@@ -388,11 +391,13 @@
 
   async function startNew(btn) {
     if (busy) return;
+    const bus = app.querySelector('input[name=bus]:checked');
+    if (!bus) return showErr('thStartErr', T('pickBus'));
     busy = true;
     const label = btn.querySelector('span');
     label.textContent = T('starting');
     try {
-      const { ok, data } = await api('start', {});
+      const { ok, data } = await api('start', { routeId: bus.value });
       if (!ok) { showErr('thStartErr', messageFor(data)); sfx.error(); return; }
       await afterJoin(data);
     } catch (err) {

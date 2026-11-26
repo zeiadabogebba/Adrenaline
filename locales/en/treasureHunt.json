@@ -73,7 +73,7 @@
   "fastest": "Fastest",
   "members": "Members",
   "newTitle": "Start a new team",
-  "newText": "One person per team taps start. We'll give your team an ID and its route, and your clock starts straight away.",
+  "newText": "One person per team taps start. Pick your bus and your team gets that bus's route and an ID, and your clock starts straight away.",
   "or": "or",
   "joinTitle": "Your team already started?",
   "joinText": "Type the team ID from your teammate's phone to join them. You share one clock and one route.",
@@ -87,5 +87,7 @@
   "shareId": "Share this ID so your teammates can join you.",
   "leaveTeam": "Not your team? Leave it",
   "leaveConfirm": "Tap again to leave this team",
-  "cantLeave": "Your team has already cleared a stop, so you can no longer leave it."
+  "cantLeave": "Your team has already cleared a stop, so you can no longer leave it.",
+  "chooseBus": "Which bus are you on?",
+  "pickBus": "Choose the bus you came on."
 }
