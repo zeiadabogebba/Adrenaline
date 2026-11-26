@@ -29,13 +29,22 @@
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-group">
-                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                <div class="nav-group nav-group--home">
                     <ul>
                         <li><a href="/"><i class="fas fa-home"></i> <%= t('nav.home') %></a></li>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupCatalogue') %></span>
+                    <ul>
                         <li><a href="/packages/day"><i class="fas fa-sun"></i> <%= t('nav.tal3a') %></a></li>
                         <li><a href="/packages/week"><i class="fas fa-calendar-week"></i> <%= t('nav.rehla') %></a></li>
                         <li><a href="/packages/single"><i class="fas fa-location-dot"></i> <%= t('nav.pump') %></a></li>
+                    </ul>
+                </div>
+                <div class="nav-group">
+                    <span class="group-label"><%= t('nav.groupTrips') %></span>
+                    <ul>
                         <li><a href="/trips/upcoming"><i class="fas fa-rocket"></i> <%= t('nav.upcomingTrips') %></a></li>
                         <li><a href="/custom-trip"><i class="fas fa-compass"></i> <%= t('nav.requestYourOwn') %></a></li>
                         <li><a href="/trips/past"><i class="fas fa-images"></i> <%= t('nav.gallery') %></a></li>
@@ -47,7 +56,7 @@
                 <div class="nav-group">
                     <span class="group-label"><%= t('nav.groupAccount') %></span>
                     <ul>
-                        <li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li>
+                        <% if (!user || user.role !== 'Admin') { %><li><a href="/dashboard"><i class="fas fa-columns"></i> <%= t('nav.dashboard') %></a></li><% } %>
                         <li><a href="/my-bookings"><i class="fas fa-suitcase-rolling"></i> <%= t('nav.myBookings') %></a></li>
                         <li class="active"><a href="/profile"><i class="fas fa-user-circle"></i> <%= t('nav.profile') %></a></li>
                         <% if (user && user.role === 'Admin') { %><li><a href="/admin"><i class="fas fa-user-shield"></i> <%= t('nav.adminPanel') %></a></li><% } %>
@@ -68,7 +77,7 @@
                 <button id="theme-toggle" class="theme-toggle-btn">
                     <i class="fas fa-moon"></i> <span><%= t('nav.darkMode') %></span>
                 </button>
-                <a href="<%= langSwitchHref %>" class="theme-toggle-btn lang-toggle-btn" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-language" aria-hidden="true"></i> <span><%= t('nav.langLong') %></span></a>
+                <a href="<%= langSwitchHref %>" class="lang-toggle-btn sidebar-lang" hreflang="<%= otherLang %>" aria-label="<%= t('nav.langAria') %>"><i class="fas fa-globe" aria-hidden="true"></i><span class="sidebar-lang__seg" aria-hidden="true"><span class="sidebar-lang__opt<%= lang === 'en' ? ' is-current' : '' %>">English</span><span class="sidebar-lang__opt sidebar-lang__opt--ar<%= lang === 'ar' ? ' is-current' : '' %>" lang="ar">العربية</span></span></a>
                 <a href="#" id="logout-link" class="logout-link"><i class="fas fa-sign-out-alt"></i> <%= t('nav.logout') %></a>
             </div>
         </aside>

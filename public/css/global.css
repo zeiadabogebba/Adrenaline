@@ -4052,3 +4052,61 @@ html[lang="ar"] :is(h1, h2, h3, h4, h5, h6) {
     color: var(--crimson);
     text-decoration-color: currentColor;
 }
+
+/* Sidebar language switch: a row that matches the theme button, split into
+   English | العربية with the current language filled in the brand red. */
+.sidebar-footer .sidebar-lang {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 42px;
+    padding: 6px;
+    padding-inline-start: 26px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s;
+}
+
+.sidebar-footer .sidebar-lang > i { width: 14px; flex: 0 0 auto; color: var(--ink); transition: color 0.2s; }
+.sidebar-footer .sidebar-lang:hover { border-color: var(--crimson); }
+.sidebar-footer .sidebar-lang:hover > i { color: var(--crimson); }
+.sidebar-footer .sidebar-lang:focus-visible { outline: 2px solid var(--crimson); outline-offset: 2px; }
+
+.sidebar-lang__seg {
+    flex: 1;
+    display: flex;
+    min-width: 0;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.sidebar-lang__opt {
+    flex: 1;
+    padding: 5px 4px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    white-space: nowrap;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-lang__opt--ar {
+    font-family: 'Cairo', var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.sidebar-lang__opt.is-current { color: #FFFFFF; background: var(--crimson); }
+.sidebar-lang:hover .sidebar-lang__opt:not(.is-current) { color: var(--ink); }

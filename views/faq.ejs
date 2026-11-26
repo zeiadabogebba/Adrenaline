@@ -30,13 +30,12 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="/" class="nav-link"><%= t('nav.home') %></a></li>
-                <li><a href="/packages/day" class="nav-link"><%= t('nav.tal3a') %></a></li>
-                <li><a href="/packages/week" class="nav-link"><%= t('nav.rehla') %></a></li>
-                <li><a href="/packages/single" class="nav-link"><%= t('nav.pump') %></a></li>
+                <li><a href="/packages/day" class="nav-link"><%= t('nav.catalogue') %></a></li>
                 <li><a href="/custom-trip" class="nav-link"><%= t('nav.customTrip') %></a></li>
-                <li id="nav-dashboard-link" <% if (!user) { %>style="display:none"<% } %>>
+                <li><a href="/trips/upcoming" class="nav-link"><%= t('nav.upcomingTrips') %></a></li>
+                <% if (!user || user.role !== 'Admin') { %><li id="nav-dashboard-link" <% if (!user) { %>style="display:none"<% } %>>
                     <a href="/dashboard" class="nav-link"><%= t('nav.dashboard') %></a>
-                </li>
+                </li><% } %>
                 <% if (user && user.role === 'Admin') { %><li><a href="/admin" class="nav-link"><%= t('nav.adminPanel') %></a></li><% } %>
             </ul>
             <div class="nav-actions">
