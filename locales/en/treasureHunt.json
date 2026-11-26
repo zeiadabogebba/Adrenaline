@@ -73,7 +73,7 @@
   "fastest": "Fastest",
   "members": "Members",
   "newTitle": "Start a new team",
-  "newText": "One person per team taps start. Pick your bus and your team gets its route and an ID, and your clock starts straight away.",
+  "newText": "One person per team taps start, then up to {n} people join with the team ID. Pick your bus and your team gets its route, and your clock starts straight away.",
   "or": "or",
   "joinTitle": "Your team already started?",
   "joinText": "Type the team ID from your teammate's phone to join them. You share one clock and one route.",
@@ -91,5 +91,8 @@
   "chooseBus": "Which bus are you on?",
   "pickBus": "Choose the bus you came on.",
   "chooseRoute": "Which route is your team on?",
-  "pickRoute": "Choose your team's route."
+  "pickRoute": "Choose your team's route.",
+  "teamFull": "That team is full ({n} people). Start a new team instead.",
+  "teamIsFull": "Your team is full.",
+  "rule6": "Up to {n} people per team."
 }

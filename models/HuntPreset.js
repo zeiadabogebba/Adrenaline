@@ -32,6 +32,7 @@ const huntPresetSchema = new mongoose.Schema(
     name:        { type: String, trim: true, maxlength: 100, required: [true, 'Give the preset a name'] },
     description: { type: String, trim: true, maxlength: 1000, default: '' },
     lifelines:   { type: Number, min: 0, max: 10, default: 1 },
+    maxTeamSize: { type: Number, min: 1, max: 20, default: 5 }, // most travellers allowed in one team
     finish: {
       place:     { type: String, trim: true, maxlength: 120, default: '' },
       placement: { type: String, trim: true, maxlength: 200, default: '' },

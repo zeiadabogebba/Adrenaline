@@ -82,7 +82,7 @@
                 <article class="thx-preset" data-preset="<%= p._id %>">
                     <header>
                         <h3><%= p.name %></h3>
-                        <p><%= p.qrCount %> QR codes &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
+                        <p><%= p.qrCount %> QR codes &middot; up to <%= p.maxTeamSize %> per team &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
                     </header>
                     <ul class="thx-routes">
                         <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><%= r.stops %> stops</small></li><% }) %>

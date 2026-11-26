@@ -8,10 +8,11 @@
   const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '' });
 
   let p = window.HUNT_PRESET || {
-    name: '', description: '', lifelines: 1,
+    name: '', description: '', lifelines: 1, maxTeamSize: 5,
     finish: { place: '', placement: '', message: '', code: '' },
     routes: [blankRoute(0)],
   };
+  if (p.maxTeamSize == null) p.maxTeamSize = 5; // presets made before this setting
   let dirty = false;
   let saving = false;
 
@@ -111,6 +112,7 @@
         <div class="thx-grid">
           ${input('name', 'Preset name', { wide: true, maxlength: 100 })}
           ${input('lifelines', 'Lifelines per team', { type: 'number', min: 0, max: 10, dir: 'ltr' })}
+          ${input('maxTeamSize', 'Most people per team', { type: 'number', min: 1, max: 20, dir: 'ltr' })}
           ${area('description', 'Notes for the organisers', { rows: 3, maxlength: 1000 })}
         </div>
         <p class="thx-summary">${p.routes.length} route${p.routes.length === 1 ? '' : 's'} &middot; ${qr} QR code${qr === 1 ? '' : 's'} to print (the finish QR is shared)</p>

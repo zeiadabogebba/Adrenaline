@@ -80,6 +80,7 @@
       case 'need_team': return T('needTeam');
       case 'closed': return T('closedScan');
       case 'team_not_found': return T('teamNotFound');
+      case 'team_full': return T('teamFull', { n: d.max });
       case 'closed_start': return T('closedTitle');
       case 'pick_bus': return T('pickBus');
       case 'cant_leave': return T('cantLeave');
@@ -107,7 +108,7 @@
   }
 
   function rulesHtml() {
-    const rules = [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
+    const rules = [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
     return `<ul class="th-rules">${rules.map(([i, txt]) => `<li><i class="fas ${i}" aria-hidden="true"></i><span>${esc(txt)}</span></li>`).join('')}</ul>`;
   }
 
@@ -132,7 +133,7 @@
     return `${pending ? `<p class="th-flash"><i class="fas fa-qrcode" aria-hidden="true"></i> ${esc(T('pendingScan'))}</p>` : ''}
     <section class="th-panel th-panel--new">
       <h3 class="th-panel__title"><i class="fas fa-flag" aria-hidden="true"></i> ${esc(T('newTitle'))}</h3>
-      <p class="th-panel__text">${esc(T('newText'))}</p>
+      <p class="th-panel__text">${esc(T('newText', { n: H.maxMembers }))}</p>
       <fieldset class="th-buses"><legend>${esc(T(busMode ? 'chooseBus' : 'chooseRoute'))}</legend>
         ${H.options.map((o) => `<label class="th-bus"><input type="radio" name="bus" value="${esc(o._id)}" ${H.options.length === 1 ? 'checked' : ''}><i class="fas ${o.kind === 'bus' ? 'fa-bus' : 'fa-route'}" aria-hidden="true"></i><span dir="auto">${esc(o.name)}</span></label>`).join('')}
       </fieldset>
@@ -154,7 +155,8 @@
       </div>
       <p class="th-team__share">${esc(T('shareId'))}</p>
       <p class="th-team__route">${state.bus ? `<span class="th-team__bus"><i class="fas fa-bus" aria-hidden="true"></i> <span dir="auto">${esc(state.bus)}</span></span>` : ''}<span class="th-chip" dir="auto">${esc(r.name)}</span></p>
-      <h4 class="th-team__head">${esc(T('members'))} <span dir="ltr">${state.members.length}</span></h4>
+      <h4 class="th-team__head">${esc(T('members'))} <span dir="ltr">${state.members.length} / ${state.maxMembers}</span></h4>
+      ${state.members.length >= state.maxMembers ? `<p class="th-team__full">${esc(T('teamIsFull'))}</p>` : ''}
       <ul class="th-team__members">${members}</ul>
       ${state.progress === 0 && !state.finished ? `<button type="button" class="th-leave" data-act="leave">${esc(T('leaveTeam'))}</button>` : ''}
     </section>`;

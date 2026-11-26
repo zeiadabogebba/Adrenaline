@@ -1034,3 +1034,4 @@
 .th-team__route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .th-team__bus { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--ink); }
 .th-team__bus i { color: var(--th-red); }
+.th-team__full { margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--th-gold); }

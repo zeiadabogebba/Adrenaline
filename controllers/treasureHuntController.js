@@ -32,6 +32,10 @@ function legAt(preset, route, i) {
 }
 
 const findRoute = (preset, routeId) => preset.routes.find((r) => String(r._id) === String(routeId));
+// How many travellers one team may have (presets made before this setting default to 5).
+const DEFAULT_TEAM_SIZE = 5;
+const teamLimit = (preset) => preset.maxTeamSize || DEFAULT_TEAM_SIZE;
+
 const routeJson = (r) => ({ _id: String(r._id), name: r.name, color: r.color, label: r.label, stops: totalLegs(r) });
 
 // What a team picks when it starts: the trip's buses, each linked to a route (set by the admin,
@@ -109,6 +113,7 @@ function teamState(team, preset, me) {
     elapsedMs: team.elapsedMs,
     splits: team.splits || [],
     lifelines: preset.lifelines,
+    maxMembers: teamLimit(preset),
     lifelinesLeft: Math.max(0, preset.lifelines - used.length),
     cleared,
     clue,
@@ -200,6 +205,7 @@ const getHuntPage = async (req, res, next) => {
         routes: preset.routes.map(routeJson),
         options: startOptions(await tripBuses(trip._id), setting, preset).map(({ _id, name, kind }) => ({ _id, name, kind })),
         lifelines: preset.lifelines,
+        maxMembers: teamLimit(preset),
         state: team ? teamState(team, preset, req.user._id) : null,
         board,
         pendingScan: cleanCode(req.query.scan),
@@ -274,8 +280,14 @@ const joinTeam = async (req, res, next) => {
     if (existing) return json(res, 200, { status: 'success', joined: false, state: teamState(existing, preset, req.user._id) });
 
     const code = cleanCode(req.body.code);
-    const team = code && (await HuntTeam.findOneAndUpdate({ tripId, code }, { $addToSet: { members: req.user._id } }));
-    if (!team) return json(res, 404, { status: 'fail', event: 'team_not_found', message: "There's no team with that ID on this trip. Check it with your teammates." });
+    const max = teamLimit(preset);
+    // Join only while the team has a free place; the check and the join are one atomic update.
+    const team = code && (await HuntTeam.findOneAndUpdate({ tripId, code, [`members.${max - 1}`]: { $exists: false } }, { $addToSet: { members: req.user._id } }));
+    if (!team) {
+      const exists = code && (await HuntTeam.exists({ tripId, code }));
+      if (exists) return json(res, 409, { status: 'fail', event: 'team_full', max, message: `That team is full (${max} people). Start a new team instead.` });
+      return json(res, 404, { status: 'fail', event: 'team_not_found', message: "There's no team with that ID on this trip. Check it with your teammates." });
+    }
     const fresh = await loadTeamFor(req.user._id, tripId);
     json(res, 200, { status: 'success', joined: true, state: teamState(fresh, preset, req.user._id) });
   } catch (err) {
@@ -414,7 +426,7 @@ const getAdminPage = async (req, res, next) => {
     });
     rows.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'upcoming' ? -1 : 1));
     const presetRows = presets.map((p) => ({
-      _id: String(p._id), name: p.name, lifelines: p.lifelines,
+      _id: String(p._id), name: p.name, lifelines: p.lifelines, maxTeamSize: teamLimit(p),
       routes: p.routes.map((r) => ({ name: r.name, color: r.color, stops: totalLegs(r) })),
       qrCount: p.routes.reduce((n, r) => n + r.legs.length, 0) + 1,
       trips: usage.trips[String(p._id)] || 0, teams: usage.teams[String(p._id)] || 0, updatedAt: p.updatedAt,
@@ -504,6 +516,7 @@ function presetFromBody(body) {
     name: str(b.name, 100),
     description: str(b.description, 1000),
     lifelines: Math.max(0, Math.min(10, parseInt(b.lifelines, 10) || 0)),
+    maxTeamSize: Math.max(1, Math.min(20, parseInt(b.maxTeamSize, 10) || DEFAULT_TEAM_SIZE)),
     finish: {
       place: str(f.place, 120),
       placement: str(f.placement, 200), message: str(f.message, 600), code: code(f.code),
