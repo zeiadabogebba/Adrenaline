@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=2">
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
+    <link rel="stylesheet" href="/css/adminPackages.css?v=20261127a">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -234,6 +234,13 @@
                 </div>
 
                 <div class="form-group full-width">
+                    <label>Buses &amp; ushers <span class="admin-only-tag"><i class="fas fa-lock"></i> Admin only</span></label>
+                    <p style="font-size:0.78rem;color:var(--color-text-muted);margin:0 0 8px;">Travellers pick their bus when they start the treasure hunt, and rate its ushers when they review this trip. Not shown anywhere else on the site.</p>
+                    <div id="busBuilder" class="itin-builder"></div>
+                    <button type="button" class="add-row-btn" id="addBusBtn"><i class="fas fa-bus"></i> Add bus</button>
+                </div>
+
+                <div class="form-group full-width">
                     <label>Included Services</label>
                     <input type="text" id="tripIncluded" placeholder="Comma-separated: Transport, Meals, Guide">
                 </div>
@@ -359,6 +366,7 @@
             includedServices: t.includedServices || '',
             highlights: t.highlights || '',
             promoCodes: (t.promoCodes || []).map(p => ({ code: p.code, discount: p.discount })),
+            buses: (t.buses || []).map(b => ({ _id: String(b._id), name: b.name, ushers: (b.ushers || []).map(u => ({ _id: String(u._id), name: u.name })) })),
             itinerary: (t.itinerary || []).map(r => ({ day: r.day, title: r.title || '', desc: r.desc || '' })),
             gallery: t.gallery || [],
             experiencePhotos: t.experiencePhotos || [],
@@ -380,6 +388,6 @@
 </script>
 <script src="/js/global.js"></script>
 <script src="/js/admin-theme.js"></script>
-<script src="/js/adminTrips.js?v=20261119a"></script>
+<script src="/js/adminTrips.js?v=20261127a"></script>
 </body>
 </html>

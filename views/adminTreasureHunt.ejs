@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261127a">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261127b">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -85,7 +85,7 @@
                         <p><%= p.qrCount %> QR codes &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
                     </header>
                     <ul class="thx-routes">
-                        <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><% if (r.bus) { %><i class="fas fa-bus"></i> <%= r.bus %><% } else { %><em class="thx-nobus">No bus yet</em><% } %> &middot; <%= r.stops %> stops</small></li><% }) %>
+                        <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><%= r.stops %> stops</small></li><% }) %>
                     </ul>
                     <p class="thx-usage">Used by <%= p.trips %> trip<%= p.trips === 1 ? '' : 's' %><% if (p.teams) { %> &middot; <%= p.teams %> team<%= p.teams === 1 ? '' : 's' %> played<% } %></p>
                     <div class="thx-actions">
@@ -119,6 +119,7 @@
                             </select>
                             <% if (r.teams) { %><a class="pbx-view" href="/admin/treasure-hunt/trips/<%= r._id %>"><i class="fas fa-ranking-star"></i> Results</a><% } %>
                         </div>
+                        <div class="thx-busmap" data-busmap></div>
                     </div>
                     <div class="pbx-switches">
                         <label class="pbx-switch">
@@ -143,6 +144,7 @@
 
 <script>
     window.SERVER_USER = <%- JSON.stringify(user).replace(/</g, '\\u003c') %>;
+    window.HUNT_ADMIN = <%- JSON.stringify({ presetRoutes, trips: Object.fromEntries(rows.map(r => [r._id, { buses: r.buses, busRoutes: r.busRoutes }])) }).replace(/</g, '\\u003c') %>;
     (function () {
         const toast = document.getElementById('thxToast');
         let timer = null;
@@ -193,9 +195,41 @@
             on.closest('.pbx-switch').querySelector('.pbx-state').textContent = on.checked ? 'On' : 'Off';
             open.closest('.pbx-switch').querySelector('.pbx-state').textContent = open.checked ? 'Open' : 'Closed';
         }
+        // Bus -> route links for trips with buses (set in the trip's admin modal).
+        const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function drawBusMap(row) {
+            const host = row.querySelector('[data-busmap]');
+            const info = window.HUNT_ADMIN.trips[row.dataset.trip] || { buses: [], busRoutes: {} };
+            const routes = window.HUNT_ADMIN.presetRoutes[row.querySelector('[data-field=presetId]').value] || [];
+            if (!routes.length) { host.innerHTML = ''; return; }
+            if (!info.buses.length) {
+                host.innerHTML = '<p class="thx-busmap__none"><i class="fas fa-bus"></i> No buses on this trip yet. Add them in Trip Management, or teams will pick a route instead.</p>';
+                return;
+            }
+            host.innerHTML = '<p class="thx-busmap__title"><i class="fas fa-bus"></i> Bus routes</p>' + info.buses.map((b, i) => {
+                const chosen = info.busRoutes[b._id] || routes[i % routes.length]._id;
+                return `<label class="thx-busmap__row"><span>${esc(b.name)}</span><select data-bus="${esc(b._id)}">${routes.map(r => `<option value="${esc(r._id)}" ${r._id === chosen ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></label>`;
+            }).join('');
+            host.querySelectorAll('select[data-bus]').forEach(s => s.addEventListener('change', async () => {
+                const busRoutes = [...host.querySelectorAll('select[data-bus]')].map(x => ({ busId: x.dataset.bus, routeId: x.value }));
+                host.querySelectorAll('select').forEach(x => x.disabled = true);
+                try {
+                    const j = await call('PATCH', '/api/admin/treasure-hunt/trips/' + row.dataset.trip, { busRoutes });
+                    info.busRoutes = j.data.busRoutes;
+                    say(`${row.querySelector('h3').firstChild.textContent.trim()}: bus routes saved. New teams on each bus get its route.`);
+                } catch (e) {
+                    say(e.message, true);
+                    drawBusMap(row);
+                } finally {
+                    host.querySelectorAll('select').forEach(x => x.disabled = false);
+                }
+            }));
+        }
+
         document.querySelectorAll('.thx-row').forEach(row => {
             const sel = row.querySelector('[data-field=presetId]');
             sel.dataset.was = sel.value;
+            drawBusMap(row);
             row.querySelectorAll('[data-field]').forEach(input => input.addEventListener('change', async () => {
                 const field = input.dataset.field;
                 const value = field === 'presetId' ? input.value : input.checked;
@@ -204,6 +238,8 @@
                 try {
                     const j = await call('PATCH', '/api/admin/treasure-hunt/trips/' + row.dataset.trip, { [field]: value });
                     sel.value = j.data.presetId; sel.dataset.was = j.data.presetId;
+                    if (window.HUNT_ADMIN.trips[row.dataset.trip]) window.HUNT_ADMIN.trips[row.dataset.trip].busRoutes = j.data.busRoutes || {};
+                    drawBusMap(row);
                     row.querySelector('[data-field=enabled]').checked = j.data.enabled;
                     row.querySelector('[data-field=open]').checked = j.data.open;
                     say(field === 'presetId' ? `${title}: ${value ? 'preset saved' : 'treasure hunt removed'}.`

@@ -264,7 +264,7 @@
 
 .thx-route__head {
     display: grid;
-    grid-template-columns: auto minmax(0, 3fr) minmax(0, 1.5fr) minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 3fr) minmax(0, 1fr) auto;
     align-items: end;
     gap: 12px;
 }
@@ -401,5 +401,14 @@
 .thx-answers ol { margin: 0; padding-inline-start: 22px; display: grid; gap: 6px; color: var(--ink-dim); font-size: 0.88rem; }
 .thx-answers b { color: var(--ink); }
 
-.thx-routes small i { color: var(--ink-dim); }
-.thx-nobus { font-style: normal; color: var(--amber, #F59E0B); }
+
+/* Trip row: which route each bus takes */
+.thx-busmap { display: grid; gap: 6px; margin-top: 10px; }
+.thx-busmap:empty { display: none; }
+.thx-busmap__title,
+.thx-busmap__none { margin: 0; font-size: 0.78rem; font-weight: 700; color: var(--ink-dim); }
+.thx-busmap__title i,
+.thx-busmap__none i { color: var(--crimson); margin-inline-end: 4px; }
+.thx-busmap__row { display: grid; grid-template-columns: minmax(80px, 140px) minmax(0, 320px); align-items: center; gap: 10px; font-size: 0.85rem; color: var(--ink); }
+.thx-busmap__row span { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thx-busmap__row select { padding: 6px 8px; background: var(--surface); border: 1px solid var(--hairline-strong); color: var(--ink); font: inherit; font-size: 0.82rem; }

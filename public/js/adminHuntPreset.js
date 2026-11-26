@@ -5,7 +5,7 @@
   const COLORS = ['#DC2626', '#2563EB', '#16A34A', '#EAB308', '#9333EA', '#EA580C'];
 
   const blankLeg = () => ({ place: '', placement: '', riddle: '', guide: '', extraHint: '', photo: '', photoPublicId: '', code: '' });
-  const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, busName: `Bus ${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '' });
+  const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '' });
 
   let p = window.HUNT_PRESET || {
     name: '', description: '', lifelines: 1,
@@ -87,7 +87,6 @@
       <header class="thx-route__head">
         <label class="thx-color" title="Route colour"><input type="color" data-path="${base}.color" value="${esc(route.color)}"></label>
         ${input(`${base}.name`, 'Route name', { maxlength: 80 })}
-        ${input(`${base}.busName`, 'Bus', { maxlength: 40, ph: 'e.g. Bus 1' })}
         ${input(`${base}.label`, 'QR prefix', { maxlength: 8, dir: 'ltr', ph: 'R1' })}
         ${LOCKED ? '' : `<button type="button" class="thx-icon thx-icon--danger" data-remove-route="${ri}" ${p.routes.length === 1 ? 'disabled' : ''} aria-label="Remove route"><i class="fas fa-trash"></i></button>`}
       </header>

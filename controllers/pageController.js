@@ -89,7 +89,7 @@ const getLandingPage = async (req, res, next) => {
       Package.find({ status: 'active', type: 'week' }).limit(3).sort('-rating'),
       Package.find({ status: 'active', type: 'single' }).limit(4).sort('-rating'),
       Review.find().populate('userId', 'name image').sort('-date').limit(6),
-      Trip.find({ kind: 'upcoming', status: 'active' }).limit(6).sort('createdAt'),
+      Trip.find({ kind: 'upcoming', status: 'active' }).select('-promoCodes').limit(6).sort('createdAt'),
       Package.find({ status: 'active', type: 'week', city: { $nin: ['', 'TBD'] } }).distinct('city'),
 
       Package.findOne({ status: 'active', type: 'week', name: 'Dahab' }),
@@ -100,7 +100,7 @@ const getLandingPage = async (req, res, next) => {
     // and a "coming soon" note when there are neither.
     const pastTrips = upcomingTrips.length
       ? []
-      : await Trip.find({ kind: 'past', status: 'active' }).limit(6).sort('-createdAt');
+      : await Trip.find({ kind: 'past', status: 'active' }).select('-promoCodes').limit(6).sort('-createdAt');
     const tripsNowMode = upcomingTrips.length ? 'upcoming' : pastTrips.length ? 'past' : 'empty';
 
     const lang = req.lang;
@@ -314,12 +314,16 @@ const getWriteReviewPage = async (req, res, next) => {
       Review.find({ userId: req.user._id }).select('tripId packageId').lean(),
     ]);
     const [trips, packages] = await Promise.all([
-      Trip.find({ _id: { $in: tripIds } }).select('title date location image kind createdAt ar'),
+      Trip.find({ _id: { $in: tripIds } }).select('title date location image kind createdAt ar +buses'),
       Package.find({ _id: { $in: packageIds } }).select('name type city image createdAt ar'),
     ]);
     const reviewed = new Set(mine.map((r) => String(r.tripId || r.packageId)));
     const reviewables = [
-      ...localizeTrips(trips, req.lang).map((t) => ({ kind: 'trip', id: String(t._id), title: t.title, sub: [t.date, t.location].filter(Boolean).join(' · '), image: t.image || '', past: t.kind === 'past', at: t.createdAt })),
+      ...localizeTrips(trips, req.lang).map((t) => ({
+        kind: 'trip', id: String(t._id), title: t.title, sub: [t.date, t.location].filter(Boolean).join(' · '), image: t.image || '', past: t.kind === 'past', at: t.createdAt,
+        // Booked travellers see the trip's buses and ushers here, so they can rate them.
+        buses: (t.buses || []).map((b) => ({ _id: String(b._id), name: b.name, ushers: (b.ushers || []).map((u) => ({ _id: String(u._id), name: u.name })) })),
+      })),
       ...localizePackages(packages, req.lang).map((p) => ({ kind: 'package', id: String(p._id), title: p.name, sub: p.city || '', image: p.image || '', past: true, at: p.createdAt })),
     ]
       .map((x) => ({ ...x, reviewed: reviewed.has(x.id) }))
@@ -505,7 +509,7 @@ const getAdminPackagesPage = async (req, res, next) => {
 
 const getAdminTripsPage = async (req, res, next) => {
   try {
-    const trips = await Trip.find().sort('-createdAt');
+    const trips = await Trip.find().select('+buses').sort('-createdAt');
     res.render('adminTrips', { user: req.user, trips });
   } catch (err) {
     next(err);
@@ -576,6 +580,8 @@ const getAdminReportsPage = async (req, res, next) => {
         user: r.userId ? r.userId.name : 'Verified Traveler',
         rating: r.rating || 5,
         review: r.text || r.title || '',
+        bus: r.busName || '',
+        ushers: (r.usherRatings || []).map((u) => ({ name: u.name, rating: u.rating, comment: u.comment || '' })),
         date: r.createdAt ? r.createdAt.toISOString().split('T')[0] : '',
         photos: r.photos || [],
       })),
@@ -594,7 +600,7 @@ const getPrivacyPage = (req, res) => res.render('legal',   { user: req.user || n
 const getTermsPage   = (req, res) => res.render('legal',   { user: req.user || null, page: 'terms' });
 const getUpcomingTrips = async (req, res, next) => {
   try {
-    const trips = await Trip.find({ kind: 'upcoming', status: 'active' }).sort('createdAt');
+    const trips = await Trip.find({ kind: 'upcoming', status: 'active' }).select('-promoCodes').sort('createdAt');
     res.render('upcomingTrips', { user: req.user || null, trips: localizeTrips(trips, req.lang) });
   } catch (err) {
     next(err);
@@ -603,7 +609,7 @@ const getUpcomingTrips = async (req, res, next) => {
 
 const getPastTrips = async (req, res, next) => {
   try {
-    const trips = localizeTrips(await Trip.find({ kind: 'past', status: 'active' }).sort('-createdAt'), req.lang);
+    const trips = localizeTrips(await Trip.find({ kind: 'past', status: 'active' }).select('-promoCodes').sort('-createdAt'), req.lang);
 
     const gallery = [];
     for (const trip of trips) {
@@ -624,7 +630,8 @@ const getPastTrips = async (req, res, next) => {
 
 const getTripDetails = async (req, res, next) => {
   try {
-    const trip = await Trip.findById(req.params.id);
+    // Promo codes stay server-side; they are checked only when a traveller applies one.
+    const trip = await Trip.findById(req.params.id).select('-promoCodes');
     if (!trip || trip.status === 'inactive') return next(new AppError('Trip not found.', 404));
     res.render('tripDetails', { user: req.user || null, trip: localizeTrip(trip, req.lang) });
   } catch (err) {

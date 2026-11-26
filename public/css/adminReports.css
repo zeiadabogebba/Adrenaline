@@ -645,3 +645,9 @@ tr:hover td {
 [data-theme="dark"] .badge-cancelled  { background: rgba(156,163,175,0.15); color: #9ca3af;            border-color: rgba(156,163,175,0.3); }
 [data-theme="dark"] .badge-verifying  { background: rgba(56,189,248,0.15); color: #38bdf8;             border-color: rgba(56,189,248,0.3); }
 [data-theme="dark"] .badge-half-paid  { background: rgba(230,126,34,0.15); color: #f0a35e;            border-color: rgba(230,126,34,0.3); }
+
+/* A review's bus and its usher ratings */
+.review-ushers { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 0.8rem; color: var(--ink-dim, #9CA3AF); }
+.review-ushers i { color: var(--crimson, #DC2626); }
+.review-usher b { color: var(--ink, #FFFFFF); font-weight: 700; }
+.review-usher em { font-style: italic; }

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     displayUserName();
     setupStarRating();
+    setupBusStep();
     setupPhotoUpload();
     setupFormSubmission();
 
@@ -28,6 +29,98 @@ function displayUserName() {
 // The trips (and packages) this traveller booked, from the page.
 function getReviewables() {
     return window.SERVER_REVIEWABLES || [];
+}
+
+// After a trip is picked: which bus they were on, then a star rating (and optional comment) per usher.
+let usherStars = {};
+
+function setupBusStep() {
+    const step = document.getElementById('bus-step');
+    if (!step) return;
+    document.querySelectorAll('input[name="reviewTarget"]').forEach((radio) => {
+        radio.addEventListener('change', () => renderBusStep());
+    });
+
+    step.addEventListener('change', (e) => {
+        if (e.target.name === 'reviewBus') renderUshers(e.target.value);
+    });
+    step.addEventListener('click', (e) => {
+        const star = e.target.closest('[data-usher-star]');
+        if (!star) return;
+        const id = star.dataset.usher;
+        usherStars[id] = Number(star.dataset.usherStar);
+        paintUsherStars(id);
+    });
+}
+
+function pickedReviewable() {
+    const picked = document.querySelector('input[name="reviewTarget"]:checked');
+    return picked ? getReviewables().find((r) => r.id === picked.value) : null;
+}
+
+function renderBusStep() {
+    const step = document.getElementById('bus-step');
+    const item = pickedReviewable();
+    usherStars = {};
+    if (!item || !item.buses || !item.buses.length) { step.hidden = true; step.innerHTML = ''; return; }
+    step.hidden = false;
+    step.innerHTML = `
+        <h3 class="bus-step__title"><i class="fas fa-bus" aria-hidden="true"></i> ${escapeHtml(window.t('js.review.whichBus'))}</h3>
+        <div class="bus-pick-grid">${item.buses.map((b) => `
+            <label class="bus-pick"><input type="radio" name="reviewBus" value="${escapeHtml(b._id)}"><i class="fas fa-bus" aria-hidden="true"></i><span dir="auto">${escapeHtml(b.name)}</span></label>`).join('')}
+        </div>
+        <div id="usher-list" class="usher-rate-list"></div>`;
+}
+
+function renderUshers(busId) {
+    const item = pickedReviewable();
+    const bus = item && (item.buses || []).find((b) => b._id === busId);
+    const list = document.getElementById('usher-list');
+    usherStars = {};
+    if (!bus || !bus.ushers.length) { list.innerHTML = ''; return; }
+    list.innerHTML = `
+        <h3 class="bus-step__title"><i class="fas fa-user-tie" aria-hidden="true"></i> ${escapeHtml(window.t('js.review.rateUshers'))}</h3>
+        ${bus.ushers.map((u) => `
+        <div class="usher-rate" data-usher-row="${escapeHtml(u._id)}">
+            <div class="usher-rate__top">
+                <span class="usher-rate__name" dir="auto">${escapeHtml(u.name)}</span>
+                <span class="usher-rate__stars" role="radiogroup" aria-label="${escapeHtml(window.t('js.review.rateUsher', { name: u.name }))}">
+                    ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="far fa-star" data-usher="${escapeHtml(u._id)}" data-usher-star="${n}" aria-label="${n}"></button>`).join('')}
+                </span>
+            </div>
+            <textarea class="usher-rate__comment" data-usher-comment="${escapeHtml(u._id)}" rows="2" maxlength="500" dir="auto" placeholder="${escapeHtml(window.t('js.review.usherComment'))}"></textarea>
+        </div>`).join('')}`;
+}
+
+function paintUsherStars(id) {
+    const n = usherStars[id] || 0;
+    document.querySelectorAll(`[data-usher="${CSS.escape(id)}"]`).forEach((s) => {
+        const on = Number(s.dataset.usherStar) <= n;
+        s.classList.toggle('fas', on);
+        s.classList.toggle('far', !on);
+        s.setAttribute('aria-pressed', on);
+    });
+}
+
+// What the review sends about the bus, or an error message if something is missing.
+function collectBusReview() {
+    const item = pickedReviewable();
+    if (!item || !item.buses || !item.buses.length) return { data: {} };
+    const bus = document.querySelector('input[name="reviewBus"]:checked');
+    if (!bus) return { error: window.t('js.review.errBus') };
+    const ushers = (item.buses.find((b) => b._id === bus.value) || { ushers: [] }).ushers;
+    const missing = ushers.find((u) => !usherStars[u._id]);
+    if (missing) return { error: window.t('js.review.errUsher', { name: missing.name }) };
+    return {
+        data: {
+            busId: bus.value,
+            usherRatings: ushers.map((u) => ({
+                usherId: u._id,
+                rating: usherStars[u._id],
+                comment: (document.querySelector(`[data-usher-comment="${CSS.escape(u._id)}"]`)?.value || '').trim(),
+            })),
+        },
+    };
 }
 
 function setupStarRating() {
@@ -147,6 +240,8 @@ function setupFormSubmission() {
             const reviewText = document.getElementById('review-text').value.trim();
 
             if (!picked) { showFeedback(window.t('js.review.errTrip')); return; }
+            const busReview = collectBusReview();
+            if (busReview.error) { showFeedback(busReview.error); return; }
             if (rating === 0) { showFeedback(window.t('js.review.errRating')); return; }
             if (reviewText.length < 10) { showFeedback(window.t('js.review.errText')); return; }
 
@@ -163,6 +258,7 @@ function setupFormSubmission() {
                     credentials: 'include',
                     body: JSON.stringify({
                         [picked.dataset.kind === 'package' ? 'packageId' : 'tripId']: picked.value,
+                        ...busReview.data,
                         rating,
                         title:       reviewTitle,
                         text:        reviewText,
@@ -221,6 +317,7 @@ function renderMyReviews(reviews) {
                 <span class="review-date">${r.date ? r.date.slice(0, 10) : ''}</span>
             </div>
             <p class="review-text">"${escapeHtml(r.title)}": ${escapeHtml(r.text)}</p>
+            ${r.busName ? `<p class="review-bus"><i class="fas fa-bus"></i> ${escapeHtml(r.busName)}${(r.usherRatings || []).map((u) => ` · ${escapeHtml(u.name)} ${'★'.repeat(u.rating)}${'☆'.repeat(5 - u.rating)}`).join('')}</p>` : ''}
             <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
                 <button class="btn btn--sm" style="color:#dc3545" onclick="deleteMyReview('${r._id}')">${window.t('js.review.delete')}</button>
             </div>

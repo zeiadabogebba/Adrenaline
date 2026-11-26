@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=2">
     <link rel="stylesheet" href="/css/global.css?v=20261002b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/adminReports.css?v=20260915a">
+    <link rel="stylesheet" href="/css/adminReports.css?v=20261127a">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -156,7 +156,7 @@
         user: <%- JSON.stringify(user) %>,
         allUsers: <%- JSON.stringify(allUsers) %>,
         allBookings: <%- JSON.stringify(allBookings) %>,
-        allReviews: <%- JSON.stringify(allReviews) %>,
+        allReviews: <%- JSON.stringify(allReviews).replace(/</g, '\\u003c') %>,
         totalRevenue: <%= totalRevenue %>,
         openTickets: <%= openTickets %>
     };
@@ -309,6 +309,9 @@
         ` : '';
     }
 
+    // Review text comes from travellers, so it is always inserted as text, never as HTML.
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     function renderReviews() {
         const sd = document.getElementById('reviewStartDate').value;
         const ed = document.getElementById('reviewEndDate').value;
@@ -332,12 +335,13 @@
             : filtered.map(r => `
                 <div class="review-item" id="admin-review-${r.id}">
                     <div class="review-header">
-                        <strong>${r.user}</strong>
+                        <strong>${esc(r.user)}</strong>
                         <span style="color:var(--amber);">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
                         <span class="review-date">${r.date}</span>
                         <button onclick="deleteAdminReview('${r.id}')" style="margin-left:auto;background:none;border:none;color:var(--bad);cursor:pointer;font-size:0.8rem;"><i class="fas fa-trash"></i> Delete</button>
                     </div>
-                    <p class="review-text">"${r.review}"</p>
+                    <p class="review-text">"${esc(r.review)}"</p>
+                    ${r.bus ? `<div class="review-ushers"><span><i class="fas fa-bus"></i> ${esc(r.bus)}</span>${r.ushers.map(u => `<span class="review-usher"><b>${esc(u.name)}</b> <span style="color:#F1C40F">${'★'.repeat(u.rating)}${'☆'.repeat(5 - u.rating)}</span>${u.comment ? ` <em>"${esc(u.comment)}"</em>` : ''}</span>`).join('')}</div>` : ''}
                     ${r.photos && r.photos.length ? `
                     <div class="review-photos">
                         ${r.photos.slice(0, 4).map(p => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="Review photo" class="review-photo-thumb" loading="lazy"></a>`).join('')}

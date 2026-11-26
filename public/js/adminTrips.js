@@ -160,6 +160,7 @@ function resetForm() {
     g('itinBuilder').innerHTML = '';
     g('arItinBuilder').innerHTML = '';
     g('promoBuilder').innerHTML = '';
+    g('busBuilder').innerHTML = '';
     syncDepositField();
     galleryPhotos.reset();
     experiencePhotos.reset();
@@ -206,6 +207,56 @@ function addPromoRow(code, discount) {
     row.querySelector('.promo-discount').value = discount != null ? discount : '';
     row.querySelector('.itin-remove-btn').addEventListener('click', () => row.remove());
     wrap.appendChild(row);
+}
+
+// Buses and the ushers on each (admin only). Each keeps its _id so linked reviews stay linked.
+function addBusRow(bus) {
+    const wrap = g('busBuilder');
+    const row = document.createElement('div');
+    row.className = 'daily-row bus-row';
+    if (bus && bus._id) row.dataset.id = bus._id;
+    row.innerHTML =
+        '<div class="bus-row-top">' +
+        '<i class="fas fa-bus" aria-hidden="true"></i>' +
+        '<input type="text" class="bus-name" maxlength="40" placeholder="Bus name, e.g. Bus 1">' +
+        '<button type="button" class="itin-remove-btn" title="Remove bus">&times;</button>' +
+        '</div>' +
+        '<div class="usher-list"></div>' +
+        '<button type="button" class="add-usher-btn"><i class="fas fa-user-plus"></i> Add usher</button>';
+    row.querySelector('.bus-name').value = (bus && bus.name) || '';
+    row.querySelector('.itin-remove-btn').addEventListener('click', () => row.remove());
+    row.querySelector('.add-usher-btn').addEventListener('click', () => addUsherRow(row).querySelector('input').focus());
+    ((bus && bus.ushers) || []).forEach((u) => addUsherRow(row, u));
+    wrap.appendChild(row);
+    return row;
+}
+
+function addUsherRow(busRow, usher) {
+    const item = document.createElement('div');
+    item.className = 'usher-row';
+    if (usher && usher._id) item.dataset.id = usher._id;
+    item.innerHTML =
+        '<input type="text" class="usher-name" maxlength="60" placeholder="Usher name">' +
+        '<button type="button" class="itin-remove-btn" title="Remove usher">&times;</button>';
+    item.querySelector('.usher-name').value = (usher && usher.name) || '';
+    item.querySelector('.itin-remove-btn').addEventListener('click', () => item.remove());
+    busRow.querySelector('.usher-list').appendChild(item);
+    return item;
+}
+
+function collectBuses() {
+    const names = new Set();
+    return Array.from(g('busBuilder').querySelectorAll('.bus-row')).map((row) => {
+        const name = row.querySelector('.bus-name').value.trim();
+        const ushers = Array.from(row.querySelectorAll('.usher-row'))
+            .map((u) => ({ ...(u.dataset.id ? { _id: u.dataset.id } : {}), name: u.querySelector('.usher-name').value.trim() }))
+            .filter((u) => u.name);
+        if (!name && !ushers.length) return null;
+        if (!name) throw new Error('Every bus needs a name.');
+        if (names.has(name.toLowerCase())) throw new Error('Two buses are called "' + name + '". Give each bus its own name.');
+        names.add(name.toLowerCase());
+        return { ...(row.dataset.id ? { _id: row.dataset.id } : {}), name, ushers };
+    }).filter(Boolean);
 }
 
 function collectPromos() {
@@ -259,6 +310,7 @@ function openEditModal(id) {
     g('tripIncluded').value = trip.includedServices || '';
     g('tripHighlights').value = trip.highlights || '';
     (trip.promoCodes || []).forEach((p) => addPromoRow(p.code, p.discount));
+    (trip.buses || []).forEach((b) => addBusRow(b));
     (trip.itinerary || []).forEach((r) => addItinRow(r.day, r.title, r.desc));
     const ar = trip.ar || {};
     g('arTripTitle').value = ar.title || '';
@@ -304,8 +356,10 @@ async function saveTrip() {
     }
 
     let promoCodes;
+    let buses;
     try {
         promoCodes = collectPromos();
+        buses = collectBuses();
     } catch (err) {
         showErr(err.message); return;
     }
@@ -329,6 +383,7 @@ async function saveTrip() {
         includedServices: g('tripIncluded').value.trim(),
         highlights: g('tripHighlights').value.trim(),
         promoCodes,
+        buses,
         itinerary: collectItin(),
         ar: {
             title: g('arTripTitle').value.trim(),
@@ -436,6 +491,7 @@ function init() {
     g('addItinBtn').onclick = () => addItinRow();
     g('addArItinBtn').onclick = () => addItinRow(undefined, '', '', 'arItinBuilder');
     g('addPromoBtn').onclick = () => addPromoRow();
+    g('addBusBtn').onclick = () => addBusRow().querySelector('.bus-name').focus();
     g('tripDepositEnabled').onchange = syncDepositField;
     g('addGalleryBtn').onclick = () => g('galleryFile').click();
     g('galleryFile').addEventListener('change', function () {

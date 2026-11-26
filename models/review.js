@@ -30,6 +30,21 @@ const reviewSchema = new mongoose.Schema(
       maxlength: [2000, 'Review cannot exceed 2000 characters'],
       minlength: [10, 'Review must be at least 10 characters'],
     },
+    // The bus the traveller was on, and their rating of each usher on it (names kept as written then).
+    busId:   { type: mongoose.Schema.Types.ObjectId, default: undefined },
+    busName: { type: String, default: undefined },
+    usherRatings: {
+      type: [
+        {
+          _id: false,
+          usherId: { type: mongoose.Schema.Types.ObjectId, required: true },
+          name:    { type: String, required: true, maxlength: 60 },
+          rating:  { type: Number, required: true, min: 1, max: 5 },
+          comment: { type: String, default: '', trim: true, maxlength: 500 },
+        },
+      ],
+      default: undefined,
+    },
     photos:      [{ type: String }],
     photosCount: { type: Number, default: 0 },
     date:        { type: Date, default: Date.now },

@@ -493,3 +493,27 @@
 
 .review-empty i { font-size: 1.8rem; color: var(--crimson); }
 .review-empty p { margin: 0; max-width: 40ch; }
+
+/* After picking a trip: the bus, then a rating for each usher on it */
+.bus-step { display: grid; gap: var(--s-sm); margin-bottom: var(--s-lg); padding: var(--s-md); border: 1px solid var(--hairline-strong); border-radius: var(--r-md); background: var(--surface); }
+.bus-step[hidden] { display: none; }
+.bus-step__title { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.bus-step__title i { color: var(--crimson); margin-inline-end: 6px; }
+.bus-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.bus-pick { position: relative; display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-md); cursor: pointer; font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; text-transform: uppercase; color: var(--ink); transition: border-color 0.2s, background-color 0.2s; }
+.bus-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.bus-pick i { color: var(--ink-dim); }
+.bus-pick:has(:checked) { border-color: var(--crimson); background: color-mix(in srgb, var(--crimson) 9%, transparent); }
+.bus-pick:has(:checked) i { color: var(--crimson); }
+.bus-pick:has(:focus-visible) { outline: 2px solid var(--crimson); outline-offset: 2px; }
+.usher-rate-list { display: grid; gap: 8px; }
+.usher-rate-list:empty { display: none; }
+.usher-rate { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-md); }
+.usher-rate__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.usher-rate__name { font-weight: 700; color: var(--ink); }
+.usher-rate__stars { display: inline-flex; gap: 2px; direction: ltr; }
+.usher-rate__stars button { padding: 4px; font-size: 1.2rem; background: none; border: 0; color: #F1C40F; cursor: pointer; }
+.usher-rate__stars button:focus-visible { outline: 2px solid var(--crimson); border-radius: 4px; }
+.usher-rate__comment { width: 100%; box-sizing: border-box; padding: 8px 10px; font: inherit; font-size: 0.88rem; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--hairline-strong); border-radius: var(--r-sm, 4px); resize: vertical; min-height: 0; height: 46px; }
+.review-bus { margin: 4px 0 0; font-size: 0.82rem; color: var(--ink-dim); }
+.review-bus i { color: var(--crimson); }

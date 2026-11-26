@@ -20,7 +20,6 @@ const routeSchema = new mongoose.Schema({
   name:  { type: String, trim: true, maxlength: 80, required: true },
   color: { type: String, trim: true, match: /^#[0-9a-fA-F]{6}$/, default: '#DC2626' },
   label: { type: String, trim: true, maxlength: 8, default: '' }, // printed prefix, e.g. R1
-  busName: { type: String, trim: true, maxlength: 40, default: '' }, // travellers pick their bus to get this route
   legs:  { type: [legSchema], default: [] },
   // The last leg (to the shared finish) has route-specific directions.
   finishRiddle:    { type: String, trim: true, maxlength: 600, default: '' },

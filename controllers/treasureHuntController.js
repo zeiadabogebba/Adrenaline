@@ -32,8 +32,25 @@ function legAt(preset, route, i) {
 }
 
 const findRoute = (preset, routeId) => preset.routes.find((r) => String(r._id) === String(routeId));
-// Travellers pick their bus; a route without a bus name yet is shown by its own name.
-const routeJson = (r) => ({ _id: String(r._id), name: r.name, bus: r.busName || r.name, color: r.color, label: r.label, stops: totalLegs(r) });
+const routeJson = (r) => ({ _id: String(r._id), name: r.name, color: r.color, label: r.label, stops: totalLegs(r) });
+
+// What a team picks when it starts: the trip's buses, each linked to a route (set by the admin,
+// otherwise bus 1 -> route 1, bus 2 -> route 2, ...). A trip without buses offers the routes.
+function startOptions(buses, setting, preset) {
+  const routes = preset.routes;
+  if (!routes.length) return [];
+  if (!buses || !buses.length) return routes.map((r) => ({ _id: String(r._id), name: r.name, routeId: String(r._id), kind: 'route', color: r.color }));
+  const linked = Object.fromEntries(((setting && setting.busRoutes) || []).map((x) => [String(x.busId), String(x.routeId)]));
+  return buses.map((b, i) => {
+    const route = routes.find((r) => String(r._id) === linked[String(b._id)]) || routes[i % routes.length];
+    return { _id: String(b._id), name: b.name, routeId: String(route._id), kind: 'bus', color: route.color };
+  });
+}
+
+const tripBuses = async (tripId) => {
+  const t = await Trip.findById(tripId).select('+buses').lean();
+  return (t && t.buses) || [];
+};
 
 // ── Access ──
 async function huntForUser(userId, tripId) {
@@ -82,6 +99,7 @@ function teamState(team, preset, me) {
     teamId: String(team._id),
     code: team.code,
     route: routeJson(route),
+    bus: team.busName || '',
     members: (team.members || []).map((m) => ({ name: m.name || 'Traveller', me: String(m._id || m) === String(me) })),
     progress: team.progress,
     total,
@@ -180,6 +198,7 @@ const getHuntPage = async (req, res, next) => {
         open: setting.open,
         name: preset.name,
         routes: preset.routes.map(routeJson),
+        options: startOptions(await tripBuses(trip._id), setting, preset).map(({ _id, name, kind }) => ({ _id, name, kind })),
         lifelines: preset.lifelines,
         state: team ? teamState(team, preset, req.user._id) : null,
         board,
@@ -208,7 +227,7 @@ const getState = async (req, res, next) => {
 // Team IDs: 8 characters with no look-alike letters, shown as ABCD-EFGH.
 const newTeamCode = () => Array.from(crypto.randomBytes(8), (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
 
-// POST /api/treasure-hunt/:tripId/start { routeId }: a new team on the route of the bus it chose.
+// POST /api/treasure-hunt/:tripId/start { busId }: a new team on the route of the bus it chose.
 // The server gives the team its ID.
 const startTeam = async (req, res, next) => {
   try {
@@ -222,14 +241,15 @@ const startTeam = async (req, res, next) => {
     if (!setting.open) return json(res, 403, { status: 'fail', event: 'closed_start', message: 'The treasure hunt is closed right now.' });
     if (!preset.routes.length) return next(new AppError('This treasure hunt has no routes yet.', 400));
 
-    // Each bus is linked to one route in the preset; the team gets its bus's route.
-    const route = findRoute(preset, req.body.routeId);
+    // The team gets the route linked to the bus it picked.
+    const option = startOptions(await tripBuses(tripId), setting, preset).find((o) => o._id === String(req.body.busId || ''));
+    const route = option && findRoute(preset, option.routeId);
     if (!route) return json(res, 400, { status: 'fail', event: 'pick_bus', message: 'Choose the bus you came on.' });
 
     let team = null;
     for (let attempt = 0; attempt < 5 && !team; attempt++) {
       try {
-        team = await HuntTeam.create({ tripId, presetId: preset._id, routeId: route._id, code: newTeamCode(), members: [req.user._id], startedAt: new Date() });
+        team = await HuntTeam.create({ tripId, presetId: preset._id, routeId: route._id, code: newTeamCode(), busId: option.kind === 'bus' ? option._id : null, busName: option.kind === 'bus' ? option.name : '', members: [req.user._id], startedAt: new Date() });
       } catch (err) {
         if (err.code !== 11000) throw err; // an ID clash: try another
       }
@@ -373,7 +393,7 @@ const getAdminPage = async (req, res, next) => {
   try {
     const [presets, trips, settings, teamCounts, usage] = await Promise.all([
       HuntPreset.find().sort('-updatedAt').lean(),
-      Trip.find({}).select('title date kind image status createdAt').sort('-createdAt').lean(),
+      Trip.find({}).select('title date kind image status createdAt +buses').sort('-createdAt').lean(),
       HuntTrip.find().lean(),
       HuntTeam.aggregate([{ $group: { _id: '$tripId', teams: { $sum: 1 }, finished: { $sum: { $cond: [{ $ne: ['$elapsedMs', null] }, 1, 0] } } } }]),
       presetUsage(),
@@ -386,6 +406,8 @@ const getAdminPage = async (req, res, next) => {
       return {
         _id: id, title: t.title, date: t.date, kind: t.kind, image: t.image, hidden: t.status === 'inactive',
         presetId: set.presetId ? String(set.presetId) : '',
+        buses: (t.buses || []).map((b) => ({ _id: String(b._id), name: b.name })),
+        busRoutes: Object.fromEntries((set.busRoutes || []).map((x) => [String(x.busId), String(x.routeId)])),
         enabled: Boolean(set.enabled), open: Boolean(set.open),
         teams: tc[id] ? tc[id].teams : 0, finished: tc[id] ? tc[id].finished : 0,
       };
@@ -393,11 +415,12 @@ const getAdminPage = async (req, res, next) => {
     rows.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'upcoming' ? -1 : 1));
     const presetRows = presets.map((p) => ({
       _id: String(p._id), name: p.name, lifelines: p.lifelines,
-      routes: p.routes.map((r) => ({ name: r.name, bus: r.busName, color: r.color, stops: totalLegs(r) })),
+      routes: p.routes.map((r) => ({ name: r.name, color: r.color, stops: totalLegs(r) })),
       qrCount: p.routes.reduce((n, r) => n + r.legs.length, 0) + 1,
       trips: usage.trips[String(p._id)] || 0, teams: usage.teams[String(p._id)] || 0, updatedAt: p.updatedAt,
     }));
-    res.render('adminTreasureHunt', { user: req.user, presets: presetRows, rows });
+    const presetRoutes = Object.fromEntries(presets.map((p) => [String(p._id), p.routes.map((r) => ({ _id: String(r._id), name: r.name, color: r.color }))]));
+    res.render('adminTreasureHunt', { user: req.user, presets: presetRows, rows, presetRoutes });
   } catch (err) {
     next(err);
   }
@@ -490,7 +513,6 @@ function presetFromBody(body) {
       name: str(r.name, 80) || 'Route',
       color: /^#[0-9a-fA-F]{6}$/.test(r.color || '') ? r.color : '#DC2626',
       label: str(r.label, 8),
-      busName: str(r.busName, 40),
       finishRiddle: str(r.finishRiddle, 600),
       finishGuide: str(r.finishGuide, 600),
       finishExtraHint: str(r.finishExtraHint, 400),
@@ -509,12 +531,7 @@ function presetFromBody(body) {
 function presetProblems(p) {
   if (!p.name) return 'Give the preset a name.';
   if (!p.routes.length) return 'Add at least one route.';
-  const buses = new Set();
   for (const r of p.routes) {
-    if (!r.busName) return `Give ${r.name} the name of the bus it belongs to.`;
-    const bus = r.busName.toLowerCase();
-    if (buses.has(bus)) return `Two routes are linked to "${r.busName}". Each bus needs its own route.`;
-    buses.add(bus);
     if (!r.legs.length) return `${r.name} needs at least one stop before the finish.`;
     for (const [i, l] of r.legs.entries()) if (!l.riddle) return `${r.name}, stop ${i + 1} needs a riddle.`;
     if (!r.finishRiddle) return `${r.name} needs the riddle that leads to the finish.`;
@@ -640,17 +657,28 @@ const updateTripSetting = async (req, res, next) => {
         return next(new AppError('Teams have already played on this trip. Reset its results before changing the preset.', 409));
       }
       $set.presetId = pid;
+      if (changing) $set.busRoutes = [];
       if (!pid) Object.assign($set, { enabled: false, open: false });
     }
     if (typeof req.body.enabled === 'boolean') $set.enabled = req.body.enabled;
     if (typeof req.body.open === 'boolean') $set.open = req.body.open;
+    if (Array.isArray(req.body.busRoutes)) {
+      // Only this trip's buses, and only routes from the trip's preset.
+      const pid = 'presetId' in $set ? $set.presetId : current && current.presetId;
+      const [buses, preset] = await Promise.all([tripBuses(tripId), pid ? HuntPreset.findById(pid).select('routes._id').lean() : null]);
+      const busIds = new Set(buses.map((b) => String(b._id)));
+      const routeIds = new Set(((preset && preset.routes) || []).map((r) => String(r._id)));
+      $set.busRoutes = req.body.busRoutes
+        .filter((x) => x && busIds.has(String(x.busId)) && routeIds.has(String(x.routeId)))
+        .map((x) => ({ busId: x.busId, routeId: x.routeId }));
+    }
     if (!Object.keys($set).length) return next(new AppError('Nothing to update.', 400));
     const presetAfter = 'presetId' in $set ? $set.presetId : current && current.presetId;
     if (($set.enabled || $set.open) && !presetAfter) return next(new AppError('Choose a preset for this trip first.', 400));
     if ($set.enabled === false) $set.open = false;
     if ($set.open === true && !(current && current.enabled) && $set.enabled !== true) $set.enabled = true;
     const setting = await HuntTrip.findOneAndUpdate({ tripId }, { $set }, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
-    json(res, 200, { status: 'success', data: { presetId: setting.presetId ? String(setting.presetId) : '', enabled: setting.enabled, open: setting.open } });
+    json(res, 200, { status: 'success', data: { presetId: setting.presetId ? String(setting.presetId) : '', enabled: setting.enabled, open: setting.open, busRoutes: Object.fromEntries((setting.busRoutes || []).map((x) => [String(x.busId), String(x.routeId)])) } });
   } catch (err) {
     next(err);
   }

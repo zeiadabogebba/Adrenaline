@@ -11,21 +11,39 @@ const isId = (v) => mongoose.isValidObjectId(v);
 // Travellers review a trip (or package) they booked, once each.
 const createReview = async (req, res, next) => {
   try {
-    const { tripId, packageId, rating, title, text, photosCount } = req.body;
+    const { tripId, packageId, rating, title, text, photosCount, busId, usherRatings } = req.body;
     const target = tripId ? { tripId } : { packageId };
     const key = tripId ? 'tripId' : 'packageId';
     if (!isId(target[key])) return next(new AppError('Choose the trip you are reviewing.', 400));
 
     const booked = await Booking.exists({ userId: req.user._id, status: LIVE_BOOKING, [key]: target[key] });
     if (!booked) return next(new AppError('You can only review a trip you booked.', 403));
-    const exists = tripId ? await Trip.exists({ _id: tripId }) : await Package.exists({ _id: packageId });
+    const trip = tripId ? await Trip.findById(tripId).select('+buses').lean() : null;
+    const exists = tripId ? trip : await Package.exists({ _id: packageId });
     if (!exists) return next(new AppError('Trip not found.', 404));
+
+    // A trip with buses: the traveller says which bus, and rates every usher on it.
+    let busFields = {};
+    if (trip && trip.buses && trip.buses.length) {
+      const bus = trip.buses.find((b) => String(b._id) === String(busId || ''));
+      if (!bus) return next(new AppError('Choose the bus you were on.', 400));
+      const given = Array.isArray(usherRatings) ? usherRatings : [];
+      const ratings = [];
+      for (const u of bus.ushers || []) {
+        const r = given.find((x) => x && String(x.usherId) === String(u._id));
+        const stars = Number(r && r.rating);
+        if (!Number.isInteger(stars) || stars < 1 || stars > 5) return next(new AppError(`Rate ${u.name} from 1 to 5 stars.`, 400));
+        ratings.push({ usherId: u._id, name: u.name, rating: stars, comment: String((r && r.comment) || '').trim().slice(0, 500) });
+      }
+      busFields = { busId: bus._id, busName: bus.name, ...(ratings.length ? { usherRatings: ratings } : {}) };
+    }
 
     const existing = await Review.findOne({ ...target, userId: req.user._id });
     if (existing) return next(new AppError('You have already reviewed this trip.', 400));
 
     const review = await Review.create({
       ...target,
+      ...busFields,
       userId: req.user._id,
       email: req.user.email,
       rating,

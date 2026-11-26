@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Trip = require('../models/Trip');
 const AppError = require('../utils/AppError');
 
@@ -35,6 +36,22 @@ function pickTripData(body) {
       }))
       .filter((r) => r.code && Number.isFinite(r.discount) && r.discount >= 1 && r.discount <= 99)
       .filter((r) => (seen.has(r.code) ? false : (seen.add(r.code), true)));
+  }
+  if (body.buses !== undefined) {
+    // Keep each bus's and usher's _id, so reviews and hunt teams that point at them stay linked.
+    const isId = (v) => mongoose.isValidObjectId(v);
+    const rows = Array.isArray(body.buses) ? body.buses : [];
+    data.buses = rows
+      .map((b) => ({
+        ...(isId(b && b._id) ? { _id: b._id } : {}),
+        name: String((b && b.name) || '').trim().slice(0, 40),
+        ushers: (Array.isArray(b && b.ushers) ? b.ushers : [])
+          .map((u) => ({ ...(isId(u && u._id) ? { _id: u._id } : {}), name: String((u && u.name) || '').trim().slice(0, 60) }))
+          .filter((u) => u.name)
+          .slice(0, 30),
+      }))
+      .filter((b) => b.name)
+      .slice(0, 20);
   }
   if (body.ar !== undefined) {
     const ar = body.ar && typeof body.ar === 'object' ? body.ar : {};

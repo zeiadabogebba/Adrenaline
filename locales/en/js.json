@@ -371,6 +371,12 @@
     "delete": "Delete",
     "deleteConfirm": "Delete this review?",
     "previewAlt": "Preview",
-    "errTrip": "Choose the trip you are reviewing."
+    "errTrip": "Choose the trip you are reviewing.",
+    "whichBus": "Which bus were you on?",
+    "rateUshers": "Rate your ushers",
+    "rateUsher": "Rate {name}",
+    "usherComment": "Anything to add? (optional)",
+    "errBus": "Choose the bus you were on.",
+    "errUsher": "Rate {name} from 1 to 5 stars."
   }
 }

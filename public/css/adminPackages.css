@@ -906,3 +906,15 @@ fieldset legend {
     color: var(--gold-primary);
 }
 .trip-announce-btn:hover { background: var(--gold-primary); color: #fff; }
+
+/* Trip modal: buses and their ushers (admin only) */
+.admin-only-tag { margin-inline-start: 6px; padding: 1px 7px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-dim); border: 1px solid var(--hairline-strong); border-radius: 999px; }
+.bus-row { display: grid; gap: 6px; }
+.bus-row-top { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; }
+.bus-row-top > i { color: var(--crimson); }
+.bus-row-top input { padding: 7px 10px; font-size: 0.85rem; font-weight: 700; }
+.usher-list { display: grid; gap: 5px; padding-inline-start: 24px; }
+.usher-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.usher-row input { padding: 6px 10px; font-size: 0.8rem; }
+.add-usher-btn { justify-self: start; margin-inline-start: 24px; padding: 4px 10px; font-size: 0.76rem; font-weight: 600; color: var(--ink-dim); background: none; border: 1px dashed var(--hairline-strong); border-radius: 6px; cursor: pointer; }
+.add-usher-btn:hover { color: var(--ink); border-color: var(--crimson); }

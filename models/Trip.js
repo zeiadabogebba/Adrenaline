@@ -45,6 +45,19 @@ const tripSchema = new mongoose.Schema(
     instapayNumber:     { type: String, default: '', trim: true, maxlength: [60, 'InstaPay number cannot exceed 60 characters'] },
     vodafoneCashNumber: { type: String, default: '', trim: true, maxlength: [60, 'Vodafone Cash number cannot exceed 60 characters'] },
 
+    // Admin only (select: false): the trip's buses and the ushers on each. Travellers see a bus
+    // name when they join the treasure hunt, and its ushers when they review the trip.
+    buses: {
+      type: [
+        {
+          name: { type: String, required: true, trim: true, maxlength: 40 },
+          ushers: [{ name: { type: String, required: true, trim: true, maxlength: 60 } }],
+        },
+      ],
+      default: [],
+      select: false,
+    },
+
     promoCodes: [
       {
         code:     { type: String, required: true, trim: true, uppercase: true },

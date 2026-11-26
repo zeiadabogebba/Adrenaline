@@ -8,6 +8,8 @@ const huntTeamSchema = new mongoose.Schema(
     presetId: { type: mongoose.Schema.Types.ObjectId, ref: 'HuntPreset', required: true },
     routeId:  { type: mongoose.Schema.Types.ObjectId, required: true },
     code:     { type: String, required: true, uppercase: true, trim: true }, // team ID, shared with teammates
+    busId:    { type: mongoose.Schema.Types.ObjectId, default: null }, // the trip bus the team picked
+    busName:  { type: String, default: '' },
     members:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     startedAt:  { type: Date, required: true },
     progress:   { type: Number, default: 0 }, // legs cleared, the finish included
