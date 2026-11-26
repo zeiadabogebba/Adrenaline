@@ -378,5 +378,22 @@
     "usherComment": "Anything to add? (optional)",
     "errBus": "Choose the bus you were on.",
     "errUsher": "Rate {name} from 1 to 5 stars."
+  },
+  "reviewPrompt": {
+    "kicker": "How was it?",
+    "title": "Rate {trip}",
+    "overall": "Your overall rating",
+    "reviewTitle": "Review title",
+    "titlePh": "e.g. Best weekend ever",
+    "reviewText": "Your review",
+    "textPh": "What stood out, and what should we improve?",
+    "addPhotos": "Add photos (optional)",
+    "photosChosen": "{n} photo(s) added",
+    "submit": "Post review",
+    "later": "Maybe later",
+    "never": "Don't ask me about this trip again",
+    "thanksTitle": "Thank you!",
+    "thanksText": "Your review helps the next travellers choose their rush.",
+    "close": "Close"
   }
 }

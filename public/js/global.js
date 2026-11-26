@@ -570,3 +570,26 @@ function initHamburgerMenus() {
         link.addEventListener('click', closeNav);
     });
 }
+
+// "How was your trip?" pop-up: for signed-in travellers with a past trip to review.
+// Checked at most once per visit, and never on admin, review, sign-in or booking pages.
+(function () {
+    const SKIP = /^\/(admin|reviews\/write|login|register|booking|custom-trip|api)(\/|$)/;
+    window.addEventListener('load', function () {
+        const user = window.SERVER_USER;
+        if (!user || !(user._id || user.id) || SKIP.test(window.location.pathname)) return;
+        try {
+            if (sessionStorage.getItem('rp-checked')) return;
+            sessionStorage.setItem('rp-checked', '1');
+        } catch (e) { /* storage blocked: still fine to check */ }
+        const v = '20261127a';
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/css/reviewPrompt.css?v=' + v;
+        document.head.appendChild(css);
+        const js = document.createElement('script');
+        js.src = '/js/reviewPrompt.js?v=' + v;
+        js.defer = true;
+        document.body.appendChild(js);
+    });
+})();

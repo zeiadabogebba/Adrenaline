@@ -3,6 +3,8 @@ const Review = require('../models/review');
 const Package = require('../models/Package');
 const Trip = require('../models/Trip');
 const Booking = require('../models/Booking');
+const ReviewPrompt = require('../models/ReviewPrompt');
+const { localizeTrip } = require('../utils/i18n');
 const AppError = require('../utils/AppError');
 
 const LIVE_BOOKING = { $nin: ['draft', 'cancelled'] };
@@ -140,4 +142,55 @@ const uploadReviewPhotos = async (req, res, next) => {
   }
 };
 
-module.exports = { createReview, getPackageReviews, getAllReviews, getMyReviews, deleteReview, uploadReviewPhotos };
+// ── "Review your trip" pop-up ──
+const SNOOZE_DAYS = 3;
+
+// GET /api/reviews/prompt: the most recent past trip this traveller has a confirmed booking on,
+// hasn't reviewed, and hasn't put off. Includes its buses and ushers for the in-pop-up review.
+const getReviewPrompt = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const tripIds = await Booking.distinct('tripId', { userId, status: 'confirmed', tripId: { $ne: null } });
+    if (!tripIds.length) return res.status(200).json({ status: 'success', data: { trip: null } });
+    const [reviewed, putOff] = await Promise.all([
+      Review.distinct('tripId', { userId, tripId: { $in: tripIds } }),
+      ReviewPrompt.distinct('tripId', { userId, $or: [{ never: true }, { snoozedUntil: { $gt: new Date() } }] }),
+    ]);
+    const skip = new Set([...reviewed, ...putOff].map(String));
+    const candidates = tripIds.filter((id) => !skip.has(String(id)));
+    if (!candidates.length) return res.status(200).json({ status: 'success', data: { trip: null } });
+    // Most recently moved to past (or edited) first.
+    const trip = await Trip.findOne({ _id: { $in: candidates }, kind: 'past' }).select('title date location image ar +buses').sort('-updatedAt');
+    if (!trip) return res.status(200).json({ status: 'success', data: { trip: null } });
+    const t = localizeTrip(trip, req.lang);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        trip: {
+          id: String(trip._id),
+          title: t.title,
+          sub: [t.date, t.location].filter(Boolean).join(' · '),
+          image: t.image || '',
+          buses: (trip.buses || []).map((b) => ({ _id: String(b._id), name: b.name, ushers: (b.ushers || []).map((u) => ({ _id: String(u._id), name: u.name })) })),
+        },
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /api/reviews/prompt/:tripId/dismiss { forever }: "Maybe later" (3 days) or "Don't ask again".
+const dismissReviewPrompt = async (req, res, next) => {
+  try {
+    if (!isId(req.params.tripId)) return next(new AppError('Trip not found.', 404));
+    const forever = req.body && req.body.forever === true;
+    const update = forever ? { never: true } : { snoozedUntil: new Date(Date.now() + SNOOZE_DAYS * 86400000) };
+    await ReviewPrompt.updateOne({ userId: req.user._id, tripId: req.params.tripId }, { $set: update }, { upsert: true });
+    res.status(200).json({ status: 'success' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getReviewPrompt, dismissReviewPrompt, createReview, getPackageReviews, getAllReviews, getMyReviews, deleteReview, uploadReviewPhotos };

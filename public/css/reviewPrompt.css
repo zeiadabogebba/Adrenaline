@@ -1,0 +1,234 @@
+/* "How was your trip?" pop-up. Always dark, in the brand style, whatever the site theme. */
+
+html.rp-lock { overflow: hidden; }
+
+.rp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+
+.rp-overlay.is-open { opacity: 1; }
+
+.rp-card {
+    --rp-red: var(--crimson, #DC2626);
+    --rp-ink: #F5F5F4;
+    --rp-dim: #A8A29E;
+    --rp-line: rgba(255, 255, 255, 0.12);
+    --rp-panel: #111114;
+    position: relative;
+    width: min(560px, 100%);
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    color: var(--rp-ink);
+    background: var(--rp-panel);
+    border-top: 4px solid var(--rp-red);
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+    transform: translateY(14px) scale(0.98);
+    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.rp-overlay.is-open .rp-card { transform: none; }
+
+.rp-x {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 12px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    color: #FFFFFF;
+    background: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+}
+
+.rp-head {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    padding: 56px 22px 18px;
+    background:
+        linear-gradient(180deg, rgba(10, 10, 11, 0.1) 0%, rgba(10, 10, 11, 0.92) 85%),
+        var(--rp-img, radial-gradient(circle at 80% 10%, rgba(220, 38, 38, 0.4), transparent 55%)) center / cover no-repeat,
+        #0A0A0B;
+}
+
+.rp-kicker {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #FCA5A5;
+}
+
+.rp-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #FFFFFF;
+}
+
+.rp-sub { margin: 0; font-size: 0.85rem; color: var(--rp-dim); }
+
+.rp-body { display: grid; gap: 14px; padding: 18px 22px 22px; }
+.rp-field { display: grid; gap: 6px; }
+
+.rp-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rp-dim);
+}
+
+.rp-label i { color: var(--rp-red); }
+
+.rp-stars { display: inline-flex; gap: 2px; direction: ltr; }
+
+.rp-stars button {
+    padding: 4px;
+    font-size: 1.6rem;
+    background: none;
+    border: 0;
+    color: #F1C40F;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.rp-stars button:active { transform: scale(0.88); }
+.rp-stars button:focus-visible { outline: 2px solid var(--rp-red); border-radius: 4px; }
+
+.rp-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    color: var(--rp-ink);
+    background: #0A0A0B;
+    border: 1px solid var(--rp-line);
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+.rp-input:focus { outline: none; border-color: var(--rp-red); }
+textarea.rp-input { resize: vertical; min-height: 0; }
+
+.rp-buses { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.rp-bus {
+    position: relative;
+    padding: 9px 14px;
+    border: 1px solid var(--rp-line);
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.rp-bus input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.rp-bus:has(:checked) { border-color: var(--rp-red); background: rgba(220, 38, 38, 0.14); }
+.rp-bus:has(:focus-visible) { outline: 2px solid var(--rp-red); outline-offset: 2px; }
+
+.rp-ushers { display: grid; gap: 8px; }
+.rp-ushers:empty { display: none; }
+.rp-usher { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--rp-line); }
+.rp-usher__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; font-weight: 700; }
+.rp-usher__top .rp-stars button { font-size: 1.25rem; }
+.rp-usher__comment { font-size: 0.85rem; padding: 8px 10px; }
+
+.rp-photos {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    padding: 8px 12px;
+    border: 1px dashed var(--rp-line);
+    color: var(--rp-dim);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.rp-photos:hover { color: var(--rp-ink); border-color: var(--rp-dim); }
+
+.rp-error {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(220, 38, 38, 0.55);
+    background: rgba(220, 38, 38, 0.12);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.rp-error[hidden] { display: none; }
+.rp-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.rp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 20px;
+    border: 0;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.rp-btn--go { flex: 1; color: #FFFFFF; background: var(--rp-red); clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)); }
+.rp-btn--go:hover { background: var(--crimson-hot, #EF4444); }
+.rp-btn--ghost { color: var(--rp-ink); background: transparent; border: 1px solid var(--rp-line); }
+.rp-btn--ghost:hover { border-color: var(--rp-dim); }
+
+.rp-never {
+    justify-self: center;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--rp-dim);
+    font: inherit;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.rp-never:hover { color: var(--rp-ink); }
+
+.rp-done { justify-items: center; text-align: center; padding: 26px 22px 28px; }
+.rp-done__icon { display: grid; place-items: center; width: 60px; height: 60px; transform: rotate(45deg); background: var(--rp-red); font-size: 1.4rem; }
+.rp-done__icon i { transform: rotate(-45deg); }
+.rp-done h3 { margin: 6px 0 0; font-family: var(--font-display); font-size: 1.8rem; font-style: italic; text-transform: uppercase; color: #FFFFFF; }
+.rp-done p { margin: 0; color: var(--rp-dim); }
+.rp-done .rp-btn { flex: none; min-width: 180px; }
+
+@media (max-width: 560px) {
+    .rp-overlay { align-items: flex-end; padding: 0; }
+    .rp-card { width: 100%; max-height: 92vh; max-height: 92dvh; clip-path: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rp-overlay,
+    .rp-card { transition: none; }
+}
