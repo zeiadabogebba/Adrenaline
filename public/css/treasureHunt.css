@@ -742,25 +742,22 @@
 .th-photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
 .th-photo i { position: absolute; inset-inline-end: 10px; bottom: 10px; padding: 7px; color: #FFFFFF; background: rgba(0, 0, 0, 0.65); }
 
-.th-guide { border: 1px dashed var(--th-line); }
+.th-guide { display: grid; gap: 6px; padding: 10px 12px 12px; border: 1px dashed var(--th-line); }
 
-.th-guide__toggle {
-    width: 100%;
+.th-guide__label {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
-    background: transparent;
-    border: 0;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--th-ink);
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: start;
 }
 
-.th-guide__toggle i { color: var(--th-gold); }
-.th-guide p { margin: 0; padding: 0 12px 12px; color: var(--th-dim); line-height: 1.7; }
+.th-guide__label i { color: var(--th-gold); }
+.th-guide p { margin: 0; color: var(--th-dim); line-height: 1.7; }
 
 .th-life {
     display: flex;

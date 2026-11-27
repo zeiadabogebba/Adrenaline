@@ -28,7 +28,6 @@
   let pending = H.pendingScan || '';
   let busy = false;
   let lifelineAsk = false;
-  let guideOpen = false;
   let clockRaf = null;
 
   if (pending && history.replaceState) history.replaceState(null, '', location.pathname);
@@ -257,7 +256,7 @@
       <div class="th-clue__body">
         <p class="th-clue__riddle" dir="auto">${esc(c.riddle)}</p>
         ${c.photo ? `<button type="button" class="th-photo" data-act="photo"><img src="${esc(c.photo)}" alt="${esc(T('photoAlt'))}" loading="lazy"><i class="fas fa-expand" aria-hidden="true"></i></button>` : ''}
-        ${c.guide ? `<div class="th-guide${guideOpen ? ' is-open' : ''}"><button type="button" class="th-guide__toggle" data-act="guide" aria-expanded="${guideOpen}"><i class="fas fa-signs-post" aria-hidden="true"></i> ${esc(guideOpen ? T('hideDirections') : T('directions'))}</button><p dir="auto" ${guideOpen ? '' : 'hidden'}>${esc(c.guide)}</p></div>` : ''}
+        ${c.guide ? `<div class="th-guide"><span class="th-guide__label"><i class="fas fa-signs-post" aria-hidden="true"></i> ${esc(T('directions'))}</span><p dir="auto">${esc(c.guide)}</p></div>` : ''}
         ${life}
       </div>
     </article>`;
@@ -362,7 +361,7 @@
     if (next) offset = next.serverNow - Date.now();
     const clueChanged = !state || !next || state.progress !== next.progress;
     state = next;
-    if (clueChanged) { lifelineAsk = false; guideOpen = false; }
+    if (clueChanged) lifelineAsk = false;
     render(opts.animate ? before : undefined);
     if (state && state.finished && !wasFinished && opts.animate) celebrate();
   }
@@ -457,7 +456,6 @@
       }
       return;
     }
-    if (act === 'guide') { guideOpen = !guideOpen; return render(); }
     if (act === 'hint-ask') { lifelineAsk = true; return render(); }
     if (act === 'hint-no') { lifelineAsk = false; return render(); }
     if (act === 'photo') return openLightbox(state.clue.photo);
