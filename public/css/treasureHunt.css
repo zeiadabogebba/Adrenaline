@@ -1134,3 +1134,9 @@
 /* "Attach photo" under the riddle follows the page theme; inside a dark card it stays light. */
 .th-main > .th-actions .th-btn--attach { color: var(--ink); border: 2px solid var(--ink); }
 .th-main > .th-actions .th-btn--attach:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+
+/* Light mode: the "stop cleared" pop-up dims the page lightly instead of blacking it out,
+   so closing the camera and sending a selfie doesn't flash dark-light-dark. */
+[data-theme="light"] .th-capture { background: rgba(246, 245, 242, 0.78); }
+/* "Sending your selfie/answer…" under the riddle follows the page theme. */
+.th-main > .th-actions .th-sending { color: var(--ink); border-color: var(--hairline-strong); }
