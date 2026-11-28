@@ -13,6 +13,7 @@ router.get('/prompt', protect, reviewController.getReviewPrompt);
 router.post('/prompt/:tripId/dismiss', protect, reviewController.dismissReviewPrompt);
 router.get('/package/:packageId', reviewController.getPackageReviews);
 router.get('/', protect, authorize('Admin'), reviewController.getAllReviews);
+router.patch('/:id/visibility', protect, authorize('Admin'), reviewController.setReviewVisibility);
 router.delete('/:id', protect, reviewController.deleteReview);
 
 module.exports = router;

@@ -45,6 +45,8 @@ const reviewSchema = new mongoose.Schema(
       ],
       default: undefined,
     },
+    // Hidden by an admin: kept, but left off the public site and out of package ratings.
+    hidden:      { type: Boolean, default: false },
     photos:      [{ type: String }],
     photosCount: { type: Number, default: 0 },
     date:        { type: Date, default: Date.now },
@@ -66,7 +68,7 @@ reviewSchema.index({ tripId: 1, userId: 1 }, { unique: true, name: 'trip_user_un
 reviewSchema.statics.calcAverageRating = async function (packageId) {
   if (!packageId) return; // trip reviews don't feed package ratings
   const stats = await this.aggregate([
-    { $match: { packageId } },
+    { $match: { packageId, hidden: { $ne: true } } },
     {
       $group: {
         _id: '$packageId',

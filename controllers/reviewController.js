@@ -63,7 +63,7 @@ const createReview = async (req, res, next) => {
 
 const getPackageReviews = async (req, res, next) => {
   try {
-    const reviews = await Review.find({ packageId: req.params.packageId })
+    const reviews = await Review.find({ packageId: req.params.packageId, hidden: { $ne: true } })
       .populate('userId', 'name image')
       .sort('-date');
 
@@ -122,6 +122,20 @@ const deleteReview = async (req, res, next) => {
     await Review.findOneAndDelete({ _id: req.params.id });
 
     res.status(204).json({ status: 'success', data: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// PATCH /api/reviews/:id/visibility { hidden } (admin): hide a review from the public site,
+// or show it again. The package's star rating is recalculated either way.
+const setReviewVisibility = async (req, res, next) => {
+  try {
+    if (typeof req.body.hidden !== 'boolean') return next(new AppError('Say whether to hide the review.', 400));
+    const review = await Review.findByIdAndUpdate(req.params.id, { hidden: req.body.hidden }, { new: true });
+    if (!review) return next(new AppError('Review not found.', 404));
+    await Review.calcAverageRating(review.packageId);
+    res.status(200).json({ status: 'success', data: { id: String(review._id), hidden: review.hidden } });
   } catch (err) {
     next(err);
   }
@@ -193,4 +207,4 @@ const dismissReviewPrompt = async (req, res, next) => {
   }
 };
 
-module.exports = { getReviewPrompt, dismissReviewPrompt, createReview, getPackageReviews, getAllReviews, getMyReviews, deleteReview, uploadReviewPhotos };
+module.exports = { getReviewPrompt, dismissReviewPrompt, createReview, getPackageReviews, getAllReviews, getMyReviews, deleteReview, setReviewVisibility, uploadReviewPhotos };

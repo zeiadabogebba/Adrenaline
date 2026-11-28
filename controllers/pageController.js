@@ -88,7 +88,7 @@ const getLandingPage = async (req, res, next) => {
       Package.find({ status: 'active', type: 'day' }).limit(3).sort('-rating'),
       Package.find({ status: 'active', type: 'week' }).limit(3).sort('-rating'),
       Package.find({ status: 'active', type: 'single' }).limit(4).sort('-rating'),
-      Review.find().populate('userId', 'name image').sort('-date').limit(6),
+      Review.find({ hidden: { $ne: true } }).populate('userId', 'name image').sort('-date').limit(6),
       Trip.find({ kind: 'upcoming', status: 'active' }).select('-promoCodes').limit(6).sort('createdAt'),
       Package.find({ status: 'active', type: 'week', city: { $nin: ['', 'TBD'] } }).distinct('city'),
 
@@ -551,7 +551,7 @@ const getAdminReportsPage = async (req, res, next) => {
         { $match: { status: { $ne: 'cancelled' }, paymentStatus: { $in: ['half paid', 'fully paid'] } } },
         { $group: { _id: null, total: { $sum: '$totalPrice' } } },
       ]),
-      Review.find().populate('userId', 'name').sort('-createdAt').limit(20),
+      Review.find().populate('userId', 'name').sort('-createdAt').limit(500),
       Contact.countDocuments({ status: 'open' }),
     ]);
 
@@ -584,6 +584,7 @@ const getAdminReportsPage = async (req, res, next) => {
         ushers: (r.usherRatings || []).map((u) => ({ name: u.name, rating: u.rating, comment: u.comment || '' })),
         date: r.createdAt ? r.createdAt.toISOString().split('T')[0] : '',
         photos: r.photos || [],
+        hidden: Boolean(r.hidden),
       })),
       totalRevenue: revenueResult.length > 0 ? revenueResult[0].total : 0,
       openTickets,

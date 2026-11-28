@@ -14,6 +14,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminReports.css?v=20261127a">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .review-header { flex-wrap: wrap; gap: 8px; }
+    .review-item.is-hidden { opacity: 0.6; }
+    .review-hidden-tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; color: var(--amber, #F59E0B); border: 1px solid currentColor; border-radius: 999px; }
+    .review-vis-btn { background: none; border: 1px solid var(--hairline-strong, #ccc); color: var(--ink, inherit); cursor: pointer; font-size: 0.78rem; padding: 3px 9px; border-radius: 6px; }
+    .review-vis-btn:hover { border-color: var(--ink, currentColor); }
+    .review-vis-note { margin: 0 0 8px; font-size: 0.78rem; color: var(--color-text-muted); }
+</style>
 </head>
 <body>
 <div class="dashboard-shell">
@@ -113,6 +121,7 @@
                     </div>
                     <div class="reviews-feed-card">
                         <h3>Recent Reviews</h3>
+                        <p class="review-vis-note">Hidden reviews stay here but are left off the public site and out of package star ratings.</p>
                         <div id="reviewsList" class="custom-scroll"></div>
                     </div>
                     <div class="chart-container-sidebar"><canvas id="ratingChart"></canvas></div>
@@ -333,12 +342,14 @@
         document.getElementById('reviewsList').innerHTML = filtered.length === 0
             ? '<div style="color:var(--color-text-muted);padding:20px;">No reviews in range.</div>'
             : filtered.map(r => `
-                <div class="review-item" id="admin-review-${r.id}">
+                <div class="review-item${r.hidden ? ' is-hidden' : ''}" id="admin-review-${r.id}">
                     <div class="review-header">
                         <strong>${esc(r.user)}</strong>
                         <span style="color:var(--amber);">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
                         <span class="review-date">${r.date}</span>
-                        <button onclick="deleteAdminReview('${r.id}')" style="margin-left:auto;background:none;border:none;color:var(--bad);cursor:pointer;font-size:0.8rem;"><i class="fas fa-trash"></i> Delete</button>
+                        ${r.hidden ? '<span class="review-hidden-tag"><i class="fas fa-eye-slash"></i> Hidden from public</span>' : ''}
+                        <button type="button" class="review-vis-btn" onclick="toggleReviewVisibility('${r.id}')" style="margin-left:auto;"><i class="fas ${r.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${r.hidden ? 'Show on site' : 'Hide'}</button>
+                        <button onclick="deleteAdminReview('${r.id}')" style="background:none;border:none;color:var(--bad);cursor:pointer;font-size:0.8rem;"><i class="fas fa-trash"></i> Delete</button>
                     </div>
                     <p class="review-text">"${esc(r.review)}"</p>
                     ${r.bus ? `<div class="review-ushers"><span><i class="fas fa-bus"></i> ${esc(r.bus)}</span>${r.ushers.map(u => `<span class="review-usher"><b>${esc(u.name)}</b> <span style="color:#F1C40F">${'★'.repeat(u.rating)}${'☆'.repeat(5 - u.rating)}</span>${u.comment ? ` <em>"${esc(u.comment)}"</em>` : ''}</span>`).join('')}</div>` : ''}
@@ -360,6 +371,20 @@
             },
             options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
+    }
+
+    async function toggleReviewVisibility(id) {
+        const r = SERVER_DATA.allReviews.find(x => x.id === id);
+        if (!r) return;
+        const res = await fetch('/api/reviews/' + id + '/visibility', {
+            method: 'PATCH', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hidden: !r.hidden }),
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) { alert(j.message || 'Could not change the review. Please try again.'); return; }
+        r.hidden = j.data.hidden;
+        renderReviews();
     }
 
     async function deleteAdminReview(id) {
