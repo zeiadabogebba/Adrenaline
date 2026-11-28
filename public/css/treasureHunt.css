@@ -1140,3 +1140,17 @@
 [data-theme="light"] .th-capture { background: rgba(246, 245, 242, 0.78); }
 /* "Sending your selfie/answer…" under the riddle follows the page theme. */
 .th-main > .th-actions .th-sending { color: var(--ink); border-color: var(--hairline-strong); }
+/* The answer box under the riddle follows the page theme (inside a dark card it stays light). */
+.th-main > .th-actions .th-answer label { color: var(--ink); }
+.th-main > .th-actions .th-answer__row input { color: var(--ink); background: var(--surface-raised); border-color: var(--hairline-strong); }
+.th-main > .th-actions .th-answer__row input::placeholder { color: var(--ink-dim); }
+
+/* Light mode: the selfie camera sheet follows the page theme; only the viewfinder stays black,
+   so opening the camera doesn't look like the site switching to dark mode. */
+[data-theme="light"] .th-cam { background: rgba(246, 245, 242, 0.82); }
+[data-theme="light"] .th-cam .th-sheet { color: #0A0A0B; background: #FFFFFF; box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .th-cam .th-sheet__head h3 { color: #0A0A0B; }
+[data-theme="light"] .th-cam .th-x { color: #0A0A0B; background: rgba(0, 0, 0, 0.06); }
+[data-theme="light"] .th-cam .th-btn--ghost { color: #0A0A0B; border-color: rgba(0, 0, 0, 0.3); }
+[data-theme="light"] .th-cam .th-btn--ghost:hover { border-color: #0A0A0B; }
+[data-theme="light"] .th-cam__snap { border-color: #0A0A0B; }
