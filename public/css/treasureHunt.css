@@ -1127,3 +1127,10 @@
 .th-retake { border-top-color: var(--th-red); }
 .th-retake__why { margin: 0; font-weight: 700; color: #FCA5A5; }
 .th-actions .th-btn--attach { width: 100%; }
+
+/* The camera sheet is always black: its outline buttons need light text. */
+.th-cam .th-btn--ghost { color: #FFFFFF; border-color: rgba(255, 255, 255, 0.35); }
+.th-cam .th-btn--ghost:hover { border-color: #FFFFFF; }
+/* "Attach photo" under the riddle follows the page theme; inside a dark card it stays light. */
+.th-main > .th-actions .th-btn--attach { color: var(--ink); border: 2px solid var(--ink); }
+.th-main > .th-actions .th-btn--attach:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
