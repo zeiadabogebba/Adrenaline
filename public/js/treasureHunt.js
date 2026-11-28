@@ -384,8 +384,17 @@
     else if (state.finished) main = victoryHtml() + teamHtml() + mapHtml();
     else if (SELFIE) main = hudHtml() + teamHtml() + mapHtml() + retakesHtml() + clueHtml() + selfieActionsHtml();
     else main = hudHtml() + teamHtml() + mapHtml() + clueHtml() + actionsHtml();
+    // Rebuilding the panel briefly shrinks the page, which would throw the reader back to the
+    // top. Hold the height and put the scroll back (the page scrolls on phones, the panel on desktop).
+    const scroller = document.querySelector('.dash-scroll-area');
+    const keepY = scroller ? scroller.scrollTop : 0;
+    const keepWin = window.scrollY;
+    app.style.minHeight = app.offsetHeight + 'px';
     app.innerHTML = `<div class="th-grid"><div class="th-main">${main}</div><aside class="th-side" id="thBoard">${boardHtml()}</aside></div>`;
     if (state) drawMap(animateFrom);
+    app.style.minHeight = '';
+    if (scroller) scroller.scrollTop = keepY;
+    window.scrollTo(window.scrollX, keepWin);
     bind();
     if (state && !state.finished) startClock(); else stopClock();
   }
