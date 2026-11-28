@@ -33,6 +33,8 @@ function legAt(preset, route, i) {
 
 const findRoute = (preset, routeId) => preset.routes.find((r) => String(r._id) === String(routeId));
 const isSelfie = (preset) => preset.mode === 'selfie';
+// Lifelines a team gets; 0 when the admin turned lifelines off for the preset.
+const lifelineCount = (preset) => (preset.lifelinesOn === false ? 0 : preset.lifelines || 0);
 
 // ── Selfie hunts ──
 // One atomic pipeline update recomputes progress and the clock from the selfies, so two
@@ -118,7 +120,7 @@ function teamState(team, preset, me) {
       riddle: l.riddle,
       guide: l.guide,
       photo: l.photo || null,
-      hasExtra: Boolean(l.extraHint),
+      hasExtra: Boolean(l.extraHint) && lifelineCount(preset) > 0,
       extra: used.includes(team.progress) ? l.extraHint : null,
     };
   }
@@ -135,9 +137,9 @@ function teamState(team, preset, me) {
     finished,
     elapsedMs: team.elapsedMs,
     splits: team.splits || [],
-    lifelines: preset.lifelines,
+    lifelines: lifelineCount(preset),
     maxMembers: teamLimit(preset),
-    lifelinesLeft: Math.max(0, preset.lifelines - used.length),
+    lifelinesLeft: Math.max(0, lifelineCount(preset) - used.length),
     cleared,
     clue,
     finishMessage: finished ? preset.finish.message : null,
@@ -158,7 +160,7 @@ function selfieUnlocked(team, total) {
   return n;
 }
 
-function stopClue(l, i, used, team) {
+function stopClue(l, i, used, team, lives) {
   return {
     index: i,
     n: i + 1,
@@ -166,7 +168,7 @@ function stopClue(l, i, used, team) {
     riddle: l.riddle,
     guide: l.guide,
     photo: l.photo || null,
-    hasExtra: Boolean(l.extraHint),
+    hasExtra: Boolean(l.extraHint) && lives > 0,
     extra: used.includes(i) ? l.extraHint : null,
     proof: l.proof === 'answer' ? 'answer' : 'photo',
     answerPrompt: l.answerPrompt,
@@ -184,9 +186,9 @@ function selfieTeamState(team, preset, me, route, total, finished, used) {
     const sf = selfieFor(team, i);
     if (sf.status === 'approved') approved++;
     cleared.push({ n: i + 1, place: l.place, split: sf.at, hintUsed: used.includes(i), isFinish: l.isFinish, status: sf.status });
-    if (sf.status === 'rejected') retakes.push(stopClue(l, i, used, team));
+    if (sf.status === 'rejected') retakes.push(stopClue(l, i, used, team, lifelineCount(preset)));
   }
-  const clue = !finished && unlocked < total ? stopClue(legAt(preset, route, unlocked), unlocked, used, team) : null;
+  const clue = !finished && unlocked < total ? stopClue(legAt(preset, route, unlocked), unlocked, used, team, lifelineCount(preset)) : null;
   return {
     mode: 'selfie',
     teamId: String(team._id),
@@ -202,9 +204,9 @@ function selfieTeamState(team, preset, me, route, total, finished, used) {
     verified: finished && approved === total,
     elapsedMs: team.elapsedMs,
     splits: cleared.map((c) => c.split),
-    lifelines: preset.lifelines,
+    lifelines: lifelineCount(preset),
     maxMembers: teamLimit(preset),
-    lifelinesLeft: Math.max(0, preset.lifelines - used.length),
+    lifelinesLeft: Math.max(0, lifelineCount(preset) - used.length),
     cleared,
     clue,
     retakes,
@@ -298,7 +300,7 @@ const getHuntPage = async (req, res, next) => {
         mode: isSelfie(preset) ? 'selfie' : 'qr',
         routes: preset.routes.map(routeJson),
         options: startOptions(await tripBuses(trip._id), setting, preset).map(({ _id, name, kind }) => ({ _id, name, kind })),
-        lifelines: preset.lifelines,
+        lifelines: lifelineCount(preset),
         maxMembers: teamLimit(preset),
         state: team ? teamState(team, preset, req.user._id) : null,
         board,
@@ -470,12 +472,13 @@ const useHint = async (req, res, next) => {
     const at = selfie ? parseInt(req.body.leg, 10) : team.progress;
     if (!Number.isInteger(at) || at < 0 || at >= totalLegs(route) || (selfie && at > selfieUnlocked(team, totalLegs(route)))) return next(new AppError('Choose a stop.', 400));
     const leg = legAt(preset, route, at);
+    if (!lifelineCount(preset)) return next(new AppError('Lifelines are turned off for this hunt.', 400));
     if (!leg.extraHint) return next(new AppError('There is no extra hint for this stop.', 400));
     if ((team.hintsUsed || []).includes(at)) {
       return json(res, 200, { status: 'success', state: teamState(team, preset, req.user._id) });
     }
     const ok = await HuntTeam.findOneAndUpdate(
-      { _id: team._id, ...(selfie ? {} : { progress: at }), hintsUsed: { $ne: at }, $expr: { $lt: [{ $size: '$hintsUsed' }, preset.lifelines] } },
+      { _id: team._id, ...(selfie ? {} : { progress: at }), hintsUsed: { $ne: at }, $expr: { $lt: [{ $size: '$hintsUsed' }, lifelineCount(preset)] } },
       { $push: { hintsUsed: at } }
     );
     const fresh = await loadTeamFor(req.user._id, tripId);
@@ -613,7 +616,7 @@ const getAdminPage = async (req, res, next) => {
     });
     rows.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'upcoming' ? -1 : 1));
     const presetRows = presets.map((p) => ({
-      _id: String(p._id), name: p.name, mode: isSelfie(p) ? 'selfie' : 'qr', lifelines: p.lifelines, maxTeamSize: teamLimit(p),
+      _id: String(p._id), name: p.name, mode: isSelfie(p) ? 'selfie' : 'qr', lifelines: lifelineCount(p), lifelinesOn: p.lifelinesOn !== false, maxTeamSize: teamLimit(p),
       routes: p.routes.map((r) => ({ name: r.name, color: r.color, stops: totalLegs(r) })),
       qrCount: p.routes.reduce((n, r) => n + r.legs.length, 0) + 1,
       trips: usage.trips[String(p._id)] || 0, teams: usage.teams[String(p._id)] || 0, updatedAt: p.updatedAt,
@@ -714,6 +717,7 @@ function presetFromBody(body) {
     description: str(b.description, 1000),
     mode: b.mode === 'selfie' ? 'selfie' : 'qr',
     lifelines: Math.max(0, Math.min(10, parseInt(b.lifelines, 10) || 0)),
+    lifelinesOn: b.lifelinesOn !== false,
     maxTeamSize: Math.max(1, Math.min(20, parseInt(b.maxTeamSize, 10) || DEFAULT_TEAM_SIZE)),
     finish: {
       place: str(f.place, 120),

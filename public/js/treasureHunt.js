@@ -116,7 +116,8 @@
     const rules = SELFIE
       ? [['fa-stopwatch', T('selfieRule1')], ['fa-images', T('selfieRule2')], ['fa-camera', T('selfieRule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-user-check', T('selfieRule5')]]
       : [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
-    return `<ul class="th-rules">${rules.map(([i, txt]) => `<li><i class="fas ${i}" aria-hidden="true"></i><span>${esc(txt)}</span></li>`).join('')}</ul>`;
+    const shown = H.lifelines > 0 ? rules : rules.filter(([i]) => i !== 'fa-life-ring'); // lifelines off
+    return `<ul class="th-rules">${shown.map(([i, txt]) => `<li><i class="fas ${i}" aria-hidden="true"></i><span>${esc(txt)}</span></li>`).join('')}</ul>`;
   }
 
   const teamId = (c) => (c && c.length > 4 ? `${c.slice(0, 4)}-${c.slice(4)}` : c || '');

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128c">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128d">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -82,7 +82,7 @@
                 <article class="thx-preset" data-preset="<%= p._id %>">
                     <header>
                         <h3><%= p.name %></h3>
-                        <p><% if (p.mode === 'selfie') { %><i class="fas fa-camera"></i> Selfie hunt<% } else { %><i class="fas fa-qrcode"></i> <%= p.qrCount %> QR codes<% } %> &middot; up to <%= p.maxTeamSize %> per team &middot; <%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team</p>
+                        <p><% if (p.mode === 'selfie') { %><i class="fas fa-camera"></i> Selfie hunt<% } else { %><i class="fas fa-qrcode"></i> <%= p.qrCount %> QR codes<% } %> &middot; up to <%= p.maxTeamSize %> per team &middot; <% if (p.lifelinesOn) { %><%= p.lifelines %> lifeline<%= p.lifelines === 1 ? '' : 's' %> per team<% } else { %>lifelines off<% } %></p>
                     </header>
                     <ul class="thx-routes">
                         <% p.routes.forEach(r => { %><li style="--route:<%= r.color %>"><span></span><b dir="auto"><%= r.name %></b><small><%= r.stops %> stops</small></li><% }) %>

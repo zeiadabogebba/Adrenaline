@@ -471,3 +471,18 @@
 .thx-shot__key { color: #16A34A; }
 .thx-shot__partial { font-size: 0.78rem; color: var(--amber, #F59E0B); }
 .thx-shot.is-partial { border-style: dashed; }
+
+/* Selfie hunt results: one card per team, its entries underneath. */
+.thx-review__team { border-top: 1px solid var(--hairline); border-inline-start: 3px solid var(--route); padding-inline-start: 14px; margin-top: var(--s-md); }
+.thx-tcard { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 12px; }
+.thx-tcard__rank { min-width: 2.2em; font-size: 1.3rem; font-weight: 800; color: var(--crimson); }
+.thx-tcard__who { flex: 1 1 220px; min-width: 0; }
+.thx-tcard__who h3 { margin: 0; }
+.thx-tcard__who p { margin: 2px 0 0; font-size: 0.85rem; color: var(--ink-dim); }
+.thx-tcard__stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
+.thx-tcard__stats div { display: grid; gap: 1px; }
+.thx-tcard__stats dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); }
+.thx-tcard__stats dd { margin: 0; font-weight: 700; color: var(--ink); }
+.thx-tcard__none { margin: 0 0 8px; font-size: 0.85rem; color: var(--ink-dim); }
+.thx-toggle__row { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 0.88rem; color: var(--ink); cursor: pointer; }
+.thx-toggle__row input { width: 18px; height: 18px; accent-color: var(--crimson); }

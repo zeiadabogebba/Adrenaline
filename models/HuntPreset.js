@@ -47,6 +47,7 @@ const huntPresetSchema = new mongoose.Schema(
     // admin checks later. Presets made before this setting are QR hunts.
     mode:        { type: String, enum: ['qr', 'selfie'], default: 'qr' },
     lifelines:   { type: Number, min: 0, max: 10, default: 1 },
+    lifelinesOn: { type: Boolean, default: true }, // off: no lifelines or extra hints for anyone
     maxTeamSize: { type: Number, min: 1, max: 20, default: 5 }, // most travellers allowed in one team
     finish: {
       place:     { type: String, trim: true, maxlength: 120, default: '' },

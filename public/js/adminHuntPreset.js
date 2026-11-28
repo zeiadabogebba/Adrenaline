@@ -8,12 +8,13 @@
   const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '', finishPhoto: '', finishPhotoPublicId: '' });
 
   let p = window.HUNT_PRESET || {
-    name: '', description: '', mode: 'qr', lifelines: 1, maxTeamSize: 5,
+    name: '', description: '', mode: 'qr', lifelines: 1, lifelinesOn: true, maxTeamSize: 5,
     finish: { place: '', placement: '', message: '', code: '' },
     routes: [blankRoute(0)],
   };
   if (p.maxTeamSize == null) p.maxTeamSize = 5; // presets made before this setting
   if (!p.mode) p.mode = 'qr';
+  if (p.lifelinesOn == null) p.lifelinesOn = true; // presets made before this setting
   p.routes.forEach((r) => { r.finishProof = r.finishProof || 'photo'; r.legs.forEach((l) => { l.proof = l.proof || 'photo'; }); });
   const selfie = () => p.mode === 'selfie';
 
@@ -96,7 +97,7 @@
       <div class="thx-grid">
         ${area(`${base}.riddle`, selfie() ? `Clue for stop ${li + 1}` : li === 0 ? 'Riddle on the start card' : `Riddle on QR ${route.label || 'R' + (ri + 1)}-${li}`, { hint: leg.photo ? 'optional, the photo is the clue' : 'or upload a clue photo instead', rows: 3 })}
         ${area(`${base}.guide`, 'Route guide', { hint: 'direction, distance, streets', maxlength: 600 })}
-        ${area(`${base}.extraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 })}
+        ${p.lifelinesOn !== false ? area(`${base}.extraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 }) : ''}
         ${input(`${base}.place`, 'The answer: place', { hint: selfie() ? 'admin only, helps you check selfies' : 'admin and volunteers only', maxlength: 120 })}
         ${selfie() ? '' : input(`${base}.placement`, 'Where the QR is stuck', { wide: true, maxlength: 200 })}
         ${photoBox(`${base}.photo`, `Photo for stop ${li + 1}`)}
@@ -122,7 +123,7 @@
         <div class="thx-grid">
           ${area(`${base}.finishRiddle`, selfie() ? 'Clue for the finish' : `Riddle on QR ${route.label || 'R' + (ri + 1)}-${route.legs.length}`, { hint: route.finishPhoto ? 'optional, the photo is the clue' : 'leads teams to the finish, or upload a clue photo instead', rows: 3 })}
           ${area(`${base}.finishGuide`, 'Route guide')}
-          ${area(`${base}.finishExtraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 })}
+          ${p.lifelinesOn !== false ? area(`${base}.finishExtraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 }) : ''}
           ${photoBox(`${base}.finishPhoto`, 'Photo for the finish')}
           ${selfie() ? proofFields(`${base}.finish`, true) : ''}
         </div>
@@ -146,7 +147,9 @@
         </fieldset>
         <div class="thx-grid">
           ${input('name', 'Preset name', { wide: true, maxlength: 100 })}
-          ${input('lifelines', 'Lifelines per team', { type: 'number', min: 0, max: 10, dir: 'ltr' })}
+          <label class="thx-f thx-toggle"><span>Lifelines</span>
+            <span class="thx-toggle__row"><input type="checkbox" data-lifelines-on ${p.lifelinesOn !== false ? 'checked' : ''}> ${p.lifelinesOn !== false ? 'On: teams can spend one to reveal the extra hint for a stop' : 'Off: no lifelines or extra hints'}</span></label>
+          ${p.lifelinesOn !== false ? input('lifelines', 'Lifelines per team', { type: 'number', min: 0, max: 10, dir: 'ltr' }) : ''}
           ${input('maxTeamSize', 'Most people per team', { type: 'number', min: 1, max: 20, dir: 'ltr' })}
           ${area('description', 'Notes for the organisers', { rows: 3, maxlength: 1000 })}
         </div>
@@ -176,6 +179,7 @@
     if (/^routes\.\d+\.color$/.test(path)) e.target.closest('.thx-route').style.setProperty('--route', e.target.value);
   });
   host.addEventListener('change', (e) => {
+    if ('lifelinesOn' in e.target.dataset) { p.lifelinesOn = e.target.checked; markDirty(); render(); return; }
     if ('mode' in e.target.dataset) { p.mode = e.target.value; markDirty(); render(); return; }
     const path = e.target.dataset.path;
     if (path && /\.(label|color)$/.test(path)) render(); // the QR labels shown on each stop
