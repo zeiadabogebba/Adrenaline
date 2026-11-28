@@ -1,7 +1,11 @@
 /* Treasure hunt: an expedition kit in the brand theme. The field panels (hero, clock, trail,
    riddle) stay black whatever the site theme is; lists and forms follow the theme. */
 
-.th-area {
+/* The overlays (camera, scanner, pop-ups) sit outside .th-area, so they get the tokens too. */
+.th-area,
+.th-scanner,
+.th-capture,
+.th-lightbox {
     --th-black: #0A0A0B;
     --th-panel: #111114;
     --th-panel-2: #18181C;
@@ -1154,3 +1158,6 @@
 [data-theme="light"] .th-cam .th-btn--ghost { color: #0A0A0B; border-color: rgba(0, 0, 0, 0.3); }
 [data-theme="light"] .th-cam .th-btn--ghost:hover { border-color: #0A0A0B; }
 [data-theme="light"] .th-cam__snap { border-color: #0A0A0B; }
+/* Light mode: the viewfinder is light grey while the camera starts, not a black box. */
+[data-theme="light"] .th-cam__view { background: #E7E5E4; }
+[data-theme="light"] .th-cam .th-reader-status { color: #0A0A0B; }

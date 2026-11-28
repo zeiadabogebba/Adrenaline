@@ -808,12 +808,14 @@
     if (camFacing === 'user') { c.translate(cv.width, 0); c.scale(-1, 1); }
     c.drawImage(video, 0, 0, cv.width, cv.height);
     buzz(20);
+    // Hold the last frame on screen until the photo has loaded, so the view never goes blank.
+    video.pause();
     cv.toBlob((blob) => {
-      if (!blob) return;
+      if (!blob) { video.play().catch(() => {}); return; }
       camBlob = blob;
-      camEl('thCamShot').src = URL.createObjectURL(blob);
-      camMode(true);
-      stopStream();
+      const shot = camEl('thCamShot');
+      shot.onload = () => { shot.onload = null; camMode(true); stopStream(); };
+      shot.src = URL.createObjectURL(blob);
     }, 'image/jpeg', 0.88);
   });
   camEl('thCamRetake').addEventListener('click', () => { camBlob = null; camMode(false); startStream(); });
