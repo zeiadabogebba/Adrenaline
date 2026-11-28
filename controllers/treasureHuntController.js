@@ -796,7 +796,21 @@ const createPreset = async (req, res, next) => {
 
 // Adds the ready-made presets once, the first time the app starts with this feature.
 // A marker in AppSetting records it, so a preset the admin renames or deletes is never re-added.
+// An early version numbered teams with a unique { tripId, number } index. Teams no longer
+// have a number, so that index lets only one team per trip exist (every team's number is
+// null, so the second one is a "duplicate"). Drop it once if a database still has it.
+async function dropStaleTeamIndexes() {
+  const indexes = await HuntTeam.collection.indexes().catch(() => []);
+  for (const ix of indexes) {
+    if (ix.name === 'tripId_1_number_1') {
+      await HuntTeam.collection.dropIndex(ix.name);
+      console.log('[treasure-hunt] dropped stale index tripId_1_number_1');
+    }
+  }
+}
+
 async function seedPresets() {
+  await dropStaleTeamIndexes().catch((err) => console.error('[treasure-hunt] stale index cleanup failed:', err.message));
   const AppSetting = require('../models/AppSetting');
   for (const [name, tpl] of Object.entries(templates)) {
     const key = `seed:hunt-preset:${name}`;
