@@ -1101,3 +1101,23 @@
 @media (max-width: 380px) {
     .th-selfie-row { grid-template-columns: 1fr; }
 }
+
+/* Written answers at selfie-hunt stops */
+.th-answer { display: grid; gap: 8px; }
+.th-answer label { font-weight: 700; color: var(--th-ink); line-height: 1.5; }
+.th-answer__row { display: flex; gap: 8px; }
+.th-answer__row input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    font: inherit;
+    color: var(--th-ink);
+    background: var(--th-panel-2);
+    border: 1px solid var(--th-line);
+}
+.th-answer__row input:focus { outline: 2px solid var(--route); outline-offset: 1px; }
+.th-answer__row .th-btn { flex: none; }
+.th-answer-given { margin: 0; font-size: 0.88rem; color: var(--th-dim); }
+.th-answer-given b { color: var(--th-ink); }
+.th-shot--text { grid-template-columns: 1fr; }
+.th-shot--partial .th-shot__status i { color: var(--th-gold); }

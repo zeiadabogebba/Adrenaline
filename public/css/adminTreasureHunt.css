@@ -233,6 +233,7 @@
 .thx-f > span small { font-weight: 500; opacity: 0.8; }
 
 .thx-f input,
+.thx-f select,
 .thx-f textarea {
     width: 100%;
     box-sizing: border-box;
@@ -463,3 +464,9 @@
 @media (max-width: 700px) {
     .thx-review { margin-inline: 16px; padding: var(--s-md); }
 }
+.thx-shot__noimg { display: grid; place-items: center; aspect-ratio: 1; color: var(--ink-dim); background: var(--surface-raised); font-size: 0.85rem; }
+.thx-shot__answer { display: grid; gap: 3px; padding: 6px 8px; border: 1px dashed var(--hairline-strong); }
+.thx-shot__answer small { color: var(--ink-dim); }
+.thx-shot__key { color: #16A34A; }
+.thx-shot__partial { font-size: 0.78rem; color: var(--amber, #F59E0B); }
+.thx-shot.is-partial { border-style: dashed; }

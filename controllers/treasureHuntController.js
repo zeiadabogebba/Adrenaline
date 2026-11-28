@@ -25,10 +25,10 @@ const totalLegs = (route) => route.legs.length + 1;
 function legAt(preset, route, i) {
   if (i < route.legs.length) {
     const l = route.legs[i];
-    return { index: i, isFinish: false, place: l.place, riddle: l.riddle, guide: l.guide, extraHint: l.extraHint, photo: l.photo, code: l.code };
+    return { index: i, isFinish: false, place: l.place, riddle: l.riddle, guide: l.guide, extraHint: l.extraHint, photo: l.photo, code: l.code, proof: l.proof || 'photo', answerPrompt: l.answerPrompt || '', answerKey: l.answerKey || '' };
   }
   const f = preset.finish;
-  return { index: i, isFinish: true, place: f.place, riddle: route.finishRiddle, guide: route.finishGuide, extraHint: route.finishExtraHint, photo: route.finishPhoto || '', code: f.code };
+  return { index: i, isFinish: true, place: f.place, riddle: route.finishRiddle, guide: route.finishGuide, extraHint: route.finishExtraHint, photo: route.finishPhoto || '', code: f.code, proof: route.finishProof || 'photo', answerPrompt: route.finishAnswerPrompt || '', answerKey: route.finishAnswerKey || '' };
 }
 
 const findRoute = (preset, routeId) => preset.routes.find((r) => String(r._id) === String(routeId));
@@ -36,9 +36,12 @@ const isSelfie = (preset) => preset.mode === 'selfie';
 
 // ── Selfie hunts ──
 // One atomic pipeline update recomputes progress and the clock from the selfies, so two
-// teammates uploading at once can't leave a stale count. Rejected selfies don't count.
+// teammates uploading at once can't leave a stale count. Rejected stops, and stops still
+// missing a part they need (selfie or answer), don't count.
+const needsPhoto = (proof) => proof !== 'answer';
+const needsAnswer = (proof) => proof === 'answer' || proof === 'both';
 function selfieRecompute(total) {
-  const live = { $filter: { input: '$selfies', cond: { $ne: ['$$this.status', 'rejected'] } } };
+  const live = { $filter: { input: '$selfies', cond: { $and: [{ $ne: ['$$this.status', 'rejected'] }, { $ne: ['$$this.complete', false] }] } } };
   return [
     { $set: { progress: { $size: live } } },
     { $set: {
@@ -49,7 +52,7 @@ function selfieRecompute(total) {
 }
 
 const selfieFor = (team, i) => (team.selfies || []).find((s) => s.leg === i) || null;
-const selfieJson = (s) => (s ? { url: s.url, status: s.status, at: s.at } : null);
+const selfieJson = (s) => (s ? { url: s.url || '', answer: s.answer || '', complete: s.complete !== false, status: s.status, at: s.at } : null);
 // How many travellers one team may have (presets made before this setting default to 5).
 const DEFAULT_TEAM_SIZE = 5;
 const teamLimit = (preset) => preset.maxTeamSize || DEFAULT_TEAM_SIZE;
@@ -155,11 +158,13 @@ function selfieTeamState(team, preset, me, route, total, finished, used) {
       hasExtra: Boolean(l.extraHint),
       extra: used.includes(i) ? l.extraHint : null,
       place: finished ? l.place : '',
+      proof: l.proof,
+      answerPrompt: l.answerPrompt,
       selfie: selfieJson(selfieFor(team, i)),
     });
   }
   // The stops the team has a selfie for, in the order it took them (for the finish screen).
-  const cleared = stops.filter((s) => s.selfie && s.selfie.status !== 'rejected')
+  const cleared = stops.filter((s) => s.selfie && s.selfie.complete && s.selfie.status !== 'rejected')
     .sort((a, b) => a.selfie.at - b.selfie.at)
     .map((s) => ({ n: s.n, place: s.place, split: s.selfie.at, hintUsed: used.includes(s.index), isFinish: s.isFinish }));
   const reviewed = stops.every((s) => s.selfie && s.selfie.status === 'approved');
@@ -206,7 +211,7 @@ async function leaderboard(tripId, preset) {
       elapsedMs: t.elapsedMs,
       startedAt: new Date(t.startedAt).getTime(),
       // Selfie hunts: true once an admin has approved every selfie.
-      verified: isSelfie(preset) ? Boolean(r && t.elapsedMs != null && (t.selfies || []).length >= totalLegs(r) && t.selfies.every((s) => s.status === 'approved')) : null,
+      verified: isSelfie(preset) ? Boolean(r && t.elapsedMs != null && (t.selfies || []).length >= totalLegs(r) && t.selfies.every((s) => s.status === 'approved' && s.complete !== false)) : null,
     };
   };
   const finished = teams.filter((t) => t.elapsedMs != null).sort((a, b) => a.elapsedMs - b.elapsedMs).map(row);
@@ -485,8 +490,8 @@ const selfieGate = async (req, res, next) => {
     const leg = parseInt(req.params.leg, 10);
     if (!route || !Number.isInteger(leg) || leg < 0 || leg >= totalLegs(route)) return next(new AppError('That stop is not on your route.', 400));
     const current = selfieFor(team, leg);
-    if (current && current.status === 'approved') return json(res, 409, { status: 'fail', event: 'selfie_approved', message: 'The organisers already approved your selfie at this stop.' });
-    req.hunt = { preset, team, route, leg, previous: current };
+    if (current && current.status === 'approved') return json(res, 409, { status: 'fail', event: 'selfie_approved', message: 'The organisers already approved this stop.' });
+    req.hunt = { preset, team, route, leg, previous: current, proof: legAt(preset, route, leg).proof };
     next();
   } catch (err) {
     next(err);
@@ -495,36 +500,52 @@ const selfieGate = async (req, res, next) => {
 
 const submitSelfie = async (req, res, next) => {
   try {
-    if (!req.file) return next(new AppError('Take a selfie or choose a photo first.', 400));
-    const { preset, team, route, leg, previous } = req.hunt;
+    const { preset, team, route, leg, previous, proof } = req.hunt;
+    // A stop asks for a selfie, a written answer, or both; each part can be sent on its own.
+    const file = needsPhoto(proof) ? req.file : null;
+    if (req.file && !file) dropSelfieFile(req.file.filename);
+    const answer = needsAnswer(proof) ? str(req.body && req.body.answer, 300) : '';
+    if (!file && !answer) {
+      return next(new AppError(proof === 'answer' ? 'Type your answer first.' : proof === 'both' ? 'Take a selfie or type your answer first.' : 'Take a selfie or choose a photo first.', 400));
+    }
     const total = totalLegs(route);
-    const entry = {
-      leg,
-      url: { $literal: req.file.path },
-      publicId: { $literal: req.file.filename || '' },
-      at: { $subtract: ['$$NOW', '$startedAt'] },
-      by: req.user._id,
-      status: 'pending',
-      reviewedAt: null,
+    const parts = {
+      ...(file ? { url: { $literal: file.path }, publicId: { $literal: file.filename || '' } } : {}),
+      ...(answer ? { answer: { $literal: answer } } : {}),
     };
-    // Replace this stop's selfie (unless it was approved meanwhile), then recompute the clock.
+    const prev = { $ifNull: [{ $arrayElemAt: [{ $filter: { input: '$selfies', cond: { $eq: ['$$this.leg', leg] } } }, 0] }, {}] };
+    const entry = { $mergeObjects: [
+      { leg, url: '', publicId: '', answer: '' },
+      prev,
+      parts,
+      { at: { $subtract: ['$$NOW', '$startedAt'] }, by: req.user._id, status: 'pending', reviewedAt: null },
+    ] };
+    const complete = { $and: [
+      needsPhoto(proof) ? { $ne: ['$$this.url', ''] } : true,
+      needsAnswer(proof) ? { $ne: ['$$this.answer', ''] } : true,
+    ] };
+    // Merge the new part into this stop's entry (unless it was approved meanwhile), mark
+    // whether the stop now has every part it needs, then recompute the clock.
     const done = await HuntTeam.findOneAndUpdate(
       { _id: team._id, elapsedMs: null, selfies: { $not: { $elemMatch: { leg, status: 'approved' } } } },
       [
         { $set: { selfies: { $concatArrays: [{ $filter: { input: '$selfies', cond: { $ne: ['$$this.leg', leg] } } }, [entry]] } } },
+        { $set: { selfies: { $map: { input: '$selfies', in: { $cond: [{ $eq: ['$$this.leg', leg] }, { $mergeObjects: ['$$this', { complete }] }, '$$this'] } } } } },
         ...selfieRecompute(total),
       ],
       { new: true }
     );
     if (!done) {
-      dropSelfieFile(req.file.filename);
+      if (file) dropSelfieFile(file.filename);
       const fresh = await loadTeamFor(req.user._id, team.tripId);
       return json(res, 409, { status: 'fail', event: 'selfie_locked', message: 'That stop is already done. Refresh to see the latest.', state: teamState(fresh, preset, req.user._id) });
     }
-    if (previous && previous.publicId && previous.publicId !== req.file.filename) dropSelfieFile(previous.publicId);
+    if (file && previous && previous.publicId && previous.publicId !== file.filename) dropSelfieFile(previous.publicId);
     const fresh = await loadTeamFor(req.user._id, team.tripId);
     const finished = fresh.elapsedMs != null;
-    json(res, 200, { status: 'success', event: finished ? 'finished' : 'captured', number: leg + 1, split: (selfieFor(fresh, leg) || {}).at, state: teamState(fresh, preset, req.user._id) });
+    const mine = selfieFor(fresh, leg) || {};
+    const event = finished ? 'finished' : mine.complete === false ? 'partial' : 'captured';
+    json(res, 200, { status: 'success', event, number: leg + 1, split: mine.at, state: teamState(fresh, preset, req.user._id) });
   } catch (err) {
     next(err);
   }
@@ -629,10 +650,14 @@ const getTripResults = async (req, res, next) => {
         route: r ? { name: r.name, color: r.color } : { name: 'Removed route', color: '#888888' },
         progress: t.progress, total: r ? totalLegs(r) : t.progress, elapsedMs: t.elapsedMs,
         startedAt: t.startedAt, finishedAt: t.finishedAt, hintsUsed: (t.hintsUsed || []).length, splits: t.splits || [],
-        selfies: (t.selfies || []).slice().sort((a, b) => a.leg - b.leg).map((s) => ({
-          leg: s.leg, url: s.url, at: s.at, status: s.status,
-          label: r ? (s.leg < r.legs.length ? (r.legs[s.leg].place || `Stop ${s.leg + 1}`) : (preset.finish.place || 'Finish')) : `Stop ${s.leg + 1}`,
-        })),
+        selfies: (t.selfies || []).slice().sort((a, b) => a.leg - b.leg).map((s) => {
+          const l = r && s.leg < totalLegs(r) ? legAt(preset, r, s.leg) : null;
+          return {
+            leg: s.leg, url: s.url || '', answer: s.answer || '', complete: s.complete !== false, at: s.at, status: s.status,
+            label: l ? (l.place || (l.isFinish ? 'Finish' : `Stop ${s.leg + 1}`)) : `Stop ${s.leg + 1}`,
+            proof: l ? l.proof : 'photo', answerPrompt: l ? l.answerPrompt : '', answerKey: l ? l.answerKey : '',
+          };
+        }),
       };
     }).sort((a, b) => (a.elapsedMs == null) - (b.elapsedMs == null) || (a.elapsedMs ?? 0) - (b.elapsedMs ?? 0) || b.progress - a.progress);
     res.render('adminHuntResults', { user: req.user, trip, setting: setting || {}, preset, rows });
@@ -648,6 +673,8 @@ const num = (v) => (v === '' || v == null || !Number.isFinite(Number(v)) ? null 
 
 // Builds a clean preset from the editor's JSON. Blank codes get a fresh one; ids are kept so
 // teams already playing keep pointing at the same route.
+const proofOf = (v) => (['photo', 'answer', 'both'].includes(v) ? v : 'photo');
+
 function presetFromBody(body) {
   const used = new Set();
   const code = (v) => {
@@ -678,11 +705,13 @@ function presetFromBody(body) {
       finishGuide: str(r.finishGuide, 600),
       finishExtraHint: str(r.finishExtraHint, 400),
       finishPhoto: str(r.finishPhoto, 500), finishPhotoPublicId: str(r.finishPhotoPublicId, 300),
+      finishProof: proofOf(r.finishProof), finishAnswerPrompt: str(r.finishAnswerPrompt, 300), finishAnswerKey: str(r.finishAnswerKey, 300),
       legs: (Array.isArray(r.legs) ? r.legs : []).slice(0, 30).map((l) => ({
         ...(isId(l._id) ? { _id: l._id } : {}),
         place: str(l.place, 120),
         placement: str(l.placement, 200), riddle: str(l.riddle, 600), guide: str(l.guide, 600),
         extraHint: str(l.extraHint, 400), photo: str(l.photo, 500), photoPublicId: str(l.photoPublicId, 300),
+        proof: proofOf(l.proof), answerPrompt: str(l.answerPrompt, 300), answerKey: str(l.answerKey, 300),
         code: code(l.code),
       })),
     })),
@@ -703,9 +732,11 @@ function presetProblems(p) {
 }
 
 // Same routes and stops, in the same order, as the saved preset.
+// For selfie hunts, also what each stop asks teams to send.
 const sameShape = (a, b) => (a.mode || 'qr') === (b.mode || 'qr') && a.routes.length === b.routes.length && a.routes.every((r, i) => {
   const o = b.routes[i];
-  return String(r._id) === String(o._id) && r.legs.length === o.legs.length && r.legs.every((l, j) => String(l._id) === String(o.legs[j]._id));
+  return String(r._id) === String(o._id) && (r.finishProof || 'photo') === (o.finishProof || 'photo') && r.legs.length === o.legs.length
+    && r.legs.every((l, j) => String(l._id) === String(o.legs[j]._id) && (l.proof || 'photo') === (o.legs[j].proof || 'photo'));
 });
 
 // POST /api/admin/treasure-hunt/presets
@@ -756,7 +787,7 @@ const updatePreset = async (req, res, next) => {
     if (await HuntTeam.exists({ presetId: current._id })) {
       const probe = new HuntPreset(data); // gives new routes/stops their ids so the shapes can be compared
       if (!sameShape(probe, current)) {
-        return next(new AppError('Teams have already played this preset, so its routes and stops can no longer be added, removed or reordered, and it can no longer switch between QR codes and selfies. You can still edit the text. Duplicate it to change them.', 409));
+        return next(new AppError('Teams have already played this preset, so its routes and stops can no longer be added, removed or reordered, and it can no longer switch between QR codes and selfies or change what a stop asks teams to send. You can still edit the text. Duplicate it to change them.', 409));
       }
     }
     current.set(data);
@@ -847,9 +878,9 @@ const updateTripSetting = async (req, res, next) => {
   }
 };
 
-// PATCH /api/admin/treasure-hunt/trips/:tripId/teams/:teamId/selfies/:leg { status, url }
-// Approve or reject one selfie. `url` is the photo the admin looked at, so a selfie the team
-// replaced meanwhile isn't judged by mistake. A rejection reopens the team's clock until it
+// PATCH /api/admin/treasure-hunt/trips/:tripId/teams/:teamId/selfies/:leg { status, at }
+// Approve or reject one stop's selfie and/or answer. `at` identifies the version the admin
+// looked at, so something the team replaced meanwhile isn't judged by mistake. A rejection reopens the team's clock until it
 // sends a new selfie for that stop.
 const reviewSelfie = async (req, res, next) => {
   try {
@@ -863,17 +894,18 @@ const reviewSelfie = async (req, res, next) => {
     const preset = await HuntPreset.findById(team.presetId).lean();
     const route = preset && findRoute(preset, team.routeId);
     if (!route) return next(new AppError('This team\'s route no longer exists.', 404));
-    const url = String(req.body.url || '');
-    const match = { $and: [{ $eq: ['$$this.leg', leg] }, { $eq: ['$$this.url', { $literal: url }] }] };
+    const at = Number(req.body.at);
+    if (!Number.isFinite(at)) return next(new AppError('Reload the page and try again.', 400));
+    const match = { $and: [{ $eq: ['$$this.leg', leg] }, { $eq: ['$$this.at', at] }] };
     const done = await HuntTeam.findOneAndUpdate(
-      { _id: team._id, selfies: { $elemMatch: { leg, url } } },
+      { _id: team._id, selfies: { $elemMatch: { leg, at } } },
       [
         { $set: { selfies: { $map: { input: '$selfies', in: { $cond: [match, { $mergeObjects: ['$$this', { status, reviewedAt: status === 'pending' ? null : '$$NOW' }] }, '$$this'] } } } } },
         ...selfieRecompute(totalLegs(route)),
       ],
       { new: true }
     ).lean();
-    if (!done) return next(new AppError('The team has replaced this selfie. Reload to see the new one.', 409));
+    if (!done) return next(new AppError('The team has sent something new for this stop. Reload to see it.', 409));
     json(res, 200, { status: 'success', data: { status, progress: done.progress, total: totalLegs(route), elapsedMs: done.elapsedMs } });
   } catch (err) {
     next(err);

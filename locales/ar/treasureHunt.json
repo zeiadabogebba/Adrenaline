@@ -127,5 +127,15 @@
   "underReview": "المنظمين لسه بيراجعوا السيلفيهات بتاعتكم.",
   "underReviewShort": "السيلفيهات بتتراجع",
   "verifiedAll": "المنظمين قبلوا كل السيلفيهات.",
-  "verified": "السيلفيهات مقبولة"
+  "verified": "السيلفيهات مقبولة",
+  "needAnswer": "السيلفي وصلت · ابعت الإجابة",
+  "needSelfie": "الإجابة وصلت · صوّر السيلفي",
+  "answerRejected": "مرفوضة · جرّب إجابة تانية",
+  "yourAnswer": "إجابتك:",
+  "answerLabel": "إجابتك",
+  "answerPh": "اكتب إجابتك",
+  "sendAnswer": "ابعت",
+  "updateAnswer": "عدّل",
+  "typeAnswer": "اكتب إجابتك الأول.",
+  "answerSent": "الإجابة اتبعتت"
 }

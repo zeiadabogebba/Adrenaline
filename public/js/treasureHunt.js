@@ -282,38 +282,58 @@
   }
 
   // ── Selfie hunts: every clue at once, each with its selfie ──
+  // A stop asks for a selfie, a written answer, or both (each part can be sent on its own).
+  const wantsPhoto = (s) => s.proof !== 'answer';
+  const wantsAnswer = (s) => s.proof === 'answer' || s.proof === 'both';
+
   function selfieBlock(s) {
     const sf = s.selfie;
     const canSend = open && !state.finished && (!sf || sf.status !== 'approved');
     const sending = uploadingLeg === s.index;
-    let shot = '';
+    let status = '';
     if (sf) {
-      const label = { pending: T('selfiePending'), approved: T('selfieApproved'), rejected: T('selfieRejected') }[sf.status];
-      const icon = { pending: 'fa-hourglass-half', approved: 'fa-circle-check', rejected: 'fa-circle-xmark' }[sf.status];
-      shot = `<div class="th-shot th-shot--${esc(sf.status)}">
-        <button type="button" class="th-shot__img" data-act="photo" data-src="${esc(sf.url)}"><img src="${esc(sf.url.replace('/upload/', '/upload/c_fill,w_240,h_240,q_auto,f_auto/'))}" alt="${esc(T('yourSelfie'))}" loading="lazy"></button>
-        <div class="th-shot__meta"><span class="th-shot__status"><i class="fas ${icon}" aria-hidden="true"></i> ${esc(label)}</span><span class="th-shot__at">${esc(T('split'))} <b dir="ltr">${fmt(sf.at)}</b></span></div>
-      </div>`;
+      let label = { pending: T('selfiePending'), approved: T('selfieApproved'), rejected: T('selfieRejected') }[sf.status];
+      let icon = { pending: 'fa-hourglass-half', approved: 'fa-circle-check', rejected: 'fa-circle-xmark' }[sf.status];
+      if (sf.status === 'rejected' && !wantsPhoto(s)) label = T('answerRejected');
+      if (sf.status !== 'rejected' && !sf.complete) { label = T(sf.url ? 'needAnswer' : 'needSelfie'); icon = 'fa-circle-half-stroke'; }
+      status = `<span class="th-shot__status"><i class="fas ${icon}" aria-hidden="true"></i> ${esc(label)}</span><span class="th-shot__at">${esc(T('split'))} <b dir="ltr">${fmt(sf.at)}</b></span>`;
     }
-    let buttons = '';
+    const state_ = sf ? (sf.status !== 'rejected' && !sf.complete ? 'partial' : sf.status) : 'todo';
+    const thumb = sf && sf.url
+      ? `<button type="button" class="th-shot__img" data-act="photo" data-src="${esc(sf.url)}"><img src="${esc(sf.url.replace('/upload/', '/upload/c_fill,w_240,h_240,q_auto,f_auto/'))}" alt="${esc(T('yourSelfie'))}" loading="lazy"></button>`
+      : '';
+    const given = sf && sf.answer ? `<p class="th-answer-given"><span>${esc(T('yourAnswer'))}</span> <b dir="auto">${esc(sf.answer)}</b></p>` : '';
+    const shot = sf ? `<div class="th-shot th-shot--${esc(state_)}${thumb ? '' : ' th-shot--text'}">${thumb}<div class="th-shot__meta">${status}${given}</div></div>` : '';
+
+    let controls = '';
     if (sending) {
-      buttons = `<p class="th-sending"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> ${esc(T('sendingSelfie'))}</p>`;
+      controls = `<p class="th-sending"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> ${esc(T('sendingSelfie'))}</p>`;
     } else if (canSend) {
-      const again = Boolean(sf);
-      buttons = `<div class="th-selfie-row">
-        <button type="button" class="th-btn th-btn--solid th-btn--cam" data-act="camera" data-leg="${s.index}"><i class="fas fa-camera" aria-hidden="true"></i><span>${esc(T(again ? 'retakeSelfie' : 'takeSelfie'))}</span></button>
-        <label class="th-btn th-btn--ghost th-btn--attach"><i class="fas fa-paperclip" aria-hidden="true"></i><span>${esc(T(again ? 'replacePhoto' : 'attachPhoto'))}</span><input type="file" accept="image/*" data-attach="${s.index}" hidden></label>
-      </div>`;
-    } else if (!open && !state.finished && (!sf || sf.status === 'rejected')) {
-      buttons = `<p class="th-note"><i class="fas fa-lock" aria-hidden="true"></i> ${esc(T('closedSelfie'))}</p>`;
+      if (wantsPhoto(s)) {
+        const again = Boolean(sf && sf.url);
+        controls += `<div class="th-selfie-row">
+          <button type="button" class="th-btn th-btn--solid th-btn--cam" data-act="camera" data-leg="${s.index}"><i class="fas fa-camera" aria-hidden="true"></i><span>${esc(T(again ? 'retakeSelfie' : 'takeSelfie'))}</span></button>
+          <label class="th-btn th-btn--ghost th-btn--attach"><i class="fas fa-paperclip" aria-hidden="true"></i><span>${esc(T(again ? 'replacePhoto' : 'attachPhoto'))}</span><input type="file" accept="image/*" data-attach="${s.index}" hidden></label>
+        </div>`;
+      }
+      if (wantsAnswer(s)) {
+        const id = `thAnswer-${s.index}`;
+        controls += `<form class="th-answer" data-answer="${s.index}" novalidate>
+          <label for="${id}">${esc(s.answerPrompt || T('answerLabel'))}</label>
+          <div class="th-answer__row"><input id="${id}" maxlength="300" autocomplete="off" dir="auto" placeholder="${esc(T('answerPh'))}" value="${esc(sf && sf.status !== 'rejected' ? sf.answer : '')}">
+          <button type="submit" class="th-btn th-btn--solid">${esc(T(sf && sf.answer ? 'updateAnswer' : 'sendAnswer'))}</button></div>
+        </form>`;
+      }
+    } else if (!open && !state.finished && (!sf || sf.status === 'rejected' || !sf.complete)) {
+      controls = `<p class="th-note"><i class="fas fa-lock" aria-hidden="true"></i> ${esc(T('closedSelfie'))}</p>`;
     }
-    return `<div class="th-selfie">${shot}${buttons}<p class="th-error" id="thSelfieErr-${s.index}" role="alert" hidden></p></div>`;
+    return `<div class="th-selfie">${shot}${controls}<p class="th-error" id="thSelfieErr-${s.index}" role="alert" hidden></p></div>`;
   }
 
   function stopLifeline(s) {
     if (!s.hasExtra) return '';
     if (s.extra) return `<div class="th-extra"><span class="th-extra__label"><i class="fas fa-life-ring" aria-hidden="true"></i> ${esc(T('extraHint'))}</span><p dir="auto">${esc(s.extra)}</p></div>`;
-    if (state.finished || (s.selfie && s.selfie.status !== 'rejected')) return '';
+    if (state.finished || (s.selfie && s.selfie.complete && s.selfie.status !== 'rejected')) return '';
     if (state.lifelinesLeft <= 0) return `<p class="th-note"><i class="fas fa-life-ring" aria-hidden="true"></i> ${esc(T('noLifelines'))}</p>`;
     if (!open) return '';
     if (lifelineAsk === s.index) {
@@ -324,7 +344,7 @@
 
   function stopsHtml() {
     const cards = state.stops.map((s) => {
-      const st = s.selfie ? s.selfie.status : 'todo';
+      const st = s.selfie ? (s.selfie.status !== 'rejected' && !s.selfie.complete ? 'todo' : s.selfie.status) : 'todo';
       const head = s.isFinish ? T('selfieFinal') : T('selfieStop', { n: s.n });
       return `<article class="th-clue th-stop th-stop--${esc(st)}" style="--route:${esc(state.route.color)}">
         <header class="th-clue__head"><span><i class="fas ${s.isFinish ? 'fa-gem' : 'fa-location-dot'}" aria-hidden="true"></i> ${esc(head)}</span><span dir="ltr">${s.n} / ${state.total}</span></header>
@@ -447,6 +467,13 @@
     if (code) code.addEventListener('submit', (e) => { e.preventDefault(); const v = document.getElementById('thCodeInput').value; if (v.trim()) claim(v); });
     app.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', onAct));
     app.querySelectorAll('input[data-attach]').forEach((i) => i.addEventListener('change', onAttach));
+    app.querySelectorAll('form[data-answer]').forEach((f) => f.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const leg = Number(f.dataset.answer);
+      const answer = f.querySelector('input').value.trim();
+      if (!answer) return showErr(`thSelfieErr-${leg}`, T('typeAnswer'));
+      sendSelfie(leg, null, answer);
+    }));
   }
 
   function showErr(id, msg) {
@@ -622,16 +649,18 @@
     if (file) sendSelfie(leg, await shrink(file));
   }
 
-  async function sendSelfie(leg, blob) {
+  // Sends a stop's selfie (blob) and/or written answer.
+  async function sendSelfie(leg, blob, answer) {
     if (busy) return;
-    if (blob.size > 12 * 1024 * 1024) return showErr(`thSelfieErr-${leg}`, T('selfieTooBig'));
+    if (blob && blob.size > 12 * 1024 * 1024) return showErr(`thSelfieErr-${leg}`, T('selfieTooBig'));
     busy = true;
     uploadingLeg = leg;
     render();
     let err = '';
     try {
       const fd = new FormData();
-      fd.append('photo', blob, 'selfie.jpg');
+      if (answer) fd.append('answer', answer);
+      if (blob) fd.append('photo', blob, 'selfie.jpg');
       const res = await fetch(`/api/treasure-hunt/${encodeURIComponent(H.tripId)}/selfie/${leg}`, { method: 'POST', credentials: 'same-origin', body: fd });
       const data = await res.json().catch(() => ({}));
       uploadingLeg = null;
@@ -642,8 +671,9 @@
         return;
       }
       if (data.event === 'already_finished') { applyState(data.state); return; }
+      if (data.event === 'partial') { buzz(30); applyState(data.state); return; }
       if (data.event === 'finished') { sfx.finish(); buzz([80, 50, 80, 50, 160]); } else { sfx.capture(); buzz(60); }
-      showCapture(leg + 1, data.split, data.event === 'finished', T('selfieSent'));
+      showCapture(leg + 1, data.split, data.event === 'finished', T(blob ? 'selfieSent' : 'answerSent'));
       await refresh(true);
       applyState(data.state, { animate: true });
     } catch (e) {
@@ -863,7 +893,7 @@
       board = data.board;
       const openChanged = data.open !== open;
       open = data.open;
-      const sig = (st) => (st && st.stops ? st.stops.map((x) => (x.selfie ? x.selfie.status + x.selfie.url : '')).join('|') + st.verified : '');
+      const sig = (st) => (st && st.stops ? st.stops.map((x) => (x.selfie ? [x.selfie.status, x.selfie.url, x.selfie.answer, x.selfie.complete].join(',') : '')).join('|') + st.verified : '');
       const moved = data.state && state && (data.state.progress !== state.progress || data.state.finished !== state.finished || (SELFIE && sig(data.state) !== sig(state)));
       const joined = data.state && !state;
       if (silent) return;

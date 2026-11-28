@@ -127,5 +127,15 @@
   "underReview": "The organisers are still checking your selfies.",
   "underReviewShort": "Selfies being checked",
   "verifiedAll": "Every selfie approved by the organisers.",
-  "verified": "Selfies approved"
+  "verified": "Selfies approved",
+  "needAnswer": "Selfie in · now send your answer",
+  "needSelfie": "Answer in · now take your selfie",
+  "answerRejected": "Rejected · try another answer",
+  "yourAnswer": "Your answer:",
+  "answerLabel": "Your answer",
+  "answerPh": "Type your answer",
+  "sendAnswer": "Send",
+  "updateAnswer": "Update",
+  "typeAnswer": "Type your answer first.",
+  "answerSent": "Answer sent"
 }

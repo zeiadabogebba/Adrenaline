@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128a">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128b">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -75,19 +75,27 @@
         <% if (selfieHunt && rows.length) { const waiting = rows.reduce((n, r) => n + r.selfies.filter(x => x.status === 'pending').length, 0); %>
         <section class="thx-review" id="thxReview">
             <header class="thx-review__head">
-                <h2><i class="fas fa-camera"></i> Selfies <span class="thx-review__count" id="thxWaiting"><%= waiting %> to check</span></h2>
-                <p>Approve a selfie if the team is clearly at the stop. Rejecting one reopens that team's clock until it sends a new selfie there. New selfies show when you reload.</p>
-                <label class="thx-review__filter"><input type="checkbox" id="thxOnlyPending" checked> Only show selfies to check</label>
+                <h2><i class="fas fa-camera"></i> Selfies and answers <span class="thx-review__count" id="thxWaiting"><%= waiting %> to check</span></h2>
+                <p>Approve a stop if the selfie shows the team there and the answer is right. Rejecting one reopens that team's clock until it sends again for that stop. New entries show when you reload.</p>
+                <label class="thx-review__filter"><input type="checkbox" id="thxOnlyPending" checked> Only show stops to check</label>
             </header>
             <% rows.forEach(r => { if (!r.selfies.length) return; %>
             <article class="thx-review__team" data-review-team="<%= r._id %>" style="--route:<%= r.route.color %>">
                 <h3><span class="thx-swatch"></span><b class="thx-teamid"><%= r.code.slice(0, 4) %>-<%= r.code.slice(4) %></b> <span dir="auto"><%= r.route.name %></span> <small><%= r.members.map(m => m.name).join(', ') %></small></h3>
                 <div class="thx-shots">
                     <% r.selfies.forEach(x => { %>
-                    <figure class="thx-shot is-<%= x.status %>" data-leg="<%= x.leg %>" data-url="<%= x.url %>">
-                        <a href="<%= x.url %>" target="_blank" rel="noopener"><img src="<%= x.url.replace('/upload/', '/upload/c_fill,w_360,h_360,q_auto,f_auto/') %>" alt="Selfie at <%= x.label %>" loading="lazy"></a>
+                    <figure class="thx-shot is-<%= x.status %><%= x.complete ? '' : ' is-partial' %>" data-leg="<%= x.leg %>" data-at="<%= x.at %>">
+                        <% if (x.url) { %><a href="<%= x.url %>" target="_blank" rel="noopener"><img src="<%= x.url.replace('/upload/', '/upload/c_fill,w_360,h_360,q_auto,f_auto/') %>" alt="Selfie at <%= x.label %>" loading="lazy"></a><% } else if (x.proof !== 'answer') { %><span class="thx-shot__noimg"><i class="fas fa-camera"></i> No selfie yet</span><% } %>
                         <figcaption>
                             <b><%= x.leg + 1 %>. <span dir="auto"><%= x.label %></span></b>
+                            <% if (x.proof !== 'photo') { %>
+                            <span class="thx-shot__answer">
+                                <% if (x.answerPrompt) { %><small dir="auto"><%= x.answerPrompt %></small><% } %>
+                                <span>Team: <b dir="auto"><%= x.answer || '(no answer yet)' %></b></span>
+                                <% if (x.answerKey) { %><span class="thx-shot__key">Correct: <b dir="auto"><%= x.answerKey %></b></span><% } %>
+                            </span>
+                            <% } %>
+                            <% if (!x.complete) { %><span class="thx-shot__partial">Not complete yet: the team still has to send the <%= x.url ? 'answer' : 'selfie' %>.</span><% } %>
                             <span class="thx-shot__meta"><span class="thx-ms" data-ms="<%= x.at %>"></span> &middot; <span class="thx-shot__status"><%= { pending: 'To check', approved: 'Approved', rejected: 'Rejected' }[x.status] %></span></span>
                             <span class="thx-shot__btns">
                                 <button type="button" class="thx-btn thx-btn--sm thx-btn--ok" data-review="approved"><i class="fas fa-check"></i> Approve</button>
@@ -99,7 +107,7 @@
                 </div>
             </article>
             <% }) %>
-            <p class="pbx-empty" id="thxReviewEmpty" hidden>All selfies are checked.</p>
+            <p class="pbx-empty" id="thxReviewEmpty" hidden>Everything is checked.</p>
         </section>
         <% } %>
 
@@ -193,12 +201,12 @@
             const status = fig.classList.contains('is-' + b.dataset.review) ? 'pending' : b.dataset.review; // tap again to undo
             fig.querySelectorAll('button').forEach(x => x.disabled = true);
             try {
-                const res = await fetch(`/api/admin/treasure-hunt/trips/${trip}/teams/${teamEl.dataset.reviewTeam}/selfies/${fig.dataset.leg}`, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status, url: fig.dataset.url }) });
+                const res = await fetch(`/api/admin/treasure-hunt/trips/${trip}/teams/${teamEl.dataset.reviewTeam}/selfies/${fig.dataset.leg}`, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status, at: Number(fig.dataset.at) }) });
                 const j = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(j.message || 'Could not save. Please try again.');
                 fig.className = 'thx-shot is-' + status;
                 fig.querySelector('.thx-shot__status').textContent = LABEL[status];
-                say(status === 'rejected' ? 'Selfie rejected. The team sees it and its clock is running again.' : status === 'approved' ? 'Selfie approved.' : 'Review undone.');
+                say(status === 'rejected' ? 'Rejected. The team sees it and its clock is running again.' : status === 'approved' ? 'Approved.' : 'Review undone.');
                 setTimeout(filterShots, 600);
             } catch (e) {
                 say(e.message, true);

@@ -4,7 +4,7 @@
   const LOCKED = Boolean(window.HUNT_LOCKED);
   const COLORS = ['#DC2626', '#2563EB', '#16A34A', '#EAB308', '#9333EA', '#EA580C'];
 
-  const blankLeg = () => ({ place: '', placement: '', riddle: '', guide: '', extraHint: '', photo: '', photoPublicId: '', code: '' });
+  const blankLeg = () => ({ place: '', placement: '', riddle: '', guide: '', extraHint: '', photo: '', photoPublicId: '', code: '', proof: 'photo', answerPrompt: '', answerKey: '' });
   const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '', finishPhoto: '', finishPhotoPublicId: '' });
 
   let p = window.HUNT_PRESET || {
@@ -14,7 +14,20 @@
   };
   if (p.maxTeamSize == null) p.maxTeamSize = 5; // presets made before this setting
   if (!p.mode) p.mode = 'qr';
+  p.routes.forEach((r) => { r.finishProof = r.finishProof || 'photo'; r.legs.forEach((l) => { l.proof = l.proof || 'photo'; }); });
   const selfie = () => p.mode === 'selfie';
+
+  // Selfie hunts: what teams send at a stop, and the answer fields when one is asked for.
+  // `pre` is the field prefix: `routes.0.legs.1.` for a stop, `routes.0.finish` for the finish.
+  const proofFields = (pre, isFinish) => {
+    const k = (name) => (isFinish ? pre + name[0].toUpperCase() + name.slice(1) : pre + name);
+    const proof = get(k('proof')) || 'photo';
+    const opt = (v, label) => `<option value="${v}" ${proof === v ? 'selected' : ''}>${label}</option>`;
+    return `<label class="thx-f thx-f--wide"><span>Teams send <small>${LOCKED ? 'locked: teams have played' : 'checked by you on the results page'}</small></span>
+        <select data-path="${k('proof')}" ${LOCKED ? 'disabled' : ''}>${opt('photo', 'A selfie')}${opt('answer', 'A written answer')}${opt('both', 'A selfie and a written answer')}</select></label>
+      ${proof === 'photo' ? '' : `${input(k('answerPrompt'), 'Question teams answer', { wide: true, maxlength: 300, hint: 'leave empty to just ask for the answer', ph: 'e.g. What year is carved above the door?' })}
+      ${input(k('answerKey'), 'Correct answer', { wide: true, maxlength: 300, hint: 'admin only, shown next to what teams write' })}`}`;
+  };
 
   // A clue photo; `path` points at the photo URL and the public id sits next to it (…PublicId).
   const photoBox = (path, alt) => {
@@ -87,6 +100,7 @@
         ${input(`${base}.place`, 'The answer: place', { hint: selfie() ? 'admin only, helps you check selfies' : 'admin and volunteers only', maxlength: 120 })}
         ${selfie() ? '' : input(`${base}.placement`, 'Where the QR is stuck', { wide: true, maxlength: 200 })}
         ${photoBox(`${base}.photo`, `Photo for stop ${li + 1}`)}
+        ${selfie() ? proofFields(`${base}.`, false) : ''}
         ${selfie() ? '' : codeBox(`${base}.code`, 'Code under the QR')}
       </div>
     </article>`;
@@ -110,6 +124,7 @@
           ${area(`${base}.finishGuide`, 'Route guide')}
           ${area(`${base}.finishExtraHint`, 'Extra hint', { hint: 'costs a lifeline', maxlength: 400 })}
           ${photoBox(`${base}.finishPhoto`, 'Photo for the finish')}
+          ${selfie() ? proofFields(`${base}.finish`, true) : ''}
         </div>
       </article>
     </section>`;
@@ -164,6 +179,7 @@
     if ('mode' in e.target.dataset) { p.mode = e.target.value; markDirty(); render(); return; }
     const path = e.target.dataset.path;
     if (path && /\.(label|color)$/.test(path)) render(); // the QR labels shown on each stop
+    if (path && /(proof|Proof)$/.test(path)) { set(path, e.target.value); markDirty(); render(); } // shows or hides the answer fields
     if (e.target.dataset.photo) uploadPhoto(e.target);
   });
   host.addEventListener('click', (e) => {

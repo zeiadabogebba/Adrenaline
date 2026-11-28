@@ -16,6 +16,11 @@ const legSchema = new mongoose.Schema({
   photo:     { type: String, default: '' },
   photoPublicId: { type: String, default: '' },
   code:      { type: String, required: true, uppercase: true, trim: true },
+  // Selfie hunts: what the team sends at this stop. `answerPrompt` is the question it sees;
+  // `answerKey` is the expected answer, shown only to admins when they check.
+  proof:        { type: String, enum: ['photo', 'answer', 'both'], default: 'photo' },
+  answerPrompt: { type: String, trim: true, maxlength: 300, default: '' },
+  answerKey:    { type: String, trim: true, maxlength: 300, default: '' },
 });
 
 const routeSchema = new mongoose.Schema({
@@ -29,6 +34,9 @@ const routeSchema = new mongoose.Schema({
   finishExtraHint: { type: String, trim: true, maxlength: 400, default: '' },
   finishPhoto:     { type: String, default: '' },
   finishPhotoPublicId: { type: String, default: '' },
+  finishProof:        { type: String, enum: ['photo', 'answer', 'both'], default: 'photo' },
+  finishAnswerPrompt: { type: String, trim: true, maxlength: 300, default: '' },
+  finishAnswerKey:    { type: String, trim: true, maxlength: 300, default: '' },
 });
 
 const huntPresetSchema = new mongoose.Schema(
