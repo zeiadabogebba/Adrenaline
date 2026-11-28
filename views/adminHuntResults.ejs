@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128b">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128c">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -85,7 +85,7 @@
                 <div class="thx-shots">
                     <% r.selfies.forEach(x => { %>
                     <figure class="thx-shot is-<%= x.status %><%= x.complete ? '' : ' is-partial' %>" data-leg="<%= x.leg %>" data-at="<%= x.at %>">
-                        <% if (x.url) { %><a href="<%= x.url %>" target="_blank" rel="noopener"><img src="<%= x.url.replace('/upload/', '/upload/c_fill,w_360,h_360,q_auto,f_auto/') %>" alt="Selfie at <%= x.label %>" loading="lazy"></a><% } else if (x.proof !== 'answer') { %><span class="thx-shot__noimg"><i class="fas fa-camera"></i> No selfie yet</span><% } %>
+                        <% if (x.url) { %><a href="<%= x.url %>" target="_blank" rel="noopener"><img src="<%= x.url.replace('/upload/', '/upload/c_limit,w_700,q_auto,f_auto/') %>" alt="Selfie at <%= x.label %>" loading="lazy"></a><% } else if (x.proof !== 'answer') { %><span class="thx-shot__noimg"><i class="fas fa-camera"></i> No selfie yet</span><% } %>
                         <figcaption>
                             <b><%= x.leg + 1 %>. <span dir="auto"><%= x.label %></span></b>
                             <% if (x.proof !== 'photo') { %>

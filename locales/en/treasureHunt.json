@@ -96,8 +96,8 @@
   "rule6": "Up to {n} people per team.",
   "cluePhotoAlt": "Clue photo",
   "selfieRule1": "One clock per team. It starts when your team is created, and stops when your team has a selfie at every stop.",
-  "selfieRule2": "Every clue shows from the start. Find the stops in any order you like.",
-  "selfieRule3": "At each stop, take a team selfie with the place clearly behind you, or attach a photo.",
+  "selfieRule2": "Stops unlock in order. Send the selfie (or the answer) at a stop to get the clue to the next one.",
+  "selfieRule3": "At most stops, take a team selfie with the place clearly behind you. Some stops ask for a written answer instead.",
   "selfieRule5": "The organisers check every selfie. If one is rejected, retake it there and your clock keeps running until you do.",
   "selfieStop": "Stop {n}",
   "selfieFinal": "The treasure",
@@ -113,7 +113,7 @@
   "selfieRejected": "Rejected · take a new selfie here",
   "selfieFailed": "The selfie couldn't be sent. Check your connection and try again.",
   "selfieTooBig": "That photo is too large. Please use one under 12 MB.",
-  "selfieLocked": "That stop is already done.",
+  "selfieLocked": "Your team already sent this stop.",
   "selfieHuntNoQr": "This hunt uses selfies, not QR codes.",
   "closedSelfie": "The hunt is closed, so selfies can no longer be sent.",
   "yourSelfie": "Your team's selfie",
@@ -137,5 +137,9 @@
   "sendAnswer": "Send",
   "updateAnswer": "Update",
   "typeAnswer": "Type your answer first.",
-  "answerSent": "Answer sent"
+  "answerSent": "Answer sent",
+  "retakeTitle": "Send again · {stop}",
+  "sendingAnswer": "Sending your answer…",
+  "lockedStop": "Stops unlock in order. Send the current stop first.",
+  "redoNode": "Send again"
 }

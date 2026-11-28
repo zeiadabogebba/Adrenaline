@@ -38,8 +38,9 @@ const isSelfie = (preset) => preset.mode === 'selfie';
 // One atomic pipeline update recomputes progress and the clock from the selfies, so two
 // teammates uploading at once can't leave a stale count. Rejected stops, and stops still
 // missing a part they need (selfie or answer), don't count.
+// A stop asks for a selfie or, when the admin turns it on, a written answer instead.
 const needsPhoto = (proof) => proof !== 'answer';
-const needsAnswer = (proof) => proof === 'answer' || proof === 'both';
+const needsAnswer = (proof) => proof === 'answer';
 function selfieRecompute(total) {
   const live = { $filter: { input: '$selfies', cond: { $and: [{ $ne: ['$$this.status', 'rejected'] }, { $ne: ['$$this.complete', false] }] } } };
   return [
@@ -143,31 +144,49 @@ function teamState(team, preset, me) {
   };
 }
 
-// Selfie hunts show every clue at once; each stop carries the team's selfie and its review.
-function selfieTeamState(team, preset, me, route, total, finished, used) {
-  const stops = [];
-  for (let i = 0; i < total; i++) {
-    const l = legAt(preset, route, i);
-    stops.push({
-      index: i,
-      n: i + 1,
-      isFinish: l.isFinish,
-      riddle: l.riddle,
-      guide: l.guide,
-      photo: l.photo || null,
-      hasExtra: Boolean(l.extraHint),
-      extra: used.includes(i) ? l.extraHint : null,
-      place: finished ? l.place : '',
-      proof: l.proof,
-      answerPrompt: l.answerPrompt,
-      selfie: selfieJson(selfieFor(team, i)),
-    });
+// Selfie hunts play like QR hunts: stops unlock in order, and a stop clears as soon as the
+// team sends its selfie (or answer), without waiting for the review. A rejected stop stays
+// cleared on the trail but has to be sent again before the clock can stop.
+// How many stops in a row, from the first, the team has sent.
+function selfieUnlocked(team, total) {
+  let n = 0;
+  while (n < total) {
+    const s = selfieFor(team, n);
+    if (!s || s.complete === false) break;
+    n++;
   }
-  // The stops the team has a selfie for, in the order it took them (for the finish screen).
-  const cleared = stops.filter((s) => s.selfie && s.selfie.complete && s.selfie.status !== 'rejected')
-    .sort((a, b) => a.selfie.at - b.selfie.at)
-    .map((s) => ({ n: s.n, place: s.place, split: s.selfie.at, hintUsed: used.includes(s.index), isFinish: s.isFinish }));
-  const reviewed = stops.every((s) => s.selfie && s.selfie.status === 'approved');
+  return n;
+}
+
+function stopClue(l, i, used, team) {
+  return {
+    index: i,
+    n: i + 1,
+    isFinish: l.isFinish,
+    riddle: l.riddle,
+    guide: l.guide,
+    photo: l.photo || null,
+    hasExtra: Boolean(l.extraHint),
+    extra: used.includes(i) ? l.extraHint : null,
+    proof: l.proof === 'answer' ? 'answer' : 'photo',
+    answerPrompt: l.answerPrompt,
+    selfie: selfieJson(selfieFor(team, i)),
+  };
+}
+
+function selfieTeamState(team, preset, me, route, total, finished, used) {
+  const unlocked = selfieUnlocked(team, total);
+  const cleared = [];
+  const retakes = [];
+  let approved = 0;
+  for (let i = 0; i < unlocked; i++) {
+    const l = legAt(preset, route, i);
+    const sf = selfieFor(team, i);
+    if (sf.status === 'approved') approved++;
+    cleared.push({ n: i + 1, place: l.place, split: sf.at, hintUsed: used.includes(i), isFinish: l.isFinish, status: sf.status });
+    if (sf.status === 'rejected') retakes.push(stopClue(l, i, used, team));
+  }
+  const clue = !finished && unlocked < total ? stopClue(legAt(preset, route, unlocked), unlocked, used, team) : null;
   return {
     mode: 'selfie',
     teamId: String(team._id),
@@ -175,19 +194,20 @@ function selfieTeamState(team, preset, me, route, total, finished, used) {
     route: routeJson(route),
     bus: team.busName || '',
     members: (team.members || []).map((m) => ({ name: m.name || 'Traveller', me: String(m._id || m) === String(me) })),
-    progress: team.progress,
+    progress: unlocked,
     total,
     startedAt: new Date(team.startedAt).getTime(),
     serverNow: Date.now(),
     finished,
-    verified: finished && reviewed,
+    verified: finished && approved === total,
     elapsedMs: team.elapsedMs,
+    splits: cleared.map((c) => c.split),
     lifelines: preset.lifelines,
     maxMembers: teamLimit(preset),
     lifelinesLeft: Math.max(0, preset.lifelines - used.length),
     cleared,
-    stops,
-    clue: null,
+    clue,
+    retakes,
     finishMessage: finished ? preset.finish.message : null,
   };
 }
@@ -448,7 +468,7 @@ const useHint = async (req, res, next) => {
     // QR hunts: the stop the team is on. Selfie hunts show every clue, so the team says which.
     const selfie = isSelfie(preset);
     const at = selfie ? parseInt(req.body.leg, 10) : team.progress;
-    if (!Number.isInteger(at) || at < 0 || at >= totalLegs(route)) return next(new AppError('Choose a stop.', 400));
+    if (!Number.isInteger(at) || at < 0 || at >= totalLegs(route) || (selfie && at > selfieUnlocked(team, totalLegs(route)))) return next(new AppError('Choose a stop.', 400));
     const leg = legAt(preset, route, at);
     if (!leg.extraHint) return next(new AppError('There is no extra hint for this stop.', 400));
     if ((team.hintsUsed || []).includes(at)) {
@@ -490,6 +510,9 @@ const selfieGate = async (req, res, next) => {
     const leg = parseInt(req.params.leg, 10);
     if (!route || !Number.isInteger(leg) || leg < 0 || leg >= totalLegs(route)) return next(new AppError('That stop is not on your route.', 400));
     const current = selfieFor(team, leg);
+    const unlocked = selfieUnlocked(team, totalLegs(route));
+    if (leg > unlocked) return json(res, 400, { status: 'fail', event: 'locked_stop', message: 'Stops unlock in order. Send the current stop first.' });
+    if (leg < unlocked && current.status !== 'rejected') return json(res, 409, { status: 'fail', event: 'selfie_locked', message: 'Your team already sent this stop.' });
     if (current && current.status === 'approved') return json(res, 409, { status: 'fail', event: 'selfie_approved', message: 'The organisers already approved this stop.' });
     req.hunt = { preset, team, route, leg, previous: current, proof: legAt(preset, route, leg).proof };
     next();
@@ -506,7 +529,7 @@ const submitSelfie = async (req, res, next) => {
     if (req.file && !file) dropSelfieFile(req.file.filename);
     const answer = needsAnswer(proof) ? str(req.body && req.body.answer, 300) : '';
     if (!file && !answer) {
-      return next(new AppError(proof === 'answer' ? 'Type your answer first.' : proof === 'both' ? 'Take a selfie or type your answer first.' : 'Take a selfie or choose a photo first.', 400));
+      return next(new AppError(proof === 'answer' ? 'Type your answer first.' : 'Take a selfie or choose a photo first.', 400));
     }
     const total = totalLegs(route);
     const parts = {
@@ -673,7 +696,7 @@ const num = (v) => (v === '' || v == null || !Number.isFinite(Number(v)) ? null 
 
 // Builds a clean preset from the editor's JSON. Blank codes get a fresh one; ids are kept so
 // teams already playing keep pointing at the same route.
-const proofOf = (v) => (['photo', 'answer', 'both'].includes(v) ? v : 'photo');
+const proofOf = (v) => (v === 'answer' ? 'answer' : 'photo');
 
 function presetFromBody(body) {
   const used = new Set();

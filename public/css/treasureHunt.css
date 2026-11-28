@@ -739,7 +739,7 @@
     clip-path: var(--th-notch-sm);
 }
 
-.th-photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.th-photo img { display: block; width: 100%; height: auto; max-height: 75vh; object-fit: contain; }
 .th-photo i { position: absolute; inset-inline-end: 10px; bottom: 10px; padding: 7px; color: #FFFFFF; background: rgba(0, 0, 0, 0.65); }
 
 .th-guide { display: grid; gap: 6px; padding: 10px 12px 12px; border: 1px dashed var(--th-line); }
@@ -1053,7 +1053,7 @@
 
 .th-shot { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; }
 .th-shot__img { padding: 0; border: 2px solid var(--th-line); background: #000; cursor: zoom-in; }
-.th-shot__img img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.th-shot__img img { display: block; width: 100%; height: auto; object-fit: contain; }
 .th-shot__meta { display: grid; gap: 4px; }
 .th-shot__status { font-weight: 800; color: var(--th-ink); }
 .th-shot__at { font-size: 0.82rem; color: var(--th-dim); }
@@ -1072,8 +1072,8 @@
 
 /* Camera sheet */
 .th-cam__view { position: relative; aspect-ratio: 3 / 4; max-height: 62vh; margin: 0 auto; width: 100%; background: #000; overflow: hidden; }
-.th-cam__view video,
-.th-cam__view img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.th-cam__view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.th-cam__view img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .th-cam__view video.is-mirror { transform: scaleX(-1); }
 .th-cam__view [hidden] { display: none; }
 .th-cam .th-reader-status label { margin-top: 6px; cursor: pointer; }
@@ -1121,3 +1121,9 @@
 .th-answer-given b { color: var(--th-ink); }
 .th-shot--text { grid-template-columns: 1fr; }
 .th-shot--partial .th-shot__status i { color: var(--th-gold); }
+
+.th-node__label--redo { color: #FCA5A5; font-weight: 800; }
+.th-node--redo .th-node__gem { background: var(--th-red); }
+.th-retake { border-top-color: var(--th-red); }
+.th-retake__why { margin: 0; font-weight: 700; color: #FCA5A5; }
+.th-actions .th-btn--attach { width: 100%; }

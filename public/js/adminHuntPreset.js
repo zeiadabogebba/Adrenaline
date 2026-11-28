@@ -21,10 +21,10 @@
   // `pre` is the field prefix: `routes.0.legs.1.` for a stop, `routes.0.finish` for the finish.
   const proofFields = (pre, isFinish) => {
     const k = (name) => (isFinish ? pre + name[0].toUpperCase() + name.slice(1) : pre + name);
-    const proof = get(k('proof')) || 'photo';
+    const proof = get(k('proof')) === 'answer' ? 'answer' : 'photo';
     const opt = (v, label) => `<option value="${v}" ${proof === v ? 'selected' : ''}>${label}</option>`;
     return `<label class="thx-f thx-f--wide"><span>Teams send <small>${LOCKED ? 'locked: teams have played' : 'checked by you on the results page'}</small></span>
-        <select data-path="${k('proof')}" ${LOCKED ? 'disabled' : ''}>${opt('photo', 'A selfie')}${opt('answer', 'A written answer')}${opt('both', 'A selfie and a written answer')}</select></label>
+        <select data-path="${k('proof')}" ${LOCKED ? 'disabled' : ''}>${opt('photo', 'A selfie')}${opt('answer', 'A written answer (a text box instead of the selfie)')}</select></label>
       ${proof === 'photo' ? '' : `${input(k('answerPrompt'), 'Question teams answer', { wide: true, maxlength: 300, hint: 'leave empty to just ask for the answer', ph: 'e.g. What year is carved above the door?' })}
       ${input(k('answerKey'), 'Correct answer', { wide: true, maxlength: 300, hint: 'admin only, shown next to what teams write' })}`}`;
   };
@@ -35,7 +35,7 @@
     const label = selfie() ? 'Clue photo' : 'Photo';
     const hint = selfie() ? 'shown with the clue; it can be the whole clue' : 'a close-up, or the whole clue if the riddle is empty';
     return `<div class="thx-photo">
-      ${url ? `<img src="${esc(url.replace('/upload/', '/upload/c_fill,w_240,h_180,q_auto,f_auto/'))}" alt="${esc(alt)}">` : '<span class="thx-photo__none"><i class="fas fa-image"></i></span>'}
+      ${url ? `<img src="${esc(url.replace('/upload/', '/upload/c_limit,w_480,q_auto,f_auto/'))}" alt="${esc(alt)}">` : '<span class="thx-photo__none"><i class="fas fa-image"></i></span>'}
       <div><span class="thx-code__label">${label} <small>(${hint})</small></span>
         <label class="thx-btn thx-btn--sm"><i class="fas fa-upload"></i> ${url ? 'Replace' : 'Upload'}<input type="file" accept="image/jpeg,image/png,image/webp" data-photo="${path}" hidden></label>
         ${url ? `<button type="button" class="thx-btn thx-btn--sm" data-unphoto="${path}">Remove</button>` : ''}

@@ -331,8 +331,8 @@
 
 .thx-code__label { display: block; width: 100%; font-size: 0.78rem; font-weight: 700; color: var(--ink-dim); }
 .thx-code b { font-family: var(--font-display); font-size: 1.3rem; letter-spacing: 0.24em; color: var(--ink); }
-.thx-photo img,
-.thx-photo__none { width: 96px; height: 72px; object-fit: cover; }
+.thx-photo img { width: 180px; height: auto; max-height: 240px; object-fit: contain; background: #000; }
+.thx-photo__none { width: 96px; height: 72px; }
 .thx-photo__none { display: grid; place-items: center; background: var(--surface-raised); color: var(--ink-dim); font-size: 1.4rem; }
 .thx-photo > div { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 
@@ -440,10 +440,11 @@
 .thx-review__team[hidden] { display: none; }
 .thx-review__team h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 0.95rem; color: var(--ink); }
 .thx-review__team h3 small { font-weight: 500; color: var(--ink-dim); }
-.thx-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.thx-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: start; }
 .thx-shot { display: grid; margin: 0; border: 2px solid var(--hairline-strong); background: var(--surface); }
 .thx-shot[hidden] { display: none; }
-.thx-shot img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.thx-shot > a { display: grid; place-items: center; background: #000; }
+.thx-shot img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; }
 .thx-shot figcaption { display: grid; gap: 6px; padding: 8px 10px 10px; font-size: 0.82rem; color: var(--ink); }
 .thx-shot__meta { color: var(--ink-dim); }
 .thx-shot__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
