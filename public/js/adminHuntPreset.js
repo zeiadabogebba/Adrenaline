@@ -8,11 +8,12 @@
   const blankRoute = (i) => ({ name: `Route ${i + 1}`, color: COLORS[i % COLORS.length], label: `R${i + 1}`, legs: [blankLeg()], finishRiddle: '', finishGuide: '', finishExtraHint: '', finishPhoto: '', finishPhotoPublicId: '' });
 
   let p = window.HUNT_PRESET || {
-    name: '', description: '', mode: 'qr', lifelines: 1, lifelinesOn: true, maxTeamSize: 5,
+    name: '', description: '', mode: 'qr', lifelines: 1, lifelinesOn: true, maxTeamSize: 5, teams: true,
     finish: { place: '', placement: '', message: '', code: '' },
     routes: [blankRoute(0)],
   };
   if (p.maxTeamSize == null) p.maxTeamSize = 5; // presets made before this setting
+  if (p.teams == null) p.teams = true;
   if (!p.mode) p.mode = 'qr';
   if (p.lifelinesOn == null) p.lifelinesOn = true; // presets made before this setting
   p.routes.forEach((r) => { r.finishProof = r.finishProof || 'photo'; r.legs.forEach((l) => { l.proof = l.proof || 'photo'; }); });
@@ -150,7 +151,9 @@
           <label class="thx-f thx-toggle"><span>Lifelines</span>
             <span class="thx-toggle__row"><input type="checkbox" data-lifelines-on ${p.lifelinesOn !== false ? 'checked' : ''}> ${p.lifelinesOn !== false ? 'On: teams can spend one to reveal the extra hint for a stop' : 'Off: no lifelines or extra hints'}</span></label>
           ${p.lifelinesOn !== false ? input('lifelines', 'Lifelines per team', { type: 'number', min: 0, max: 10, dir: 'ltr' }) : ''}
-          ${input('maxTeamSize', 'Most people per team', { type: 'number', min: 1, max: 20, dir: 'ltr' })}
+          <label class="thx-f thx-toggle"><span>Teams</span>
+            <span class="thx-toggle__row"><input type="checkbox" data-teams-on ${p.teams !== false ? 'checked' : ''}> ${p.teams !== false ? 'On: travellers play in teams and join with a team ID' : 'Off: everyone plays on their own'}</span></label>
+          ${p.teams !== false ? input('maxTeamSize', 'Most people per team', { type: 'number', min: 1, max: 20, dir: 'ltr' }) : ''}
           ${area('description', 'Notes for the organisers', { rows: 3, maxlength: 1000 })}
         </div>
         <p class="thx-summary">${p.routes.length} route${p.routes.length === 1 ? '' : 's'} &middot; ${selfie() ? 'selfie stops, nothing to print' : `${qr} QR code${qr === 1 ? '' : 's'} to print (the finish QR is shared)`}</p>
@@ -179,6 +182,7 @@
     if (/^routes\.\d+\.color$/.test(path)) e.target.closest('.thx-route').style.setProperty('--route', e.target.value);
   });
   host.addEventListener('change', (e) => {
+    if ('teamsOn' in e.target.dataset) { p.teams = e.target.checked; markDirty(); render(); return; }
     if ('lifelinesOn' in e.target.dataset) { p.lifelinesOn = e.target.checked; markDirty(); render(); return; }
     if ('mode' in e.target.dataset) { p.mode = e.target.value; markDirty(); render(); return; }
     const path = e.target.dataset.path;

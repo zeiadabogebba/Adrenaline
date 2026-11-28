@@ -30,6 +30,7 @@
   let lifelineAsk = false; // QR hunts: true while confirming. Selfie hunts: the stop index.
   let clockRaf = null;
   const SELFIE = H.mode === 'selfie';
+  const SOLO = Boolean(H.solo); // teams off: everyone plays alone
   let uploadingLeg = null;
 
   if (pending && history.replaceState) history.replaceState(null, '', location.pathname);
@@ -82,9 +83,12 @@
       case 'closed': return T('closedScan');
       case 'team_not_found': return T('teamNotFound');
       case 'team_full': return T('teamFull', { n: d.max });
+      case 'solo_hunt': return T('soloHunt');
       case 'closed_start': return T('closedTitle');
       case 'pick_bus': return T('pickBus');
       case 'cant_leave': return T('cantLeave');
+      case 'cant_leave_last': return T('cantLeaveLast');
+      case 'cant_leave_finished': return T('cantLeaveFinished');
       case 'no_lifelines': return T('noLifelines');
       case 'selfie_hunt': return T('selfieHuntNoQr');
       case 'selfie_approved':
@@ -116,11 +120,15 @@
     const rules = SELFIE
       ? [['fa-stopwatch', T('selfieRule1')], ['fa-images', T('selfieRule2')], ['fa-camera', T('selfieRule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-user-check', T('selfieRule5')]]
       : [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
-    const shown = H.lifelines > 0 ? rules : rules.filter(([i]) => i !== 'fa-life-ring'); // lifelines off
+    let shown = H.lifelines > 0 ? rules : rules.filter(([i]) => i !== 'fa-life-ring'); // lifelines off
+    if (SOLO) shown = shown.map((r) => (r[0] === 'fa-users' ? ['fa-user', T('soloRule')] : r));
     return `<ul class="th-rules">${shown.map(([i, txt]) => `<li><i class="fas ${i}" aria-hidden="true"></i><span>${esc(txt)}</span></li>`).join('')}</ul>`;
   }
 
   const teamId = (c) => (c && c.length > 4 ? `${c.slice(0, 4)}-${c.slice(4)}` : c || '');
+  // Solo hunts show the player's name where team hunts show the team ID.
+  const who = (st) => ((st.members.find((m) => m.me) || st.members[0] || {}).name || '');
+  const rowName = (t) => (SOLO ? (t.members[0] || teamId(t.code)) : teamId(t.code));
 
   const busMode = (H.options || []).some((o) => o.kind === 'bus');
 
@@ -136,24 +144,29 @@
       <p class="th-error" id="thJoinErr" role="alert" hidden></p>
     </section>`;
     if (!open) {
-      return `<section class="th-panel th-panel--closed"><i class="fas fa-lock" aria-hidden="true"></i><div><h3>${esc(T('closedTitle'))}</h3><p>${esc(T('closedText'))}</p></div></section>` + join;
+      return `<section class="th-panel th-panel--closed"><i class="fas fa-lock" aria-hidden="true"></i><div><h3>${esc(T('closedTitle'))}</h3><p>${esc(T('closedText'))}</p></div></section>` + (SOLO ? '' : join);
     }
     return `${pending ? `<p class="th-flash"><i class="fas fa-qrcode" aria-hidden="true"></i> ${esc(T('pendingScan'))}</p>` : ''}
     <section class="th-panel th-panel--new">
-      <h3 class="th-panel__title"><i class="fas fa-flag" aria-hidden="true"></i> ${esc(T('newTitle'))}</h3>
-      <p class="th-panel__text">${esc(T('newText', { n: H.maxMembers }))}</p>
+      <h3 class="th-panel__title"><i class="fas fa-flag" aria-hidden="true"></i> ${esc(T(SOLO ? 'soloNewTitle' : 'newTitle'))}</h3>
+      <p class="th-panel__text">${esc(SOLO ? T('soloNewText') : T('newText', { n: H.maxMembers }))}</p>
       <fieldset class="th-buses"><legend>${esc(T(busMode ? 'chooseBus' : 'chooseRoute'))}</legend>
         ${H.options.map((o) => `<label class="th-bus"><input type="radio" name="bus" value="${esc(o._id)}" ${H.options.length === 1 ? 'checked' : ''}><i class="fas ${o.kind === 'bus' ? 'fa-bus' : 'fa-route'}" aria-hidden="true"></i><span dir="auto">${esc(o.name)}</span></label>`).join('')}
       </fieldset>
       <p class="th-error" id="thStartErr" role="alert" hidden></p>
-      <button type="button" class="th-btn th-btn--go" data-act="new-team"><i class="fas fa-stopwatch" aria-hidden="true"></i><span>${esc(T('startBtn'))}</span></button>
+      <button type="button" class="th-btn th-btn--go" data-act="new-team"><i class="fas fa-stopwatch" aria-hidden="true"></i><span>${esc(T(SOLO ? 'soloStartBtn' : 'startBtn'))}</span></button>
     </section>
-    <div class="th-or"><span>${esc(T('or'))}</span></div>
-    ${join}`;
+    ${SOLO ? '' : `<div class="th-or"><span>${esc(T('or'))}</span></div>${join}`}`;
   }
 
   function teamHtml() {
     const r = state.route;
+    if (SOLO) {
+      const me = (state.members.find((m) => m.me) || state.members[0] || {}).name || '';
+      return `<section class="th-team" style="--route:${esc(r.color)}">
+        <p class="th-team__route"><span class="th-team__bus"><i class="fas fa-user" aria-hidden="true"></i> <span dir="auto">${esc(me)}</span></span>${state.bus ? `<span class="th-team__bus"><i class="fas fa-bus" aria-hidden="true"></i> <span dir="auto">${esc(state.bus)}</span></span>` : ''}<span class="th-chip" dir="auto">${esc(r.name)}</span></p>
+      </section>`;
+    }
     const members = state.members.map((m) => `<li class="${m.me ? 'is-me' : ''}"><i class="fas fa-user" aria-hidden="true"></i><span dir="auto">${esc(m.name)}</span>${m.me ? ` <em>${esc(T('you'))}</em>` : ''}</li>`).join('');
     return `<section class="th-team" style="--route:${esc(r.color)}">
       <div class="th-team__id">
@@ -166,7 +179,7 @@
       <h4 class="th-team__head">${esc(T('members'))} <span dir="ltr">${state.members.length} / ${state.maxMembers}</span></h4>
       ${state.members.length >= state.maxMembers ? `<p class="th-team__full">${esc(T('teamIsFull'))}</p>` : ''}
       <ul class="th-team__members">${members}</ul>
-      ${state.progress === 0 && !state.finished ? `<button type="button" class="th-leave" data-act="leave">${esc(T('leaveTeam'))}</button>` : ''}
+      ${!state.finished && (state.progress === 0 || (SELFIE && state.members.length > 1)) ? `<button type="button" class="th-leave" data-act="leave">${esc(T('leaveTeam'))}</button><p class="th-error" id="thLeaveErr" role="alert" hidden></p>` : ''}
     </section>`;
   }
 
@@ -174,7 +187,7 @@
     const r = state.route;
     return `<div class="th-hud" style="--route:${esc(r.color)}">
       <div class="th-hud__clock"><span class="th-hud__label">${esc(T('elapsed'))}</span><span id="thClock" class="th-time" dir="ltr">00:00.0</span></div>
-      <div class="th-hud__team"><span class="th-hud__label">${esc(T('team'))}</span><strong dir="ltr">${esc(teamId(state.code))}</strong><span class="th-chip" dir="auto">${esc(r.label || r.name)}</span></div>
+      <div class="th-hud__team"><span class="th-hud__label">${esc(T(SOLO ? 'player' : 'team'))}</span><strong dir="${SOLO ? 'auto' : 'ltr'}">${esc(SOLO ? who(state) : teamId(state.code))}</strong><span class="th-chip" dir="auto">${esc(r.label || r.name)}</span></div>
     </div>`;
   }
 
@@ -342,7 +355,7 @@
     }).join('');
     return `<section class="th-victory" style="--route:${esc(state.route.color)}">
       <div class="th-hero__topo" aria-hidden="true"></div>
-      <p class="th-kicker">${esc(T('yourTeam', { n: teamId(state.code) }))} · <span dir="auto">${esc(state.route.name)}</span></p>
+      <p class="th-kicker">${SOLO ? `<span dir="auto">${esc(who(state))}</span>` : esc(T('yourTeam', { n: teamId(state.code) }))} · <span dir="auto">${esc(state.route.name)}</span></p>
       <h2 class="th-victory__title">${esc(T('victory'))}</h2>
       ${state.finishMessage ? `<p class="th-victory__msg" dir="auto">${esc(state.finishMessage)}</p>` : ''}
       <div class="th-victory__time"><span>${esc(T('finalTime'))}</span><strong dir="ltr">${fmt(state.elapsedMs)}</strong></div>
@@ -360,14 +373,14 @@
       const lead = board.finished[0].elapsedMs;
       return `<li class="th-lb__row${t.teamId === mine ? ' is-me' : ''}${i < 3 ? ' is-top' : ''}" style="--route:${esc(t.route.color)}">
         <span class="th-lb__rank" dir="ltr">${i + 1}</span>
-        <span class="th-lb__who"><strong dir="ltr">${esc(teamId(t.code))}${t.teamId === mine ? ` <em>${esc(T('you'))}</em>` : ''}${t.verified === true ? ` <i class="fas fa-circle-check th-lb__ok" title="${esc(T('verified'))}" aria-label="${esc(T('verified'))}"></i>` : t.verified === false ? ` <i class="fas fa-hourglass-half th-lb__wait" title="${esc(T('underReviewShort'))}" aria-label="${esc(T('underReviewShort'))}"></i>` : ''}</strong><small dir="auto">${esc(t.members.join('، ') || t.route.name)}</small></span>
+        <span class="th-lb__who"><strong dir="${SOLO ? 'auto' : 'ltr'}">${esc(rowName(t))}${t.teamId === mine ? ` <em>${esc(T('you'))}</em>` : ''}${t.verified === true ? ` <i class="fas fa-circle-check th-lb__ok" title="${esc(T('verified'))}" aria-label="${esc(T('verified'))}"></i>` : t.verified === false ? ` <i class="fas fa-hourglass-half th-lb__wait" title="${esc(T('underReviewShort'))}" aria-label="${esc(T('underReviewShort'))}"></i>` : ''}</strong><small dir="auto">${esc(SOLO ? t.route.name : (t.members.join('، ') || t.route.name))}</small></span>
         <span class="th-lb__time"><b dir="ltr">${fmt(t.elapsedMs)}</b><small dir="ltr">${i === 0 ? esc(T('fastest')) : '+' + fmt(t.elapsedMs - lead)}</small></span>
       </li>`;
     }).join('') || `<li class="th-lb__empty">${esc(T('noFinishers'))}</li>`;
     const trail = board.onTrail.map((t) => {
       const pct = Math.round((t.progress / Math.max(1, t.total)) * 100);
       return `<li class="th-trail-row${t.teamId === mine ? ' is-me' : ''}" style="--route:${esc(t.route.color)}">
-        <span class="th-trail-row__team" dir="ltr">${esc(teamId(t.code))}</span>
+        <span class="th-trail-row__team" dir="${SOLO ? 'auto' : 'ltr'}">${esc(rowName(t))}</span>
         <span class="th-trail-row__bar"><span style="width:${pct}%"></span></span>
         <span class="th-trail-row__n" dir="ltr">${t.progress}/${t.total}</span>
       </li>`;
@@ -514,12 +527,12 @@
     }
     if (act === 'leave') {
       const btn = e.currentTarget;
-      if (btn.dataset.armed !== '1') { btn.dataset.armed = '1'; btn.textContent = T('leaveConfirm'); setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = T('leaveTeam'); } }, 3500); return; }
+      if (btn.dataset.armed !== '1') { btn.dataset.armed = '1'; btn.textContent = T(state.progress > 0 ? 'leaveConfirmMid' : 'leaveConfirm'); setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = T('leaveTeam'); } }, 3500); return; }
       if (busy) return;
       busy = true;
       try {
         const { ok, data } = await api('leave', {});
-        if (!ok) { showErr('thScanErr', messageFor(data)); return; }
+        if (!ok) { showErr('thLeaveErr', messageFor(data)); return; }
         stopClock();
         state = null;
         render();

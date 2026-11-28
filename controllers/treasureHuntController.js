@@ -58,7 +58,9 @@ const selfieFor = (team, i) => (team.selfies || []).find((s) => s.leg === i) || 
 const selfieJson = (s) => (s ? { url: s.url || '', answer: s.answer || '', complete: s.complete !== false, status: s.status, at: s.at } : null);
 // How many travellers one team may have (presets made before this setting default to 5).
 const DEFAULT_TEAM_SIZE = 5;
-const teamLimit = (preset) => preset.maxTeamSize || DEFAULT_TEAM_SIZE;
+const isSolo = (preset) => preset.teams === false;
+// With teams off, each traveller is a team of one.
+const teamLimit = (preset) => (isSolo(preset) ? 1 : preset.maxTeamSize || DEFAULT_TEAM_SIZE);
 
 const routeJson = (r) => ({ _id: String(r._id), name: r.name, color: r.color, label: r.label, stops: totalLegs(r) });
 
@@ -139,6 +141,7 @@ function teamState(team, preset, me) {
     splits: team.splits || [],
     lifelines: lifelineCount(preset),
     maxMembers: teamLimit(preset),
+    solo: isSolo(preset),
     lifelinesLeft: Math.max(0, lifelineCount(preset) - used.length),
     cleared,
     clue,
@@ -206,6 +209,7 @@ function selfieTeamState(team, preset, me, route, total, finished, used) {
     splits: cleared.map((c) => c.split),
     lifelines: lifelineCount(preset),
     maxMembers: teamLimit(preset),
+    solo: isSolo(preset),
     lifelinesLeft: Math.max(0, lifelineCount(preset) - used.length),
     cleared,
     clue,
@@ -302,6 +306,7 @@ const getHuntPage = async (req, res, next) => {
         options: startOptions(await tripBuses(trip._id), setting, preset).map(({ _id, name, kind }) => ({ _id, name, kind })),
         lifelines: lifelineCount(preset),
         maxMembers: teamLimit(preset),
+        solo: isSolo(preset),
         state: team ? teamState(team, preset, req.user._id) : null,
         board,
         pendingScan: cleanCode(req.query.scan),
@@ -374,6 +379,7 @@ const joinTeam = async (req, res, next) => {
 
     const existing = await loadTeamFor(req.user._id, tripId);
     if (existing) return json(res, 200, { status: 'success', joined: false, state: teamState(existing, preset, req.user._id) });
+    if (isSolo(preset)) return json(res, 403, { status: 'fail', event: 'solo_hunt', message: 'Everyone plays on their own in this hunt, so you cannot join someone else. Start the hunt yourself.' });
 
     const code = cleanCode(req.body.code);
     const max = teamLimit(preset);
@@ -400,7 +406,15 @@ const leaveTeam = async (req, res, next) => {
     if (!hunt) return next(new AppError('This treasure hunt is not available.', 404));
     const team = await HuntTeam.findOne({ tripId, members: req.user._id });
     if (!team) return json(res, 200, { status: 'success', state: null });
-    if (team.progress > 0) return json(res, 409, { status: 'fail', event: 'cant_leave', message: 'Your team has already cleared a stop, so you can no longer leave it.' });
+    if (team.progress > 0 || team.selfies.length) {
+      // Selfie hunts: someone on the wrong team can still leave mid-hunt, as long as the team
+      // isn't finished and someone else stays on it to carry its progress.
+      if (!isSelfie(hunt.preset)) return json(res, 409, { status: 'fail', event: 'cant_leave', message: 'Your team has already cleared a stop, so you can no longer leave it.' });
+      if (team.elapsedMs != null) return json(res, 409, { status: 'fail', event: 'cant_leave_finished', message: 'Your team has finished, so you can no longer leave it.' });
+      const left = await HuntTeam.updateOne({ _id: team._id, elapsedMs: null, 'members.1': { $exists: true } }, { $pull: { members: req.user._id } });
+      if (!left.modifiedCount) return json(res, 409, { status: 'fail', event: 'cant_leave_last', message: 'You are the last one on this team, so you cannot leave it.' });
+      return json(res, 200, { status: 'success', state: null });
+    }
     await HuntTeam.updateOne({ _id: team._id, progress: 0 }, { $pull: { members: req.user._id } });
     await HuntTeam.deleteOne({ _id: team._id, progress: 0, members: { $size: 0 } });
     json(res, 200, { status: 'success', state: null });
@@ -616,7 +630,7 @@ const getAdminPage = async (req, res, next) => {
     });
     rows.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'upcoming' ? -1 : 1));
     const presetRows = presets.map((p) => ({
-      _id: String(p._id), name: p.name, mode: isSelfie(p) ? 'selfie' : 'qr', lifelines: lifelineCount(p), lifelinesOn: p.lifelinesOn !== false, maxTeamSize: teamLimit(p),
+      _id: String(p._id), name: p.name, mode: isSelfie(p) ? 'selfie' : 'qr', lifelines: lifelineCount(p), lifelinesOn: p.lifelinesOn !== false, maxTeamSize: teamLimit(p), solo: isSolo(p),
       routes: p.routes.map((r) => ({ name: r.name, color: r.color, stops: totalLegs(r) })),
       qrCount: p.routes.reduce((n, r) => n + r.legs.length, 0) + 1,
       trips: usage.trips[String(p._id)] || 0, teams: usage.teams[String(p._id)] || 0, updatedAt: p.updatedAt,
@@ -719,6 +733,7 @@ function presetFromBody(body) {
     lifelines: Math.max(0, Math.min(10, parseInt(b.lifelines, 10) || 0)),
     lifelinesOn: b.lifelinesOn !== false,
     maxTeamSize: Math.max(1, Math.min(20, parseInt(b.maxTeamSize, 10) || DEFAULT_TEAM_SIZE)),
+    teams: b.teams !== false,
     finish: {
       place: str(f.place, 120),
       placement: str(f.placement, 200), message: str(f.message, 600), code: code(f.code),

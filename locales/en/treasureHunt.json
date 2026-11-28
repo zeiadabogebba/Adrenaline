@@ -141,5 +141,14 @@
   "retakeTitle": "Send again · {stop}",
   "sendingAnswer": "Sending your answer…",
   "lockedStop": "Stops unlock in order. Send the current stop first.",
-  "redoNode": "Send again"
+  "redoNode": "Send again",
+  "soloRule": "Everyone plays on their own. There are no teams.",
+  "soloNewTitle": "Start the hunt",
+  "soloNewText": "You play on your own. Pick your bus and your clock starts straight away.",
+  "soloStartBtn": "Start the hunt",
+  "player": "Player",
+  "soloHunt": "Everyone plays on their own in this hunt.",
+  "cantLeaveLast": "You are the last one on this team, so you can't leave it.",
+  "cantLeaveFinished": "Your team has finished, so you can no longer leave it.",
+  "leaveConfirmMid": "Tap again to leave. Your team keeps its progress; you can then join your own team."
 }

@@ -49,6 +49,7 @@ const huntPresetSchema = new mongoose.Schema(
     lifelines:   { type: Number, min: 0, max: 10, default: 1 },
     lifelinesOn: { type: Boolean, default: true }, // off: no lifelines or extra hints for anyone
     maxTeamSize: { type: Number, min: 1, max: 20, default: 5 }, // most travellers allowed in one team
+    teams:       { type: Boolean, default: true }, // off: everyone plays alone, nobody can join anyone
     finish: {
       place:     { type: String, trim: true, maxlength: 120, default: '' },
       placement: { type: String, trim: true, maxlength: 200, default: '' },
