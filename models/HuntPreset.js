@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 // Each route is a list of legs. To reach leg N a team gets its riddle (printed on the QR
 // at the previous stop, or on the start card for leg 1), a route guide, and an extra hint.
 // `code` is the secret printed under the QR at that stop; scanning it clears the leg.
+// A clue can be text, a photo, or both. In selfie mode every clue is shown at once and the
+// team uploads a selfie at each stop instead of scanning.
 
 const legSchema = new mongoose.Schema({
   place:     { type: String, trim: true, maxlength: 120, default: '' }, // admin/volunteers only (the answer)
@@ -25,12 +27,17 @@ const routeSchema = new mongoose.Schema({
   finishRiddle:    { type: String, trim: true, maxlength: 600, default: '' },
   finishGuide:     { type: String, trim: true, maxlength: 600, default: '' },
   finishExtraHint: { type: String, trim: true, maxlength: 400, default: '' },
+  finishPhoto:     { type: String, default: '' },
+  finishPhotoPublicId: { type: String, default: '' },
 });
 
 const huntPresetSchema = new mongoose.Schema(
   {
     name:        { type: String, trim: true, maxlength: 100, required: [true, 'Give the preset a name'] },
     description: { type: String, trim: true, maxlength: 1000, default: '' },
+    // How a team proves it reached a stop: scan the QR there, or take a selfie there that an
+    // admin checks later. Presets made before this setting are QR hunts.
+    mode:        { type: String, enum: ['qr', 'selfie'], default: 'qr' },
     lifelines:   { type: Number, min: 0, max: 10, default: 1 },
     maxTeamSize: { type: Number, min: 1, max: 20, default: 5 }, // most travellers allowed in one team
     finish: {

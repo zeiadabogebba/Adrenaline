@@ -58,6 +58,7 @@ router.post('/treasure-hunt/presets/:id/duplicate',      protect, authorize('Adm
 router.delete('/treasure-hunt/presets/:id',              protect, authorize('Admin'), hunt.deletePreset);
 router.post('/treasure-hunt/photo',                      protect, authorize('Admin'), huntPhoto, hunt.uploadPhoto);
 router.patch('/treasure-hunt/trips/:tripId',             protect, authorize('Admin'), hunt.updateTripSetting);
+router.patch('/treasure-hunt/trips/:tripId/teams/:teamId/selfies/:leg', protect, authorize('Admin'), hunt.reviewSelfie);
 router.delete('/treasure-hunt/trips/:tripId/teams',      protect, authorize('Admin'), hunt.resetTeams);
 router.delete('/treasure-hunt/trips/:tripId/teams/:teamId', protect, authorize('Admin'), hunt.resetTeams);
 router.delete('/google-sheets',              protect, authorize('Admin'), googleSheets.disconnect);

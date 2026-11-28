@@ -17,6 +17,21 @@ const huntTeamSchema = new mongoose.Schema(
     finishedAt: { type: Date, default: null },
     elapsedMs:  { type: Number, default: null },
     hintsUsed:  { type: [Number], default: [] }, // leg indexes whose extra hint was revealed
+    // Selfie hunts: the team's latest selfie at each stop. `at` is ms since start. The clock
+    // stops when every stop has a selfie that isn't rejected; a rejected one has to be retaken.
+    selfies: {
+      type: [{
+        _id: false,
+        leg:       { type: Number, required: true },
+        url:       { type: String, required: true },
+        publicId:  { type: String, default: '' },
+        at:        { type: Number, required: true },
+        by:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        status:    { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+        reviewedAt: { type: Date, default: null },
+      }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

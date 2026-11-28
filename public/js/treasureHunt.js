@@ -27,8 +27,10 @@
   let offset = state ? state.serverNow - Date.now() : (board ? board.serverNow - Date.now() : 0);
   let pending = H.pendingScan || '';
   let busy = false;
-  let lifelineAsk = false;
+  let lifelineAsk = false; // QR hunts: true while confirming. Selfie hunts: the stop index.
   let clockRaf = null;
+  const SELFIE = H.mode === 'selfie';
+  let uploadingLeg = null;
 
   if (pending && history.replaceState) history.replaceState(null, '', location.pathname);
 
@@ -84,6 +86,9 @@
       case 'pick_bus': return T('pickBus');
       case 'cant_leave': return T('cantLeave');
       case 'no_lifelines': return T('noLifelines');
+      case 'selfie_hunt': return T('selfieHuntNoQr');
+      case 'selfie_approved':
+      case 'selfie_locked': return T('selfieLocked');
       default: return (d && d.message) || T('failed');
     }
   }
@@ -107,7 +112,9 @@
   }
 
   function rulesHtml() {
-    const rules = [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
+    const rules = SELFIE
+      ? [['fa-stopwatch', T('selfieRule1')], ['fa-images', T('selfieRule2')], ['fa-camera', T('selfieRule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-user-check', T('selfieRule5')]]
+      : [['fa-stopwatch', T('rule1')], ['fa-route', T('rule2')], ['fa-qrcode', T('rule3')], ['fa-users', T('rule6', { n: H.maxMembers })], ['fa-life-ring', T('rule4', { n: H.lifelines })], ['fa-hand', T('rule5')]];
     return `<ul class="th-rules">${rules.map(([i, txt]) => `<li><i class="fas ${i}" aria-hidden="true"></i><span>${esc(txt)}</span></li>`).join('')}</ul>`;
   }
 
@@ -254,8 +261,8 @@
     return `<article class="th-clue" style="--route:${esc(state.route.color)}">
       <header class="th-clue__head"><span><i class="fas ${c.isFinish ? 'fa-gem' : 'fa-key'}" aria-hidden="true"></i> ${esc(head)}</span><span dir="ltr">${c.n} / ${state.total}</span></header>
       <div class="th-clue__body">
-        <p class="th-clue__riddle" dir="auto">${esc(c.riddle)}</p>
-        ${c.photo ? `<button type="button" class="th-photo" data-act="photo"><img src="${esc(c.photo)}" alt="${esc(T('photoAlt'))}" loading="lazy"><i class="fas fa-expand" aria-hidden="true"></i></button>` : ''}
+        ${c.riddle ? `<p class="th-clue__riddle" dir="auto">${esc(c.riddle)}</p>` : ''}
+        ${c.photo ? `<button type="button" class="th-photo" data-act="photo" data-src="${esc(c.photo)}"><img src="${esc(c.photo)}" alt="${esc(T(c.riddle ? 'photoAlt' : 'cluePhotoAlt'))}" loading="lazy"><i class="fas fa-expand" aria-hidden="true"></i></button>` : ''}
         ${c.guide ? `<div class="th-guide"><span class="th-guide__label"><i class="fas fa-signs-post" aria-hidden="true"></i> ${esc(T('directions'))}</span><p dir="auto">${esc(c.guide)}</p></div>` : ''}
         ${life}
       </div>
@@ -274,6 +281,70 @@
     </div>`;
   }
 
+  // ── Selfie hunts: every clue at once, each with its selfie ──
+  function selfieBlock(s) {
+    const sf = s.selfie;
+    const canSend = open && !state.finished && (!sf || sf.status !== 'approved');
+    const sending = uploadingLeg === s.index;
+    let shot = '';
+    if (sf) {
+      const label = { pending: T('selfiePending'), approved: T('selfieApproved'), rejected: T('selfieRejected') }[sf.status];
+      const icon = { pending: 'fa-hourglass-half', approved: 'fa-circle-check', rejected: 'fa-circle-xmark' }[sf.status];
+      shot = `<div class="th-shot th-shot--${esc(sf.status)}">
+        <button type="button" class="th-shot__img" data-act="photo" data-src="${esc(sf.url)}"><img src="${esc(sf.url.replace('/upload/', '/upload/c_fill,w_240,h_240,q_auto,f_auto/'))}" alt="${esc(T('yourSelfie'))}" loading="lazy"></button>
+        <div class="th-shot__meta"><span class="th-shot__status"><i class="fas ${icon}" aria-hidden="true"></i> ${esc(label)}</span><span class="th-shot__at">${esc(T('split'))} <b dir="ltr">${fmt(sf.at)}</b></span></div>
+      </div>`;
+    }
+    let buttons = '';
+    if (sending) {
+      buttons = `<p class="th-sending"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> ${esc(T('sendingSelfie'))}</p>`;
+    } else if (canSend) {
+      const again = Boolean(sf);
+      buttons = `<div class="th-selfie-row">
+        <button type="button" class="th-btn th-btn--solid th-btn--cam" data-act="camera" data-leg="${s.index}"><i class="fas fa-camera" aria-hidden="true"></i><span>${esc(T(again ? 'retakeSelfie' : 'takeSelfie'))}</span></button>
+        <label class="th-btn th-btn--ghost th-btn--attach"><i class="fas fa-paperclip" aria-hidden="true"></i><span>${esc(T(again ? 'replacePhoto' : 'attachPhoto'))}</span><input type="file" accept="image/*" data-attach="${s.index}" hidden></label>
+      </div>`;
+    } else if (!open && !state.finished && (!sf || sf.status === 'rejected')) {
+      buttons = `<p class="th-note"><i class="fas fa-lock" aria-hidden="true"></i> ${esc(T('closedSelfie'))}</p>`;
+    }
+    return `<div class="th-selfie">${shot}${buttons}<p class="th-error" id="thSelfieErr-${s.index}" role="alert" hidden></p></div>`;
+  }
+
+  function stopLifeline(s) {
+    if (!s.hasExtra) return '';
+    if (s.extra) return `<div class="th-extra"><span class="th-extra__label"><i class="fas fa-life-ring" aria-hidden="true"></i> ${esc(T('extraHint'))}</span><p dir="auto">${esc(s.extra)}</p></div>`;
+    if (state.finished || (s.selfie && s.selfie.status !== 'rejected')) return '';
+    if (state.lifelinesLeft <= 0) return `<p class="th-note"><i class="fas fa-life-ring" aria-hidden="true"></i> ${esc(T('noLifelines'))}</p>`;
+    if (!open) return '';
+    if (lifelineAsk === s.index) {
+      return `<div class="th-confirm" role="alertdialog"><p><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ${esc(T('lifelineConfirm'))}</p><div class="th-confirm__row"><button type="button" class="th-btn th-btn--solid" data-act="hint-yes" data-leg="${s.index}">${esc(T('reveal'))}</button><button type="button" class="th-btn th-btn--ghost" data-act="hint-no">${esc(T('keep'))}</button></div></div>`;
+    }
+    return `<button type="button" class="th-life" data-act="hint-ask" data-leg="${s.index}"><i class="fas fa-life-ring" aria-hidden="true"></i><span>${esc(T('lifeline'))}</span><span class="th-chip" dir="auto">${esc(T('lifelinesLeft', { n: state.lifelinesLeft }))}</span></button>`;
+  }
+
+  function stopsHtml() {
+    const cards = state.stops.map((s) => {
+      const st = s.selfie ? s.selfie.status : 'todo';
+      const head = s.isFinish ? T('selfieFinal') : T('selfieStop', { n: s.n });
+      return `<article class="th-clue th-stop th-stop--${esc(st)}" style="--route:${esc(state.route.color)}">
+        <header class="th-clue__head"><span><i class="fas ${s.isFinish ? 'fa-gem' : 'fa-location-dot'}" aria-hidden="true"></i> ${esc(head)}</span><span dir="ltr">${s.n} / ${state.total}</span></header>
+        <div class="th-clue__body">
+          ${s.place ? `<p class="th-stop__place" dir="auto"><i class="fas fa-flag" aria-hidden="true"></i> ${esc(s.place)}</p>` : ''}
+          ${s.riddle ? `<p class="th-clue__riddle" dir="auto">${esc(s.riddle)}</p>` : ''}
+          ${s.photo ? `<button type="button" class="th-photo" data-act="photo" data-src="${esc(s.photo)}"><img src="${esc(s.photo)}" alt="${esc(T('cluePhotoAlt'))}" loading="lazy"><i class="fas fa-expand" aria-hidden="true"></i></button>` : ''}
+          ${s.guide ? `<div class="th-guide"><span class="th-guide__label"><i class="fas fa-signs-post" aria-hidden="true"></i> ${esc(T('directions'))}</span><p dir="auto">${esc(s.guide)}</p></div>` : ''}
+          ${stopLifeline(s)}
+          ${selfieBlock(s)}
+        </div>
+      </article>`;
+    }).join('');
+    return `<section class="th-stops">
+      <div class="th-map-head" style="--route:${esc(state.route.color)}"><span><i class="fas fa-camera" aria-hidden="true"></i> <span dir="auto">${esc(state.route.name)}</span></span><span class="th-chip">${esc(T('selfiesDone', { done: state.progress, total: state.total }))}</span></div>
+      ${!open && !state.finished ? `<p class="th-flash th-flash--bad"><i class="fas fa-lock" aria-hidden="true"></i> ${esc(T('closedSelfie'))}</p>` : ''}
+      ${cards}
+    </section>`;
+  }
+
   function myRank() {
     if (!state || !board) return null;
     const i = board.finished.findIndex((t) => t.teamId === state.teamId);
@@ -284,7 +355,7 @@
     const rank = myRank();
     const legs = state.cleared.map((c, i) => {
       const prev = i ? state.cleared[i - 1].split : 0;
-      return `<li><span class="th-legs__n" dir="ltr">${c.isFinish ? '<i class="fas fa-flag-checkered"></i>' : i + 1}</span><span class="th-legs__place" dir="auto">${esc(c.place || T('stop', { n: i + 1 }))}${c.hintUsed ? ' <i class="fas fa-life-ring" aria-hidden="true"></i>' : ''}</span><span class="th-legs__t" dir="ltr">+${fmt(c.split - prev)}</span></li>`;
+      return `<li><span class="th-legs__n" dir="ltr">${c.isFinish ? '<i class="fas fa-flag-checkered"></i>' : c.n}</span><span class="th-legs__place" dir="auto">${esc(c.place || T('stop', { n: c.n }))}${c.hintUsed ? ' <i class="fas fa-life-ring" aria-hidden="true"></i>' : ''}</span><span class="th-legs__t" dir="ltr">+${fmt(c.split - prev)}</span></li>`;
     }).join('');
     return `<section class="th-victory" style="--route:${esc(state.route.color)}">
       <div class="th-hero__topo" aria-hidden="true"></div>
@@ -293,6 +364,7 @@
       ${state.finishMessage ? `<p class="th-victory__msg" dir="auto">${esc(state.finishMessage)}</p>` : ''}
       <div class="th-victory__time"><span>${esc(T('finalTime'))}</span><strong dir="ltr">${fmt(state.elapsedMs)}</strong></div>
       ${rank ? `<p class="th-victory__rank"><i class="fas fa-trophy" aria-hidden="true"></i> ${esc(T('place', { n: rank }))}</p>` : ''}
+      ${SELFIE ? `<p class="th-victory__review${state.verified ? ' is-ok' : ''}"><i class="fas ${state.verified ? 'fa-circle-check' : 'fa-hourglass-half'}" aria-hidden="true"></i> ${esc(T(state.verified ? 'verifiedAll' : 'underReview'))}</p>` : ''}
       <h3 class="th-subhead">${esc(T('legByLeg'))}</h3>
       <ol class="th-legs">${legs}</ol>
     </section>`;
@@ -305,7 +377,7 @@
       const lead = board.finished[0].elapsedMs;
       return `<li class="th-lb__row${t.teamId === mine ? ' is-me' : ''}${i < 3 ? ' is-top' : ''}" style="--route:${esc(t.route.color)}">
         <span class="th-lb__rank" dir="ltr">${i + 1}</span>
-        <span class="th-lb__who"><strong dir="ltr">${esc(teamId(t.code))}${t.teamId === mine ? ` <em>${esc(T('you'))}</em>` : ''}</strong><small dir="auto">${esc(t.members.join('، ') || t.route.name)}</small></span>
+        <span class="th-lb__who"><strong dir="ltr">${esc(teamId(t.code))}${t.teamId === mine ? ` <em>${esc(T('you'))}</em>` : ''}${t.verified === true ? ` <i class="fas fa-circle-check th-lb__ok" title="${esc(T('verified'))}" aria-label="${esc(T('verified'))}"></i>` : t.verified === false ? ` <i class="fas fa-hourglass-half th-lb__wait" title="${esc(T('underReviewShort'))}" aria-label="${esc(T('underReviewShort'))}"></i>` : ''}</strong><small dir="auto">${esc(t.members.join('، ') || t.route.name)}</small></span>
         <span class="th-lb__time"><b dir="ltr">${fmt(t.elapsedMs)}</b><small dir="ltr">${i === 0 ? esc(T('fastest')) : '+' + fmt(t.elapsedMs - lead)}</small></span>
       </li>`;
     }).join('') || `<li class="th-lb__empty">${esc(T('noFinishers'))}</li>`;
@@ -327,10 +399,11 @@
   function render(animateFrom) {
     let main;
     if (!state) main = heroHtml() + startHtml() + rulesHtml();
+    else if (SELFIE) main = (state.finished ? victoryHtml() + teamHtml() : hudHtml() + teamHtml()) + stopsHtml();
     else if (state.finished) main = victoryHtml() + teamHtml() + mapHtml();
     else main = hudHtml() + teamHtml() + mapHtml() + clueHtml() + actionsHtml();
     app.innerHTML = `<div class="th-grid"><div class="th-main">${main}</div><aside class="th-side" id="thBoard">${boardHtml()}</aside></div>`;
-    if (state) drawMap(animateFrom);
+    if (state && !SELFIE) drawMap(animateFrom);
     bind();
     if (state && !state.finished) startClock(); else stopClock();
   }
@@ -359,7 +432,7 @@
     const before = state ? state.progress : 0;
     const wasFinished = state && state.finished;
     if (next) offset = next.serverNow - Date.now();
-    const clueChanged = !state || !next || state.progress !== next.progress;
+    const clueChanged = !SELFIE && (!state || !next || state.progress !== next.progress);
     state = next;
     if (clueChanged) lifelineAsk = false;
     render(opts.animate ? before : undefined);
@@ -373,6 +446,7 @@
     const code = document.getElementById('thCode');
     if (code) code.addEventListener('submit', (e) => { e.preventDefault(); const v = document.getElementById('thCodeInput').value; if (v.trim()) claim(v); });
     app.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', onAct));
+    app.querySelectorAll('input[data-attach]').forEach((i) => i.addEventListener('change', onAttach));
   }
 
   function showErr(id, msg) {
@@ -456,18 +530,20 @@
       }
       return;
     }
-    if (act === 'hint-ask') { lifelineAsk = true; return render(); }
+    const leg = e.currentTarget.dataset.leg;
+    if (act === 'camera') return openCamera(Number(leg));
+    if (act === 'hint-ask') { lifelineAsk = SELFIE ? Number(leg) : true; return render(); }
     if (act === 'hint-no') { lifelineAsk = false; return render(); }
-    if (act === 'photo') return openLightbox(state.clue.photo);
+    if (act === 'photo') return openLightbox(e.currentTarget.dataset.src || state.clue.photo);
     if (act === 'hint-yes') {
       if (busy) return;
       busy = true;
       try {
-        const { ok, data } = await api('hint', {});
+        const { ok, data } = await api('hint', SELFIE ? { leg: Number(leg) } : {});
         lifelineAsk = false;
         if (data.state) { state = data.state; offset = state.serverNow - Date.now(); }
         render();
-        if (!ok) showErr('thScanErr', messageFor(data));
+        if (!ok) showErr(SELFIE ? `thSelfieErr-${leg}` : 'thScanErr', messageFor(data));
       } catch (err) {
         showErr('thScanErr', T('failed'));
       } finally {
@@ -517,6 +593,70 @@
     }
   }
 
+  // ── Selfies: shrink on the phone, then upload ──
+  // A photo the browser can't decode (e.g. HEIC on some phones) is sent as is; the server converts it.
+  async function shrink(file) {
+    let url = '';
+    try {
+      url = URL.createObjectURL(file);
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+      const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.naturalWidth * k);
+      cv.height = Math.round(img.naturalHeight * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      const blob = await new Promise((r) => cv.toBlob(r, 'image/jpeg', 0.85));
+      return blob || file;
+    } catch (e) {
+      return file;
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+    }
+  }
+
+  async function onAttach(e) {
+    const input = e.currentTarget;
+    const file = input.files && input.files[0];
+    const leg = Number(input.dataset.attach);
+    input.value = '';
+    if (file) sendSelfie(leg, await shrink(file));
+  }
+
+  async function sendSelfie(leg, blob) {
+    if (busy) return;
+    if (blob.size > 12 * 1024 * 1024) return showErr(`thSelfieErr-${leg}`, T('selfieTooBig'));
+    busy = true;
+    uploadingLeg = leg;
+    render();
+    let err = '';
+    try {
+      const fd = new FormData();
+      fd.append('photo', blob, 'selfie.jpg');
+      const res = await fetch(`/api/treasure-hunt/${encodeURIComponent(H.tripId)}/selfie/${leg}`, { method: 'POST', credentials: 'same-origin', body: fd });
+      const data = await res.json().catch(() => ({}));
+      uploadingLeg = null;
+      if (!res.ok) {
+        sfx.error(); buzz([60, 40, 60]);
+        err = messageFor(data);
+        if (data.state) applyState(data.state); else render();
+        return;
+      }
+      if (data.event === 'already_finished') { applyState(data.state); return; }
+      if (data.event === 'finished') { sfx.finish(); buzz([80, 50, 80, 50, 160]); } else { sfx.capture(); buzz(60); }
+      showCapture(leg + 1, data.split, data.event === 'finished', T('selfieSent'));
+      await refresh(true);
+      applyState(data.state, { animate: true });
+    } catch (e) {
+      uploadingLeg = null;
+      render();
+      err = T('selfieFailed');
+    } finally {
+      busy = false;
+      uploadingLeg = null;
+      if (err) showErr(`thSelfieErr-${leg}`, err);
+    }
+  }
+
   // ── Overlays ──
   const overlays = document.createElement('div');
   overlays.innerHTML = `
@@ -525,14 +665,21 @@
       <div class="th-sheet"><div class="th-sheet__head"><h3><i class="fas fa-qrcode" aria-hidden="true"></i> ${esc(T('scannerTitle'))}</h3><button type="button" class="th-x" id="thScanClose" aria-label="${esc(T('close'))}"><i class="fas fa-xmark"></i></button></div>
       <div class="th-reader-wrap"><div id="thReader"></div><div class="th-reader-status" id="thReaderStatus"><i class="fas fa-circle-notch fa-spin"></i><span>${esc(T('scannerStarting'))}</span></div><span class="th-reader-frame" aria-hidden="true"></span></div></div>
     </div>
+    <div class="th-scanner th-cam" id="thCam" data-open="false" role="dialog" aria-modal="true" aria-label="${esc(T('cameraTitle'))}">
+      <div class="th-sheet"><div class="th-sheet__head"><h3><i class="fas fa-camera" aria-hidden="true"></i> <span id="thCamTitle">${esc(T('cameraTitle'))}</span></h3><button type="button" class="th-x" id="thCamClose" aria-label="${esc(T('close'))}"><i class="fas fa-xmark"></i></button></div>
+      <div class="th-cam__view"><video id="thCamVideo" playsinline muted autoplay></video><img id="thCamShot" alt="${esc(T('yourSelfie'))}" hidden><div class="th-reader-status" id="thCamStatus"></div></div>
+      <div class="th-cam__row" id="thCamLive"><button type="button" class="th-btn th-btn--ghost th-cam__flip" id="thCamFlip" aria-label="${esc(T('flipCamera'))}"><i class="fas fa-camera-rotate"></i></button><button type="button" class="th-cam__snap" id="thCamSnap" aria-label="${esc(T('snap'))}"><span></span></button><span class="th-cam__spacer"></span></div>
+      <div class="th-cam__row th-cam__row--review" id="thCamReview" hidden><button type="button" class="th-btn th-btn--ghost" id="thCamRetake"><i class="fas fa-rotate-left" aria-hidden="true"></i> ${esc(T('retake'))}</button><button type="button" class="th-btn th-btn--solid" id="thCamUse"><i class="fas fa-paper-plane" aria-hidden="true"></i> ${esc(T('useSelfie'))}</button></div>
+      </div>
+    </div>
     <div class="th-lightbox" id="thLightbox" data-open="false" role="dialog" aria-modal="true"><button type="button" class="th-x" id="thLightClose" aria-label="${esc(T('close'))}"><i class="fas fa-xmark"></i></button><div id="thLightHost"></div></div>
     <canvas class="th-confetti" id="thConfetti" aria-hidden="true"></canvas>`;
   document.body.appendChild(overlays);
 
   let capTimer = null;
-  function showCapture(n, split, isFinal) {
+  function showCapture(n, split, isFinal, kicker) {
     const el = document.getElementById('thCapture');
-    document.getElementById('thCapKick').textContent = isFinal ? T('treasure') : T('cleared');
+    document.getElementById('thCapKick').textContent = isFinal ? T('treasure') : (kicker || T('cleared'));
     document.getElementById('thCapTitle').textContent = isFinal ? T('victory') : T('stop', { n });
     document.getElementById('thCapSplit').textContent = fmt(split);
     el.dataset.open = 'true';
@@ -589,9 +736,98 @@
     try { if (qr && qr.isScanning) await qr.stop(); } catch (e) { /* already stopped */ }
   }
   document.getElementById('thScanClose').addEventListener('click', closeScanner);
+  // ── Selfie camera: front camera in the page, with the phone's own camera as a fallback ──
+  let camLeg = null;
+  let camStream = null;
+  let camFacing = 'user';
+  let camBlob = null;
+  const camEl = (id) => document.getElementById(id);
+  function camStatus(html) { const el = camEl('thCamStatus'); el.innerHTML = html; el.hidden = !html; }
+  function camMode(review) {
+    camEl('thCamLive').hidden = review;
+    camEl('thCamReview').hidden = !review;
+    camEl('thCamShot').hidden = !review;
+    camEl('thCamVideo').hidden = review;
+  }
+  function stopStream() { if (camStream) camStream.getTracks().forEach((t) => t.stop()); camStream = null; }
+  async function startStream() {
+    stopStream();
+    camStatus(`<i class="fas fa-circle-notch fa-spin"></i><span>${esc(T('scannerStarting'))}</span>`);
+    const video = camEl('thCamVideo');
+    video.classList.toggle('is-mirror', camFacing === 'user');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no camera api');
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing, width: { ideal: 1600 }, height: { ideal: 1600 } }, audio: false });
+      if (camEl('thCam').dataset.open !== 'true') { stopStream(); return; }
+      video.srcObject = camStream;
+      await video.play().catch(() => {});
+      camStatus('');
+    } catch (err) {
+      // No camera access in the page: let the phone's camera app take it instead.
+      camStatus(`<i class="fas fa-video-slash"></i><span>${esc(T('cameraBlocked'))}</span><label class="th-btn th-btn--solid"><i class="fas fa-camera" aria-hidden="true"></i> ${esc(T('openPhoneCamera'))}<input type="file" accept="image/*" capture="user" id="thCamNative" hidden></label>`);
+      const nat = camEl('thCamNative');
+      nat.addEventListener('change', async () => {
+        const f = nat.files && nat.files[0];
+        if (!f) return;
+        const leg = camLeg;
+        closeCamera();
+        sendSelfie(leg, await shrink(f));
+      });
+    }
+  }
+  function openCamera(leg) {
+    const s = state && state.stops && state.stops[leg];
+    if (!s) return;
+    camLeg = leg;
+    camBlob = null;
+    camEl('thCamTitle').textContent = s.isFinish ? T('selfieFinal') : T('selfieStop', { n: s.n });
+    camMode(false);
+    camEl('thCam').dataset.open = 'true';
+    startStream();
+  }
+  function closeCamera() {
+    camEl('thCam').dataset.open = 'false';
+    stopStream();
+    const shot = camEl('thCamShot');
+    if (shot.src && shot.src.startsWith('blob:')) URL.revokeObjectURL(shot.src);
+    shot.removeAttribute('src');
+    camBlob = null;
+  }
+  camEl('thCamClose').addEventListener('click', closeCamera);
+  camEl('thCamFlip').addEventListener('click', () => { camFacing = camFacing === 'user' ? 'environment' : 'user'; startStream(); });
+  camEl('thCamSnap').addEventListener('click', () => {
+    const video = camEl('thCamVideo');
+    if (!camStream || !video.videoWidth) return;
+    const k = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(video.videoWidth * k);
+    cv.height = Math.round(video.videoHeight * k);
+    const c = cv.getContext('2d');
+    // Save the selfie the way it looked on screen (mirrored for the front camera).
+    if (camFacing === 'user') { c.translate(cv.width, 0); c.scale(-1, 1); }
+    c.drawImage(video, 0, 0, cv.width, cv.height);
+    buzz(20);
+    cv.toBlob((blob) => {
+      if (!blob) return;
+      camBlob = blob;
+      camEl('thCamShot').src = URL.createObjectURL(blob);
+      camMode(true);
+      stopStream();
+    }, 'image/jpeg', 0.88);
+  });
+  camEl('thCamRetake').addEventListener('click', () => { camBlob = null; camMode(false); startStream(); });
+  camEl('thCamUse').addEventListener('click', () => {
+    if (!camBlob) return;
+    const blob = camBlob;
+    const leg = camLeg;
+    closeCamera();
+    sendSelfie(leg, blob);
+  });
+
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     closeScanner();
+    if (camEl('thCam').dataset.open === 'true') closeCamera();
     document.getElementById('thLightbox').dataset.open = 'false';
   });
 
@@ -627,7 +863,8 @@
       board = data.board;
       const openChanged = data.open !== open;
       open = data.open;
-      const moved = data.state && state && (data.state.progress !== state.progress || data.state.finished !== state.finished);
+      const sig = (st) => (st && st.stops ? st.stops.map((x) => (x.selfie ? x.selfie.status + x.selfie.url : '')).join('|') + st.verified : '');
+      const moved = data.state && state && (data.state.progress !== state.progress || data.state.finished !== state.finished || (SELFIE && sig(data.state) !== sig(state)));
       const joined = data.state && !state;
       if (silent) return;
       if (moved || joined) applyState(data.state, { animate: true });

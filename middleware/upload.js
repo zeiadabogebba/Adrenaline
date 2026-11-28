@@ -83,7 +83,22 @@ const huntPhotoStorage = new CloudinaryStorage({
 });
 
 const uploadHuntPhoto = multer({ storage: huntPhotoStorage, fileFilter, limits: { fileSize: 8 * 1024 * 1024 } }).single('photo');
+// Travellers' selfies at hunt stops. Phones may send HEIC; Cloudinary stores everything as JPEG.
+const huntSelfieStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:          cloudinaryFolder('treasure-hunt-selfies'),
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
+    format:          'jpg',
+    transformation:  [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto' }],
+  },
+});
+const selfieFilter = (req, file, cb) => {
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(file.mimetype)) cb(null, true);
+  else cb(new AppError('Only photos (JPEG, PNG, WebP or HEIC) can be uploaded.', 400), false);
+};
+const uploadHuntSelfie = multer({ storage: huntSelfieStorage, fileFilter: selfieFilter, limits: { fileSize: 12 * 1024 * 1024 } }).single('photo');
 const uploadPhotoBookPhoto = multer({ storage: photoBookStorage, fileFilter, limits: { fileSize: 8 * 1024 * 1024 } }).single('photo');
 const uploadPaymentScreenshot = multer({ storage: paymentScreenshotStorage, fileFilter, limits: { fileSize: 6 * 1024 * 1024 } }).single('screenshot');
 
-module.exports = { uploadAvatar, uploadPackageImage, uploadTripImage, uploadReviewPhotos, uploadTravellerPhoto, uploadPaymentScreenshot, uploadPhotoBookPhoto, uploadHuntPhoto };
+module.exports = { uploadAvatar, uploadPackageImage, uploadTripImage, uploadReviewPhotos, uploadTravellerPhoto, uploadPaymentScreenshot, uploadPhotoBookPhoto, uploadHuntPhoto, uploadHuntSelfie };

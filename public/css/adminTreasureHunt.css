@@ -412,3 +412,54 @@
 .thx-busmap__row { display: grid; grid-template-columns: minmax(80px, 140px) minmax(0, 320px); align-items: center; gap: 10px; font-size: 0.85rem; color: var(--ink); }
 .thx-busmap__row span { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thx-busmap__row select { padding: 6px 8px; background: var(--surface); border: 1px solid var(--hairline-strong); color: var(--ink); font: inherit; font-size: 0.82rem; }
+
+/* ── Preset mode: QR codes or selfies ── */
+.thx-mode { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 0 0 var(--s-md); padding: 0; border: 0; }
+.thx-mode legend { margin-bottom: 8px; font-size: 0.78rem; font-weight: 700; color: var(--ink-dim); }
+.thx-mode legend small { font-weight: 500; }
+.thx-mode__opt { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1px solid var(--hairline-strong); background: var(--surface); cursor: pointer; }
+.thx-mode__opt:has(input:disabled) { cursor: not-allowed; opacity: 0.75; }
+.thx-mode__opt.is-on { border-color: var(--crimson); box-shadow: inset 3px 0 0 var(--crimson); }
+.thx-mode__opt input { margin-top: 4px; accent-color: var(--crimson); }
+.thx-mode__opt > i { margin-top: 3px; font-size: 1.1rem; color: var(--crimson); }
+.thx-mode__opt span { display: grid; gap: 2px; }
+.thx-mode__opt b { color: var(--ink); }
+.thx-mode__opt small { font-size: 0.8rem; color: var(--ink-dim); line-height: 1.5; }
+
+/* ── Selfie review ── */
+.thx-review { margin: var(--s-lg) var(--space-2xl) 0; padding: var(--s-lg); border: 1px solid var(--hairline-strong); background: var(--surface-raised); }
+.thx-review__head { display: grid; gap: 6px; margin-bottom: var(--s-md); }
+.thx-review__head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0; font-size: 1.15rem; color: var(--ink); }
+.thx-review__head h2 i { color: var(--crimson); }
+.thx-review__head p { margin: 0; max-width: 70ch; font-size: 0.88rem; color: var(--ink-dim); }
+.thx-review__count { padding: 2px 10px; font-size: 0.78rem; font-weight: 700; color: #FFFFFF; background: var(--crimson); border-radius: var(--r-full); }
+.thx-review__filter { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--ink); cursor: pointer; }
+.thx-review__filter input { accent-color: var(--crimson); }
+.thx-review__team { padding: var(--s-md) 0; border-top: 1px solid var(--hairline); }
+.thx-review__team[hidden] { display: none; }
+.thx-review__team h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 0.95rem; color: var(--ink); }
+.thx-review__team h3 small { font-weight: 500; color: var(--ink-dim); }
+.thx-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.thx-shot { display: grid; margin: 0; border: 2px solid var(--hairline-strong); background: var(--surface); }
+.thx-shot[hidden] { display: none; }
+.thx-shot img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.thx-shot figcaption { display: grid; gap: 6px; padding: 8px 10px 10px; font-size: 0.82rem; color: var(--ink); }
+.thx-shot__meta { color: var(--ink-dim); }
+.thx-shot__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.thx-shot__btns .thx-btn { justify-content: center; }
+.thx-btn--ok { color: #16A34A; }
+.thx-shot.is-pending { border-color: var(--amber, #F59E0B); }
+.thx-shot.is-approved { border-color: #16A34A; }
+.thx-shot.is-approved [data-review="approved"] { color: #FFFFFF; background: #16A34A; border-color: #16A34A; }
+.thx-shot.is-rejected { border-color: var(--crimson); }
+.thx-shot.is-rejected img { opacity: 0.55; }
+.thx-shot.is-rejected [data-review="rejected"] { color: #FFFFFF; background: var(--crimson); border-color: var(--crimson); }
+.thx-selfie-sum { white-space: nowrap; }
+.thx-selfie-sum span { margin-inline-end: 6px; }
+.thx-selfie-sum .fa-check { color: #16A34A; }
+.thx-selfie-sum .fa-hourglass-half { color: var(--amber, #F59E0B); }
+.thx-selfie-sum .fa-xmark { color: var(--crimson); }
+
+@media (max-width: 700px) {
+    .thx-review { margin-inline: 16px; padding: var(--s-md); }
+}

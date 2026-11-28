@@ -1032,3 +1032,72 @@
 .th-team__bus { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--ink); }
 .th-team__bus i { color: var(--th-red); }
 .th-team__full { margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--th-gold); }
+
+/* ── Selfie hunts: every stop as a card, each with its selfie ── */
+
+.th-stops { display: grid; gap: var(--s-md); }
+.th-stops > .th-map-head { padding-bottom: 14px; color: var(--th-ink); background: var(--th-black); clip-path: var(--th-notch-sm); }
+.th-stops > .th-flash { margin: 0; }
+.th-stop--approved { border-top-color: #16A34A; }
+.th-stop--rejected { border-top-color: var(--th-red); }
+.th-stop__place { margin: 0; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; color: var(--th-ink); }
+.th-stop__place i { color: var(--route); margin-inline-end: 6px; }
+
+.th-selfie { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--th-line); }
+.th-selfie-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.th-selfie-row .th-btn { justify-content: center; gap: 8px; min-height: 48px; }
+.th-btn--attach { cursor: pointer; color: var(--th-ink); border-color: var(--th-line); }
+.th-btn--attach:focus-within { outline: 2px solid var(--route); outline-offset: 2px; }
+.th-sending { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px; font-weight: 700; color: var(--th-ink); border: 1px dashed var(--th-line); }
+.th-sending i { color: var(--route); }
+
+.th-shot { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; }
+.th-shot__img { padding: 0; border: 2px solid var(--th-line); background: #000; cursor: zoom-in; }
+.th-shot__img img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.th-shot__meta { display: grid; gap: 4px; }
+.th-shot__status { font-weight: 800; color: var(--th-ink); }
+.th-shot__at { font-size: 0.82rem; color: var(--th-dim); }
+.th-shot__at b { font-family: var(--font-display); color: var(--th-ink); }
+.th-shot--pending .th-shot__status i { color: var(--th-gold); }
+.th-shot--approved .th-shot__img { border-color: #16A34A; }
+.th-shot--approved .th-shot__status i { color: #22C55E; }
+.th-shot--rejected .th-shot__img { border-color: var(--th-red); opacity: 0.6; }
+.th-shot--rejected .th-shot__status { color: #FCA5A5; }
+
+.th-victory__review { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--th-dim); }
+.th-victory__review i { color: var(--th-gold); }
+.th-victory__review.is-ok i { color: #22C55E; }
+.th-lb__ok { color: #16A34A; font-size: 0.85rem; }
+.th-lb__wait { color: var(--th-gold); font-size: 0.8rem; }
+
+/* Camera sheet */
+.th-cam__view { position: relative; aspect-ratio: 3 / 4; max-height: 62vh; margin: 0 auto; width: 100%; background: #000; overflow: hidden; }
+.th-cam__view video,
+.th-cam__view img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.th-cam__view video.is-mirror { transform: scaleX(-1); }
+.th-cam__view [hidden] { display: none; }
+.th-cam .th-reader-status label { margin-top: 6px; cursor: pointer; }
+.th-cam__row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding-top: 16px; }
+.th-cam__row[hidden] { display: none; }
+.th-cam__row--review { grid-template-columns: 1fr 1fr; }
+.th-cam__row--review .th-btn { justify-content: center; gap: 8px; min-height: 48px; }
+.th-cam__flip { justify-self: start; width: 48px; height: 48px; padding: 0; color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2); }
+
+.th-cam__snap {
+    display: grid;
+    place-items: center;
+    width: 74px;
+    height: 74px;
+    padding: 0;
+    border: 4px solid #FFFFFF;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.th-cam__snap span { width: 56px; height: 56px; border-radius: 50%; background: var(--crimson, #DC2626); transition: transform 0.12s ease; }
+.th-cam__snap:active span { transform: scale(0.88); }
+
+@media (max-width: 380px) {
+    .th-selfie-row { grid-template-columns: 1fr; }
+}

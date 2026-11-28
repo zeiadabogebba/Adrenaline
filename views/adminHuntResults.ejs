@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261127b">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128a">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -67,16 +67,48 @@
         </header>
 
         <div class="thx-toolbar">
-            <% if (preset) { %><a class="thx-btn" href="/admin/treasure-hunt/presets/<%= preset._id %>/print" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print QR codes</a><% } %>
+            <% if (preset && preset.mode !== 'selfie') { %><a class="thx-btn" href="/admin/treasure-hunt/presets/<%= preset._id %>/print" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print QR codes</a><% } %>
             <% if (rows.length) { %><button type="button" class="thx-btn thx-btn--danger" id="thxResetAll"><i class="fas fa-rotate-left"></i> Reset all results</button><% } %>
         </div>
+
+        <% const selfieHunt = preset && preset.mode === 'selfie'; %>
+        <% if (selfieHunt && rows.length) { const waiting = rows.reduce((n, r) => n + r.selfies.filter(x => x.status === 'pending').length, 0); %>
+        <section class="thx-review" id="thxReview">
+            <header class="thx-review__head">
+                <h2><i class="fas fa-camera"></i> Selfies <span class="thx-review__count" id="thxWaiting"><%= waiting %> to check</span></h2>
+                <p>Approve a selfie if the team is clearly at the stop. Rejecting one reopens that team's clock until it sends a new selfie there. New selfies show when you reload.</p>
+                <label class="thx-review__filter"><input type="checkbox" id="thxOnlyPending" checked> Only show selfies to check</label>
+            </header>
+            <% rows.forEach(r => { if (!r.selfies.length) return; %>
+            <article class="thx-review__team" data-review-team="<%= r._id %>" style="--route:<%= r.route.color %>">
+                <h3><span class="thx-swatch"></span><b class="thx-teamid"><%= r.code.slice(0, 4) %>-<%= r.code.slice(4) %></b> <span dir="auto"><%= r.route.name %></span> <small><%= r.members.map(m => m.name).join(', ') %></small></h3>
+                <div class="thx-shots">
+                    <% r.selfies.forEach(x => { %>
+                    <figure class="thx-shot is-<%= x.status %>" data-leg="<%= x.leg %>" data-url="<%= x.url %>">
+                        <a href="<%= x.url %>" target="_blank" rel="noopener"><img src="<%= x.url.replace('/upload/', '/upload/c_fill,w_360,h_360,q_auto,f_auto/') %>" alt="Selfie at <%= x.label %>" loading="lazy"></a>
+                        <figcaption>
+                            <b><%= x.leg + 1 %>. <span dir="auto"><%= x.label %></span></b>
+                            <span class="thx-shot__meta"><span class="thx-ms" data-ms="<%= x.at %>"></span> &middot; <span class="thx-shot__status"><%= { pending: 'To check', approved: 'Approved', rejected: 'Rejected' }[x.status] %></span></span>
+                            <span class="thx-shot__btns">
+                                <button type="button" class="thx-btn thx-btn--sm thx-btn--ok" data-review="approved"><i class="fas fa-check"></i> Approve</button>
+                                <button type="button" class="thx-btn thx-btn--sm thx-btn--danger" data-review="rejected"><i class="fas fa-xmark"></i> Reject</button>
+                            </span>
+                        </figcaption>
+                    </figure>
+                    <% }) %>
+                </div>
+            </article>
+            <% }) %>
+            <p class="pbx-empty" id="thxReviewEmpty" hidden>All selfies are checked.</p>
+        </section>
+        <% } %>
 
         <% if (!rows.length) { %>
         <p class="pbx-empty">No team has started yet.</p>
         <% } else { %>
         <div class="thx-table-wrap">
             <table class="thx-table">
-                <thead><tr><th>#</th><th>Team</th><th>Route</th><th>Members</th><th>Progress</th><th>Time</th><th>Lifelines</th><th>Started</th><th></th></tr></thead>
+                <thead><tr><th>#</th><th>Team</th><th>Route</th><th>Members</th><th>Progress</th><th>Time</th><% if (selfieHunt) { %><th>Selfies</th><% } %><th>Lifelines</th><th>Started</th><th></th></tr></thead>
                 <tbody>
                 <% let rank = 0; rows.forEach(r => { if (r.elapsedMs != null) rank++; %>
                     <tr data-team="<%= r._id %>" style="--route:<%= r.route.color %>">
@@ -86,6 +118,9 @@
                         <td class="thx-members"><%= r.members.map(m => m.name).join(', ') %></td>
                         <td><%= r.progress %> / <%= r.total %></td>
                         <td class="thx-time" data-ms="<%= r.elapsedMs == null ? '' : r.elapsedMs %>" data-start="<%= new Date(r.startedAt).getTime() %>"></td>
+                        <% if (selfieHunt) { const ok = r.selfies.filter(x => x.status === 'approved').length, wait = r.selfies.filter(x => x.status === 'pending').length, no = r.selfies.filter(x => x.status === 'rejected').length; %>
+                        <td class="thx-selfie-sum"><span title="Approved"><i class="fas fa-check"></i> <%= ok %></span> <span title="To check"><i class="fas fa-hourglass-half"></i> <%= wait %></span><% if (no) { %> <span title="Rejected"><i class="fas fa-xmark"></i> <%= no %></span><% } %></td>
+                        <% } %>
                         <td><%= r.hintsUsed %></td>
                         <td><%= new Date(r.startedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }) %></td>
                         <td><button type="button" class="thx-btn thx-btn--sm thx-btn--danger" data-remove="<%= r._id %>" title="Remove this team's run">Remove</button></td>
@@ -97,8 +132,8 @@
         <% } %>
 
         <% if (preset) { %>
-        <details class="thx-answers">
-            <summary><i class="fas fa-key"></i> Answer sheet for volunteers</summary>
+        <details class="thx-answers"<%= selfieHunt ? ' open' : '' %>>
+            <summary><i class="fas fa-key"></i> Answer sheet<%= selfieHunt ? ' (check selfies against these places)' : ' for volunteers' %></summary>
             <% preset.routes.forEach(route => { %>
             <h3 style="--route:<%= route.color %>"><span class="thx-swatch"></span><span dir="auto"><%= route.name %></span></h3>
             <ol>
@@ -123,6 +158,7 @@
             });
         }
         paint(); setInterval(paint, 1000);
+        document.querySelectorAll('.thx-ms[data-ms]').forEach(el => { el.textContent = fmt(Number(el.dataset.ms)); });
         const toast = document.getElementById('thxToast');
         const say = (m, bad) => { toast.textContent = m; toast.classList.toggle('is-bad', !!bad); toast.hidden = false; setTimeout(() => { toast.hidden = true; }, 4000); };
         function arm(btn, label, run) {
@@ -139,6 +175,38 @@
         }
         const trip = '<%= trip._id %>';
         document.querySelectorAll('[data-remove]').forEach(b => arm(b, 'Tap again', async () => { await del(`/api/admin/treasure-hunt/trips/${trip}/teams/${b.dataset.remove}`); b.closest('tr').remove(); say('Team removed. Its members can start again.'); }));
+        // Selfie review
+        const onlyPending = document.getElementById('thxOnlyPending');
+        const LABEL = { pending: 'To check', approved: 'Approved', rejected: 'Rejected' };
+        function filterShots() {
+            if (!onlyPending) return;
+            let visible = 0, waiting = 0;
+            document.querySelectorAll('.thx-shot').forEach(f => { const pend = f.classList.contains('is-pending'); if (pend) waiting++; f.hidden = onlyPending.checked && !pend; if (!f.hidden) visible++; });
+            document.querySelectorAll('[data-review-team]').forEach(t => { t.hidden = ![...t.querySelectorAll('.thx-shot')].some(f => !f.hidden); });
+            document.getElementById('thxReviewEmpty').hidden = visible > 0;
+            document.getElementById('thxWaiting').textContent = waiting + ' to check';
+        }
+        if (onlyPending) { onlyPending.addEventListener('change', filterShots); filterShots(); }
+        document.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', async () => {
+            const fig = b.closest('.thx-shot');
+            const teamEl = b.closest('[data-review-team]');
+            const status = fig.classList.contains('is-' + b.dataset.review) ? 'pending' : b.dataset.review; // tap again to undo
+            fig.querySelectorAll('button').forEach(x => x.disabled = true);
+            try {
+                const res = await fetch(`/api/admin/treasure-hunt/trips/${trip}/teams/${teamEl.dataset.reviewTeam}/selfies/${fig.dataset.leg}`, { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status, url: fig.dataset.url }) });
+                const j = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(j.message || 'Could not save. Please try again.');
+                fig.className = 'thx-shot is-' + status;
+                fig.querySelector('.thx-shot__status').textContent = LABEL[status];
+                say(status === 'rejected' ? 'Selfie rejected. The team sees it and its clock is running again.' : status === 'approved' ? 'Selfie approved.' : 'Review undone.');
+                setTimeout(filterShots, 600);
+            } catch (e) {
+                say(e.message, true);
+            } finally {
+                fig.querySelectorAll('button').forEach(x => x.disabled = false);
+            }
+        }));
+
         const all = document.getElementById('thxResetAll');
         if (all) arm(all, 'Tap again to delete every team\'s run', async () => { await del(`/api/admin/treasure-hunt/trips/${trip}/teams`); location.reload(); });
     })();

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/adminPackages.css?v=20261119a">
     <link rel="stylesheet" href="/css/adminPhotoBooks.css?v=20261126b">
-    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261127b">
+    <link rel="stylesheet" href="/css/adminTreasureHunt.css?v=20261128a">
 </head>
 <body>
 <div class="dashboard-shell">
@@ -62,7 +62,7 @@
             <div class="top-bar-left">
                 <a class="pbx-back" href="/admin/treasure-hunt"><i class="fas fa-arrow-left" aria-hidden="true"></i> Treasure Hunt</a>
                 <h1 id="thePresetTitle"><%= preset ? preset.name : 'New preset' %></h1>
-                <p>Each route is a list of stops, and every route ends at the shared finish. A team sees the riddle for a stop once it clears the stop before it. The riddle for stop 1 goes on the start card.</p>
+                <p>Each route is a list of stops, and every route ends at the shared finish. A clue can be a riddle, a photo, or both. In a QR hunt a team sees the clue for a stop once it clears the stop before it; in a selfie hunt it sees every clue at once.</p>
             </div>
         </header>
 
@@ -73,7 +73,7 @@
         <div id="thxEditor" class="thx-editor"></div>
 
         <div class="thx-savebar">
-            <% if (preset) { %><a class="thx-btn" href="/admin/treasure-hunt/presets/<%= preset._id %>/print" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print QR codes</a><% } %>
+            <% if (preset) { %><a class="thx-btn" id="thxPrint" href="/admin/treasure-hunt/presets/<%= preset._id %>/print" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print QR codes</a><% } %>
             <span class="thx-savebar__state" id="thxDirty"></span>
             <button type="button" class="thx-btn thx-btn--primary" id="thxSave"><i class="fas fa-floppy-disk"></i> Save preset</button>
         </div>
@@ -86,7 +86,7 @@
     window.HUNT_PRESET = <%- JSON.stringify(preset).replace(/</g, '\\u003c') %>;
     window.HUNT_LOCKED = <%= locked ? 'true' : 'false' %>;
 </script>
-<script src="/js/adminHuntPreset.js?v=20261127c"></script>
+<script src="/js/adminHuntPreset.js?v=20261128a"></script>
 <script src="/js/global.js"></script>
 <script src="/js/admin-theme.js"></script>
 </body>
